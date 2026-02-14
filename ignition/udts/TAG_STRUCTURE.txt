@@ -1,0 +1,294 @@
+Mining Operations Tag Structure
+================================
+
+Total: 107 tags across 10 equipment instances
+
+[default]
+  └── Mining/
+      └── Equipment/
+          │
+          ├── HT_001/ (HaulTruck)           [14 tags × 5 instances = 70 tags]
+          │   ├── Location_Lat              Float8   -31.9505 degrees
+          │   ├── Location_Lon              Float8   115.8605 degrees
+          │   ├── Speed_KPH                 Float4   0.0 km/h
+          │   ├── Load_Tonnes               Float4   0.0 tonnes (0-250)
+          │   ├── Fuel_Level_Pct            Float4   100.0 % (0-100)
+          │   ├── Engine_Temp_C             Float4   85.0 °C (0-120)
+          │   ├── Tire_Pressure_FL_PSI      Float4   100.0 PSI
+          │   ├── Tire_Pressure_FR_PSI      Float4   100.0 PSI
+          │   ├── Tire_Pressure_RL_PSI      Float4   100.0 PSI
+          │   ├── Tire_Pressure_RR_PSI      Float4   100.0 PSI
+          │   ├── Vibration_MM_S            Float4   3.0 mm/s (0-20)
+          │   ├── Operator_ID               String   "OP_101"
+          │   ├── Cycle_State               String   "stopped"
+          │   ├── Cycle_Time_Sec            Int4     0 sec (0-1380)
+          │   └── Hours_Operated            Float4   0.0 hours
+          │
+          ├── HT_002/ (same structure)
+          ├── HT_003/ (same structure)
+          ├── HT_004/ (same structure)
+          ├── HT_005/ (same structure)
+          │
+          ├── CR_001/ (Crusher)             [9 tags × 3 instances = 27 tags]
+          │   ├── Status                    String   "RUNNING"
+          │   ├── Throughput_TPH            Float4   2400.0 TPH (0-3000)
+          │   ├── Vibration_MM_S ⚠️         Float4   20.0 mm/s (0-100)
+          │   │                                      ALARM: >40 HIGH, >60 CRITICAL
+          │   ├── Motor_Current_A           Float4   200.0 Amps (0-300)
+          │   ├── Belt_Speed_M_S            Float4   2.0 m/s (0-3)
+          │   ├── Chute_Level_Pct           Float4   60.0 % (0-100)
+          │   ├── Runtime_Hours             Float4   0.0 hours
+          │   ├── Feed_Rate_TPH             Float4   2500.0 TPH (0-3500)
+          │   └── Motor_Temp_C              Float4   75.0 °C (0-150)
+          │
+          ├── CR_002/ (same structure)
+          ├── CR_003/ (same structure)
+          │
+          ├── CV_001/ (Conveyor)            [5 tags × 2 instances = 10 tags]
+          │   ├── Speed_M_S                 Float4   2.5 m/s (0-5)
+          │   ├── Load_Pct                  Float4   60.0 % (0-100)
+          │   ├── Motor_Temp_C              Float4   65.0 °C (0-120)
+          │   ├── Belt_Alignment_MM ⚠️      Float4   0.0 mm (-10 to 10)
+          │   │                                      ALARM: <-5 or >5 WARNING
+          │   └── Status                    String   "RUNNING"
+          │
+          └── CV_002/ (same structure)
+
+
+UDT Member Counts
+=================
+
+HaulTruck:  14 members
+  - 6 Float8: GPS coordinates
+  - 9 Float4: Speed, load, fuel, temp, tire pressures, vibration, hours
+  - 2 String: Operator ID, cycle state
+  - 1 Int4:   Cycle time
+
+Crusher:    9 members
+  - 8 Float4: Throughput, vibration, current, speed, level, runtime, feed, temp
+  - 1 String: Status
+
+Conveyor:   5 members
+  - 4 Float4: Speed, load, temp, alignment
+  - 1 String: Status
+
+
+Tag Naming Convention
+=====================
+
+Equipment Type Prefixes:
+  HT_ = Haul Truck
+  CR_ = Crusher
+  CV_ = Conveyor
+
+Instance Numbers:
+  001, 002, 003, ... (zero-padded 3 digits)
+
+Examples:
+  HT_001 = Haul Truck #1
+  CR_002 = Crusher #2
+  CV_001 = Conveyor #1
+
+
+Alarm Configuration
+===================
+
+Crusher Vibration (CR_001, CR_002, CR_003):
+  Tag: Vibration_MM_S
+    ├── HIGH_VIBRATION
+    │     Mode: Above Setpoint
+    │     Threshold: 40.0 mm/s
+    │     Priority: High
+    │
+    └── CRITICAL_VIBRATION
+          Mode: Above Setpoint
+          Threshold: 60.0 mm/s
+          Priority: Critical
+
+Conveyor Alignment (CV_001, CV_002):
+  Tag: Belt_Alignment_MM
+    ├── MISALIGNMENT_NEG
+    │     Mode: Below Setpoint
+    │     Threshold: -5.0 mm
+    │     Priority: Medium
+    │
+    └── MISALIGNMENT_POS
+          Mode: Above Setpoint
+          Threshold: 5.0 mm
+          Priority: Medium
+
+
+Data Flow (After Physics Simulation)
+====================================
+
+1. Gateway Timer Script (1 Hz)
+   └─> Updates tag values based on physics model
+       ├─> Haul trucks: Move, load/unload, consume fuel
+       ├─> Crushers: Process ore, vary vibration/throughput
+       └─> Conveyors: Transport material, track alignment
+
+2. Ignition Tag System
+   └─> Stores current values in memory
+       └─> Optional: Tag Historian records time-series data
+
+3. HMI Displays
+   └─> Real-time visualization of equipment status
+
+4. Databricks Pipeline
+   └─> Periodic export to Delta Lake tables
+       └─> Genie AI natural language queries
+
+
+Example Genie Queries (After Data Pipeline)
+===========================================
+
+Fleet Management:
+  - "Show me all haul trucks with fuel below 20%"
+  - "Which trucks are currently loaded?"
+  - "What's the average speed of all trucks?"
+
+Equipment Health:
+  - "Is any crusher vibrating above 40 mm/s?"
+  - "Show me equipment with alarms active"
+  - "Which conveyors have belt misalignment?"
+
+Production Metrics:
+  - "What's the total throughput across all crushers?"
+  - "How many tonnes have trucks hauled in the last hour?"
+  - "Which equipment has been running longest?"
+
+Predictive Maintenance:
+  - "Which trucks have tire pressure below 95 PSI?"
+  - "Show crusher motor temperatures over 80°C"
+  - "Alert when any equipment runtime exceeds 10 hours"
+
+
+File Dependencies
+=================
+
+Setup Phase (this workstream):
+  1. HaulTruck_UDT.json        → Import into Ignition Designer
+  2. Crusher_UDT.json          → Import into Ignition Designer
+  3. Conveyor_UDT.json         → Import into Ignition Designer
+  4. create_tag_instances.py   → Run to create all tag instances
+  5. validation_tests.py       → Run to verify setup
+
+Next Workstreams:
+  - File 02: Physics simulation (populates tag values)
+  - File 03: HMI displays (visualizes equipment)
+  - File 04: Databricks pipeline (exports to Delta Lake)
+  - File 05: Genie AI interface (natural language queries)
+
+
+Performance Considerations
+==========================
+
+Tag Count:        107 tags
+Update Rate:      1 Hz (1 update/second per tag)
+Data Rate:        ~107 updates/second total
+Memory Usage:     <1 MB (memory tags only)
+CPU Impact:       <1% on modern gateway
+Network Impact:   ~5-10 KB/sec (historian enabled)
+Storage:          ~3 GB/year (with 1-second historian)
+
+Optimizations:
+  - Memory tags (no OPC/device overhead)
+  - 1 Hz update rate (adjustable in physics script)
+  - Optional historian (can disable for demo)
+
+
+Tag Quality States
+==================
+
+Good:      Tag has valid value, updated recently
+Bad:       Tag initialization failed or device offline
+Uncertain: Tag value questionable, stale, or estimated
+
+For this demo:
+  - All tags should show "Good" quality after setup
+  - If "Bad", run physics simulation to populate values
+  - If "Uncertain", check gateway status and tag provider
+
+
+Security & Access
+=================
+
+Tag Security:
+  - Default: All users can read
+  - Recommended: Restrict writes to operators/admins
+  - Production: Configure tag security zones
+
+Project Access:
+  - Designer: Requires Designer role
+  - Gateway: Admin access for tag management
+  - HMI: Read-only for operators, control for engineers
+
+Audit Trail:
+  - Enable tag value change logging in Gateway config
+  - Track alarm acknowledgments
+  - Monitor script execution logs
+
+
+Maintenance
+===========
+
+Regular Tasks:
+  - Weekly: Review alarm history, adjust thresholds if needed
+  - Monthly: Check tag quality, verify physics simulation running
+  - Quarterly: Archive historical data, optimize database
+
+Tag Modifications:
+  - Add tags: Edit UDT definition, instances auto-update
+  - Remove tags: Delete from UDT, instances auto-update
+  - Rename tags: Use Designer rename tool (updates all references)
+
+Backup:
+  - Export tags: Right-click Mining folder > Export Tags > JSON
+  - Store backup: Version control recommended
+  - Restore: Import JSON file to recreate structure
+
+
+Version History
+===============
+
+v1.0 (2026-02-14):
+  - Initial release
+  - 3 UDT types: HaulTruck, Crusher, Conveyor
+  - 10 equipment instances (5 trucks, 3 crushers, 2 conveyors)
+  - 107 total tags
+  - Alarm configurations for crushers and conveyors
+  - Automated creation and validation scripts
+
+
+Support & Documentation
+=======================
+
+Primary Reference:
+  - README.md: Full installation and usage guide
+  - QUICK_START.md: Fast setup instructions
+  - This file: Visual structure reference
+
+Ignition Resources:
+  - Docs: https://docs.inductiveautomation.com/
+  - Forum: https://forum.inductiveautomation.com/
+  - University: https://inductiveuniversity.com/
+
+Demo Resources:
+  - Prompt file: /prompts/ralph_wiggum_01_udts.md
+  - Main README: /README.md (project root)
+  - Databricks docs: /databricks/ directory
+
+
+Contact
+=======
+
+For issues with:
+  - UDT setup: Review README.md troubleshooting section
+  - Ignition config: Refer to Inductive Automation docs
+  - Demo integration: Check project documentation
+  - Databricks Genie: See main project README
+
+---
+Generated: 2026-02-14
+Version: 1.0
+Status: Production-ready

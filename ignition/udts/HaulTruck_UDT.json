@@ -1,0 +1,156 @@
+{
+  "name": "HaulTruck",
+  "tagType": "UdtType",
+  "typeId": "HaulTruck",
+  "description": "Mining haul truck with realistic operational parameters",
+  "tags": [
+    {
+      "name": "Location_Lat",
+      "tagType": "AtomicTag",
+      "dataType": "Float8",
+      "value": -31.9505,
+      "tooltip": "GPS Latitude (West Australia)",
+      "engUnit": "degrees"
+    },
+    {
+      "name": "Location_Lon",
+      "tagType": "AtomicTag",
+      "dataType": "Float8",
+      "value": 115.8605,
+      "tooltip": "GPS Longitude (West Australia)",
+      "engUnit": "degrees"
+    },
+    {
+      "name": "Speed_KPH",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 0.0,
+      "tooltip": "Current speed",
+      "engUnit": "km/h",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 60.0
+    },
+    {
+      "name": "Load_Tonnes",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 0.0,
+      "tooltip": "Current payload",
+      "engUnit": "tonnes",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 250.0
+    },
+    {
+      "name": "Fuel_Level_Pct",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 100.0,
+      "tooltip": "Fuel tank level",
+      "engUnit": "%",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 100.0
+    },
+    {
+      "name": "Engine_Temp_C",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 85.0,
+      "tooltip": "Engine coolant temperature",
+      "engUnit": "°C",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 120.0
+    },
+    {
+      "name": "Tire_Pressure_FL_PSI",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 100.0,
+      "tooltip": "Front Left tire pressure",
+      "engUnit": "PSI",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 150.0
+    },
+    {
+      "name": "Tire_Pressure_FR_PSI",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 100.0,
+      "tooltip": "Front Right tire pressure",
+      "engUnit": "PSI",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 150.0
+    },
+    {
+      "name": "Tire_Pressure_RL_PSI",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 100.0,
+      "tooltip": "Rear Left tire pressure",
+      "engUnit": "PSI",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 150.0
+    },
+    {
+      "name": "Tire_Pressure_RR_PSI",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 100.0,
+      "tooltip": "Rear Right tire pressure",
+      "engUnit": "PSI",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 150.0
+    },
+    {
+      "name": "Vibration_MM_S",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 3.0,
+      "tooltip": "Chassis vibration",
+      "engUnit": "mm/s",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 20.0
+    },
+    {
+      "name": "Operator_ID",
+      "tagType": "AtomicTag",
+      "dataType": "String",
+      "value": "OP_101",
+      "tooltip": "Current operator badge ID"
+    },
+    {
+      "name": "Cycle_State",
+      "tagType": "AtomicTag",
+      "dataType": "String",
+      "value": "stopped",
+      "tooltip": "Current cycle state (stopped, loading, hauling_loaded, dumping, returning_empty)"
+    },
+    {
+      "name": "Cycle_Time_Sec",
+      "tagType": "AtomicTag",
+      "dataType": "Int4",
+      "value": 0,
+      "tooltip": "Seconds elapsed in current cycle",
+      "engUnit": "seconds",
+      "engLow": 0,
+      "engHigh": 1380
+    },
+    {
+      "name": "Hours_Operated",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 0.0,
+      "tooltip": "Cumulative operating hours",
+      "engUnit": "hours",
+      "formatString": "#0.0"
+    }
+  ]
+}

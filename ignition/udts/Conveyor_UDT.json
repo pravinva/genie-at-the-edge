@@ -1,0 +1,79 @@
+{
+  "name": "Conveyor",
+  "tagType": "UdtType",
+  "typeId": "Conveyor",
+  "description": "Belt conveyor system",
+  "tags": [
+    {
+      "name": "Speed_M_S",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 2.5,
+      "tooltip": "Belt speed",
+      "engUnit": "m/s",
+      "formatString": "#0.00",
+      "engLow": 0.0,
+      "engHigh": 5.0
+    },
+    {
+      "name": "Load_Pct",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 60.0,
+      "tooltip": "Belt loading percentage",
+      "engUnit": "%",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 100.0
+    },
+    {
+      "name": "Motor_Temp_C",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 65.0,
+      "tooltip": "Drive motor temperature",
+      "engUnit": "°C",
+      "formatString": "#0.0",
+      "engLow": 0.0,
+      "engHigh": 120.0
+    },
+    {
+      "name": "Belt_Alignment_MM",
+      "tagType": "AtomicTag",
+      "dataType": "Float4",
+      "value": 0.0,
+      "tooltip": "Belt tracking offset from center",
+      "engUnit": "mm",
+      "formatString": "#0.0",
+      "engLow": -10.0,
+      "engHigh": 10.0,
+      "alarms": [
+        {
+          "name": "MISALIGNMENT_NEG",
+          "enabled": true,
+          "mode": "BelowValue",
+          "setpoint": -5.0,
+          "priority": "Medium",
+          "displayPath": "Conveyor Belt Misalignment (Negative)",
+          "notes": "Belt tracking too far left"
+        },
+        {
+          "name": "MISALIGNMENT_POS",
+          "enabled": true,
+          "mode": "AboveValue",
+          "setpoint": 5.0,
+          "priority": "Medium",
+          "displayPath": "Conveyor Belt Misalignment (Positive)",
+          "notes": "Belt tracking too far right"
+        }
+      ]
+    },
+    {
+      "name": "Status",
+      "tagType": "AtomicTag",
+      "dataType": "String",
+      "value": "RUNNING",
+      "tooltip": "Operational status (STOPPED, RUNNING, FAULT)"
+    }
+  ]
+}
