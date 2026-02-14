@@ -96,13 +96,13 @@ h3 { font-size: 14px; }
   <!-- Header (48px fixed) -->
   <header class="chat-header">
     <div class="header-left">
-      <div class="robot-icon">🤖</div>
+      <div class="robot-icon"></div>
       <h1>AI Operations Assistant</h1>
     </div>
     <div class="header-right">
-      <div class="status-indicator online">●</div>
+      <div class="status-indicator online"></div>
       <span class="status-text">Online</span>
-      <button class="btn-icon" onclick="clearChat()">🗑️</button>
+      <button class="btn-icon" onclick="clearChat()"></button>
     </div>
   </header>
   
@@ -125,10 +125,10 @@ h3 { font-size: 14px; }
       maxlength="500"
     ></textarea>
     <button class="btn-send" onclick="handleSend()">
-      <span class="send-icon">➤</span>
+      <span class="send-icon"></span>
     </button>
     <button class="btn-voice" onclick="handleVoice()" disabled title="Voice input coming soon">
-      <span class="voice-icon">🎤</span>
+      <span class="voice-icon"></span>
     </button>
   </div>
   
@@ -529,7 +529,7 @@ function generateFollowUps(responseText, rawResponse) {
 function showError(message) {
   const errorDiv = `
     <div class="message-error" role="alert">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon"></div>
       <div class="error-text">${message}</div>
       <button class="btn-retry" onclick="retryLastMessage()">Retry</button>
     </div>

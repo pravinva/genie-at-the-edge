@@ -8,12 +8,12 @@ This directory contains production-ready Python scripts for simulating realistic
 
 ```
 ignition/scripts/
-├── README.md                          (this file)
-├── mining_physics_simulation.py       (main Gateway Timer Script)
-├── fault_injection_cr002.py          (CR_002 degradation script)
-├── physics_utils.py                  (helper functions & constants)
-├── deployment_guide.md               (step-by-step deployment)
-└── testing_script.py                 (validation & testing)
+ README.md                          (this file)
+ mining_physics_simulation.py       (main Gateway Timer Script)
+ fault_injection_cr002.py          (CR_002 degradation script)
+ physics_utils.py                  (helper functions & constants)
+ deployment_guide.md               (step-by-step deployment)
+ testing_script.py                 (validation & testing)
 ```
 
 ## Components

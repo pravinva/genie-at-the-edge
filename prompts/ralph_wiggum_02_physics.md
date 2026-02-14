@@ -445,7 +445,7 @@ def simulate_weather():
 3. Configure:
    - Name: "MiningPhysicsSimulation"
    - Description: "Realistic equipment behavior simulation"
-   - Enabled: ✓ (checked)
+   - Enabled:  (checked)
    - Execution: Fixed Rate
    - Delay (seconds): 1 (run every 1 second)
    - Initial Delay: 0

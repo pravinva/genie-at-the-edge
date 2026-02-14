@@ -26,25 +26,25 @@ Conversational AI embedded directly in the control interface, providing instant 
 ### Architecture Overview
 
 ```
-┌─────────────────┐
-│ Ignition SCADA  │  Your existing control system
-└────────┬────────┘
-         │ Real-time streaming
-         ▼
-┌─────────────────┐
-│   Databricks    │  Unified lakehouse (OT + IT + business data)
-│   Lakehouse     │  Real-Time processing (<1 second)
-└────────┬────────┘
-         │ Natural language queries
-         ▼
-┌─────────────────┐
-│   Genie AI      │  Conversational intelligence
-└────────┬────────┘
-         │ Embedded chat
-         ▼
-┌─────────────────┐
-│   Operators     │  Insights in seconds, not minutes
-└─────────────────┘
+
+ Ignition SCADA    Your existing control system
+
+          Real-time streaming
+         
+
+   Databricks      Unified lakehouse (OT + IT + business data)
+   Lakehouse       Real-Time processing (<1 second)
+
+          Natural language queries
+         
+
+   Genie AI        Conversational intelligence
+
+          Embedded chat
+         
+
+   Operators       Insights in seconds, not minutes
+
 ```
 
 **Key Components:**
@@ -152,7 +152,7 @@ Conversational AI embedded directly in the control interface, providing instant 
 
 **AI Response:**
 - Crusher 1: 21mm/s vibration (normal)
-- Crusher 2: 42mm/s vibration (elevated) ⚠️
+- Crusher 2: 42mm/s vibration (elevated) 
 - Crusher 3: 19mm/s vibration (normal)
 - Analysis: Only Crusher 2 affected, isolated issue
 - Recommendation: Focus on Crusher 2, others OK
@@ -163,7 +163,7 @@ Conversational AI embedded directly in the control interface, providing instant 
 **Question:** "Which haul trucks have low efficiency today?"
 
 **AI Response:**
-- Truck 3: 72% efficiency (below 89% fleet average) ⚠️
+- Truck 3: 72% efficiency (below 89% fleet average) 
 - Possible causes: Operator technique, mechanical issue starting
 - Recommendation: Review operator logs, schedule inspection
 
@@ -416,10 +416,10 @@ Scales easily. Site 1 = $80K/year, Site 2 = +$30K (shared infrastructure). Volum
 ## Resources Included
 
 **Documents Provided:**
-- ✅ This customer handout (overview)
-- ✅ Technical architecture document (for IT/OT review)
-- ✅ Business value calculator (ROI spreadsheet)
-- ✅ Demo recording (full walkthrough)
+-  This customer handout (overview)
+-  Technical architecture document (for IT/OT review)
+-  Business value calculator (ROI spreadsheet)
+-  Demo recording (full walkthrough)
 
 **Available On Request:**
 - Security white paper (for IT security teams)

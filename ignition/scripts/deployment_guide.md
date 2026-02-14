@@ -39,20 +39,20 @@ Before proceeding, verify tags exist in Designer:
 
 ```
 Designer > Tag Browser > [default] > Mining > Equipment
-  ├─ HT_001/
-  │  ├─ Location_Lat
-  │  ├─ Speed_KPH
-  │  ├─ Load_Tonnes
-  │  └─ ... (12 more tags)
-  ├─ HT_002/ ... HT_005/
-  ├─ CR_001/
-  │  ├─ Status
-  │  ├─ Throughput_TPH
-  │  ├─ Vibration_MM_S
-  │  └─ ... (6 more tags)
-  ├─ CR_002/ ... CR_003/
-  ├─ CV_001/
-  └─ CV_002/
+   HT_001/
+     Location_Lat
+     Speed_KPH
+     Load_Tonnes
+     ... (12 more tags)
+   HT_002/ ... HT_005/
+   CR_001/
+     Status
+     Throughput_TPH
+     Vibration_MM_S
+     ... (6 more tags)
+   CR_002/ ... CR_003/
+   CV_001/
+   CV_002/
 ```
 
 **Expected Tag Count:** 105 tags minimum
@@ -80,7 +80,7 @@ Designer > Tag Browser > [default] > Mining > Equipment
    ```
    Name: MiningPhysicsSimulation
    Description: Realistic mining equipment behavior simulation (15 equipment instances)
-   Enabled: ☑ (checked)
+   Enabled:  (checked)
    ```
 
 4. **Set Execution Timing:**
@@ -343,9 +343,9 @@ Expected logs:
 - **Tag Updates:** 105 tags/second
 
 **Performance Thresholds:**
-- ⚠️ Warning: Execution time >100ms
-- ❌ Critical: Execution time >500ms (cannot keep up with 1s interval)
-- ❌ Critical: Error count >0
+-  Warning: Execution time >100ms
+-  Critical: Execution time >500ms (cannot keep up with 1s interval)
+-  Critical: Error count >0
 
 **If Performance Issues Occur:**
 1. Increase timer delay from 1s to 2s
@@ -587,7 +587,7 @@ Click: Restore
 
 ## Production Deployment Notes
 
-⚠️ **Important:** This simulation is designed for demonstration purposes. For production use:
+ **Important:** This simulation is designed for demonstration purposes. For production use:
 
 1. **Performance Testing:**
    - Test with full equipment count

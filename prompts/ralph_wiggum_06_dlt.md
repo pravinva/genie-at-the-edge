@@ -430,14 +430,14 @@ Cluster Config:
   - Max workers: 4
 
 Advanced:
-  - Enable Real-Time processing: ✓ (checked)
+  - Enable Real-Time processing:  (checked)
   - Configuration:
     - spark.databricks.streaming.mode: realtime
     - spark.sql.shuffle.partitions: 200
   - Storage location: Default (Unity Catalog managed)
   - Checkpoint location: Default
 
-Development: ✓ (for testing, uncheck for production)
+Development:  (for testing, uncheck for production)
 ```
 
 ---
@@ -539,9 +539,9 @@ Workflows > Delta Live Tables > Create Pipeline
 ```
 Click: Validate
 Should show:
-- ✓ Tables: bronze, silver, gold detected
-- ✓ Dependencies: Correctly ordered
-- ✓ Quality expectations: Defined
+-  Tables: bronze, silver, gold detected
+-  Dependencies: Correctly ordered
+-  Quality expectations: Defined
 ```
 
 **4. Start pipeline:**

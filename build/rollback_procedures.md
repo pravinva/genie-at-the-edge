@@ -674,11 +674,11 @@ python build/run_validation.py --environment dev
 ### Success Criteria
 
 System is healthy when:
-- ✓ All components accessible
-- ✓ Data flowing (check timestamps)
-- ✓ Latency targets met (<15s end-to-end)
-- ✓ No errors in logs
-- ✓ Demo scenario works
+-  All components accessible
+-  Data flowing (check timestamps)
+-  Latency targets met (<15s end-to-end)
+-  No errors in logs
+-  Demo scenario works
 
 ---
 

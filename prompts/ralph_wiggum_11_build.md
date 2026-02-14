@@ -11,19 +11,19 @@
 
 ```
 TRACK A: IGNITION (Days 1-3)
-  └─> Creates data generation and visualization
+  > Creates data generation and visualization
 
 TRACK B: DATABRICKS PROCESSING (Days 2-5)
-  └─> Creates data pipeline and analytics
+  > Creates data pipeline and analytics
 
 TRACK C: USER INTERFACE (Days 5-8)
-  └─> Creates chat interface and integration
+  > Creates chat interface and integration
 
 TRACK D: INTEGRATION (Days 8-9)
-  └─> Connects all pieces
+  > Connects all pieces
 
 TRACK E: VALIDATION (Day 10)
-  └─> End-to-end testing and demo prep
+  > End-to-end testing and demo prep
 ```
 
 ---
@@ -91,9 +91,9 @@ Deliverable: Tag system working, alarms functional
 ```
 
 **Day 1 End State:**
-- ✅ Tag structure complete
-- ✅ Alarms configured
-- ✅ Ready for automation scripts
+-  Tag structure complete
+-  Alarms configured
+-  Ready for automation scripts
 
 **Estimated time:** 90 minutes total
 
@@ -199,10 +199,10 @@ Deliverable: Data flowing Ignition → Databricks
 ```
 
 **Day 2 End State:**
-- ✅ Ignition tags updating realistically every second
-- ✅ Databricks receiving data via Zerobus
-- ✅ Bronze table populating
-- ✅ Ready for DLT pipeline
+-  Ignition tags updating realistically every second
+-  Databricks receiving data via Zerobus
+-  Bronze table populating
+-  Ready for DLT pipeline
 
 **Estimated time:** 4-5 hours total (includes waiting for data flow)
 
@@ -272,10 +272,10 @@ Deliverable: Pipeline running with <3s latency
 ```
 
 **Day 3 End State:**
-- ✅ Fault scenario active (CR_002 degrading)
-- ✅ Real-Time pipeline processing in <3s
-- ✅ Gold tables ready for Genie queries
-- ✅ Ready for Genie space creation
+-  Fault scenario active (CR_002 degrading)
+-  Real-Time pipeline processing in <3s
+-  Gold tables ready for Genie queries
+-  Ready for Genie space creation
 
 **Estimated time:** 6 hours
 
@@ -337,9 +337,9 @@ Deliverable: Genie tuned for mining operations domain
 ```
 
 **Day 4 End State:**
-- ✅ Genie space operational
-- ✅ Queries return accurate results in <5s
-- ✅ Ready for UI integration
+-  Genie space operational
+-  Queries return accurate results in <5s
+-  Ready for UI integration
 
 **Estimated time:** 4 hours
 
@@ -405,10 +405,10 @@ Deliverable: Production-ready error handling
 ```
 
 **Days 5-7 End State:**
-- ✅ Chat UI matches Perspective quality
-- ✅ All features working
-- ✅ Handles errors gracefully
-- ✅ Ready for embedding in Ignition
+-  Chat UI matches Perspective quality
+-  All features working
+-  Handles errors gracefully
+-  Ready for embedding in Ignition
 
 **Estimated time:** 12 hours across 3 days
 
@@ -493,10 +493,10 @@ Deliverable: Professional Perspective view
 ```
 
 **Days 8-9 End State:**
-- ✅ Complete Ignition Perspective view
-- ✅ Chat embedded seamlessly
-- ✅ Alarm integration working
-- ✅ UI polished and professional
+-  Complete Ignition Perspective view
+-  Chat embedded seamlessly
+-  Alarm integration working
+-  UI polished and professional
 
 **Estimated time:** 8 hours across 2 days
 
@@ -603,11 +603,11 @@ Deliverable: Backup plan if live demo fails
 ```
 
 **Day 10 End State:**
-- ✅ System validated end-to-end
-- ✅ Latency measured and documented
-- ✅ Fault scenario rehearsed
-- ✅ Demo script polished
-- ✅ Ready for customer presentation
+-  System validated end-to-end
+-  Latency measured and documented
+-  Fault scenario rehearsed
+-  Demo script polished
+-  Ready for customer presentation
 
 **Estimated time:** 5-6 hours
 
@@ -654,29 +654,29 @@ With issues/learning: 14 days
 **Before proceeding to next phase, verify:**
 
 **After Day 2:**
-- ✅ Data visible in Databricks bronze table
-- ✅ Ignition simulation running error-free
-- ✅ Zerobus module configured correctly
+-  Data visible in Databricks bronze table
+-  Ignition simulation running error-free
+-  Zerobus module configured correctly
 
 **After Day 4:**
-- ✅ Gold tables populating
-- ✅ Genie returns accurate answers
-- ✅ Latency <5s for queries
+-  Gold tables populating
+-  Genie returns accurate answers
+-  Latency <5s for queries
 
 **After Day 7:**
-- ✅ Chat UI matches Perspective styling
-- ✅ All features working
-- ✅ No console errors
+-  Chat UI matches Perspective styling
+-  All features working
+-  No console errors
 
 **After Day 9:**
-- ✅ Integration works end-to-end
-- ✅ Alarm buttons trigger chat
-- ✅ Professional appearance
+-  Integration works end-to-end
+-  Alarm buttons trigger chat
+-  Professional appearance
 
 **After Day 10:**
-- ✅ Demo rehearsed successfully
-- ✅ System stable for 24 hours
-- ✅ Backup plan ready
+-  Demo rehearsed successfully
+-  System stable for 24 hours
+-  Backup plan ready
 
 **Don't skip quality gates. Fix issues before proceeding.**
 

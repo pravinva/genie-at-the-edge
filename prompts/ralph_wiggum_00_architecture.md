@@ -11,55 +11,55 @@
 ## SYSTEM ARCHITECTURE
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  OPERATOR WORKSTATION (Browser)                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  IGNITION PERSPECTIVE SESSION                         │  │
-│  │  ┌─────────────────────┬─────────────────────────────┐│  │
-│  │  │  LEFT: Equipment    │  RIGHT: Genie Chat         ││  │
-│  │  │  - Live dashboards  │  - Embedded iframe         ││  │
-│  │  │  - Tag bindings     │  - Calls Databricks API    ││  │
-│  │  │  - Alarms           │  - Chat interface          ││  │
-│  │  └─────────────────────┴─────────────────────────────┘│  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                           │
-          ┌────────────────┴────────────────┐
-          │                                 │
+
+  OPERATOR WORKSTATION (Browser)                             
+    
+    IGNITION PERSPECTIVE SESSION                           
+      
+      LEFT: Equipment      RIGHT: Genie Chat           
+      - Live dashboards    - Embedded iframe           
+      - Tag bindings       - Calls Databricks API      
+      - Alarms             - Chat interface            
+      
+    
+
+                           
+          
+                                           
           ↓ Tag updates via Zerobus        ↓ API calls
-┌─────────────────────────┐    ┌──────────────────────────────┐
-│  IGNITION GATEWAY       │    │  DATABRICKS WORKSPACE        │
-│  ┌────────────────────┐ │    │  ┌────────────────────────┐  │
-│  │ Memory Tags        │ │    │  │ ZEROBUS INGESTION     │  │
-│  │ - 15 equipment     │ │    │  │ Stream: mining_ot     │  │
-│  │ - Real-time values │─┼────┼─>│ Target: bronze table  │  │
-│  └────────────────────┘ │    │  └───────────┬────────────┘  │
-│  ┌────────────────────┐ │    │              ↓               │
-│  │ Timer Scripts      │ │    │  ┌────────────────────────┐  │
-│  │ - Physics sim      │ │    │  │ DLT REAL-TIME MODE    │  │
-│  │ - Fault injection  │ │    │  │ Bronze→Silver→Gold    │  │
-│  │ - 1000ms interval  │ │    │  │ Latency: <1s          │  │
-│  └────────────────────┘ │    │  └───────────┬────────────┘  │
-│  ┌────────────────────┐ │    │              ↓               │
-│  │ Zerobus Module     │ │    │  ┌────────────────────────┐  │
-│  │ - Watches tags     │ │    │  │ DELTA TABLES (Gold)   │  │
-│  │ - Batches events   │ │    │  │ - equipment_perf      │  │
-│  │ - POSTs to DB      │ │    │  │ - production_metrics  │  │
-│  └────────────────────┘ │    │  │ - ml_predictions      │  │
-│  ┌────────────────────┐ │    │  └───────────┬────────────┘  │
-│  │ Perspective Module │ │    │              ↓               │
-│  │ - Views            │ │    │  ┌────────────────────────┐  │
-│  │ - Components       │ │    │  │ GENIE SPACE           │  │
-│  │ - Session mgmt     │ │    │  │ Warehouse: 4b99...    │  │
-│  └────────────────────┘ │    │  │ Queries gold tables   │  │
-└─────────────────────────┘    │  └───────────┬────────────┘  │
-                                │              ↓               │
-                                │  ┌────────────────────────┐  │
-                                │  │ CHAT UI (Static HTML) │  │
-                                │  │ Hosted in /files/     │  │
-                                │  │ Calls Genie API       │  │
-                                │  └────────────────────────┘  │
-                                └──────────────────────────────┘
+    
+  IGNITION GATEWAY             DATABRICKS WORKSPACE        
+           
+   Memory Tags                ZEROBUS INGESTION       
+   - 15 equipment             Stream: mining_ot       
+   - Real-time values > Target: bronze table    
+           
+                     ↓               
+   Timer Scripts               
+   - Physics sim              DLT REAL-TIME MODE      
+   - Fault injection          Bronze→Silver→Gold      
+   - 1000ms interval          Latency: <1s            
+           
+                     ↓               
+   Zerobus Module              
+   - Watches tags             DELTA TABLES (Gold)     
+   - Batches events           - equipment_perf        
+   - POSTs to DB              - production_metrics    
+          - ml_predictions        
+           
+   Perspective Module                    ↓               
+   - Views                     
+   - Components               GENIE SPACE             
+   - Session mgmt             Warehouse: 4b99...      
+          Queries gold tables     
+        
+                                              ↓               
+                                    
+                                   CHAT UI (Static HTML)   
+                                   Hosted in /files/       
+                                   Calls Genie API         
+                                    
+                                
 ```
 
 ---
@@ -89,7 +89,7 @@ T=13.0s   SQL Warehouse executes query on gold tables
             ↓ Format response
 T=15.0s   Operator sees natural language answer with context
 
-───────────────────────────────────────────────────────
+
 TOTAL: ~15 seconds from physical event to operator insight
 Data freshness: 2 seconds (Real-Time Mode)
 Query latency: 4 seconds (Genie + warehouse)
@@ -134,24 +134,24 @@ Query latency: 4 seconds (Genie + warehouse)
 
 ```
 IGNITION LAYER:
-├─ Data Generation (Gateway Scripts)
-│  └─ Outputs: Memory tag updates (1 Hz)
-├─ Data Egress (Zerobus Module)
-│  └─ Outputs: JSON batches to Databricks
-├─ Visualization (Perspective Views)
-│  └─ Outputs: Rendered HMI in browser
-└─ Integration (Embedded Frame)
-   └─ Outputs: iframe loading Databricks UI
+ Data Generation (Gateway Scripts)
+   Outputs: Memory tag updates (1 Hz)
+ Data Egress (Zerobus Module)
+   Outputs: JSON batches to Databricks
+ Visualization (Perspective Views)
+   Outputs: Rendered HMI in browser
+ Integration (Embedded Frame)
+    Outputs: iframe loading Databricks UI
 
 DATABRICKS LAYER:
-├─ Ingestion (Zerobus API)
-│  └─ Outputs: Bronze Delta table
-├─ Processing (DLT Pipelines)
-│  └─ Outputs: Silver + Gold Delta tables
-├─ Intelligence (Genie + ML)
-│  └─ Outputs: Natural language responses
-└─ Interface (Static HTML)
-   └─ Outputs: Chat UI in iframe
+ Ingestion (Zerobus API)
+   Outputs: Bronze Delta table
+ Processing (DLT Pipelines)
+   Outputs: Silver + Gold Delta tables
+ Intelligence (Genie + ML)
+   Outputs: Natural language responses
+ Interface (Static HTML)
+    Outputs: Chat UI in iframe
 ```
 
 ---
@@ -264,23 +264,23 @@ DATABRICKS LAYER:
 ## SUCCESS METRICS
 
 **Technical:**
-- ✅ <5s end-to-end latency (event → insight)
-- ✅ <2s data freshness (tag → gold table)
-- ✅ 99.9% uptime over 24-hour test
-- ✅ Zero data loss during network interruptions
-- ✅ Graceful degradation if Databricks unavailable
+-  <5s end-to-end latency (event → insight)
+-  <2s data freshness (tag → gold table)
+-  99.9% uptime over 24-hour test
+-  Zero data loss during network interruptions
+-  Graceful degradation if Databricks unavailable
 
 **Functional:**
-- ✅ Operator can diagnose issues 10x faster than manual
-- ✅ AI responses are accurate (>90% operator satisfaction)
-- ✅ Suggested questions are relevant (operator clicks them)
-- ✅ No context switching (everything on one screen)
+-  Operator can diagnose issues 10x faster than manual
+-  AI responses are accurate (>90% operator satisfaction)
+-  Suggested questions are relevant (operator clicks them)
+-  No context switching (everything on one screen)
 
 **Business:**
-- ✅ Reduces average investigation time from 30min to 30sec
-- ✅ Catches predictive failures 2-4 hours early
-- ✅ Operators rate experience 8+/10
-- ✅ Customer requests production deployment
+-  Reduces average investigation time from 30min to 30sec
+-  Catches predictive failures 2-4 hours early
+-  Operators rate experience 8+/10
+-  Customer requests production deployment
 
 ---
 
@@ -357,27 +357,27 @@ DATABRICKS LAYER:
 
 ```
 Day 1-2: Ignition Foundation
-  ├─ 01_UDT_Definitions (no dependencies)
-  ├─ 02_Physics_Simulation (depends on: 01)
-  └─ 03_Fault_Injection (depends on: 01, 02)
+   01_UDT_Definitions (no dependencies)
+   02_Physics_Simulation (depends on: 01)
+   03_Fault_Injection (depends on: 01, 02)
 
 Day 3-4: Databricks Processing
-  ├─ 05_Dimension_Tables (no dependencies, can run parallel)
-  ├─ 06_DLT_Pipeline (depends on: Zerobus data flowing)
-  └─ 07_Genie_Setup (depends on: 06 - needs gold tables)
+   05_Dimension_Tables (no dependencies, can run parallel)
+   06_DLT_Pipeline (depends on: Zerobus data flowing)
+   07_Genie_Setup (depends on: 06 - needs gold tables)
 
 Day 5-7: User Interface
-  └─ 08_Chat_UI (depends on: 07 - needs Genie space ID)
+   08_Chat_UI (depends on: 07 - needs Genie space ID)
 
 Day 8-9: Integration
-  ├─ 04_Perspective_View (depends on: 01, 08)
-  └─ 09_Integration_Config (depends on: 04, 08)
+   04_Perspective_View (depends on: 01, 08)
+   09_Integration_Config (depends on: 04, 08)
 
 Day 10: Testing
-  └─ 10_Testing_Plan (depends on: all above)
+   10_Testing_Plan (depends on: all above)
 
 Day 11-12: Demo
-  └─ 12_Demo_Script (depends on: working system)
+   12_Demo_Script (depends on: working system)
 ```
 
 ---
@@ -385,11 +385,11 @@ Day 11-12: Demo
 ## CRITICAL SUCCESS FACTORS
 
 **Must Have:**
-1. ✅ Professional UI quality (matches Perspective/Databricks products)
-2. ✅ Sub-5-second latency (fast enough to feel "real-time")
-3. ✅ Stable for 24+ hours (no crashes, memory leaks)
-4. ✅ Accurate responses (Genie answers are correct)
-5. ✅ Easy to demo (one-click startup, reliable)
+1.  Professional UI quality (matches Perspective/Databricks products)
+2.  Sub-5-second latency (fast enough to feel "real-time")
+3.  Stable for 24+ hours (no crashes, memory leaks)
+4.  Accurate responses (Genie answers are correct)
+5.  Easy to demo (one-click startup, reliable)
 
 **Nice to Have:**
 - Voice input (future enhancement)

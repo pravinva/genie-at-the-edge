@@ -160,9 +160,9 @@ No errors should appear
 ```
 
 ### Performance Thresholds
-- ✅ Good: Execution time <50ms, CPU <1%
-- ⚠️ Warning: Execution time 50-100ms, CPU 1-5%
-- ❌ Critical: Execution time >100ms, CPU >5%
+-  Good: Execution time <50ms, CPU <1%
+-  Warning: Execution time 50-100ms, CPU 1-5%
+-  Critical: Execution time >100ms, CPU >5%
 
 ---
 
@@ -235,19 +235,19 @@ system.tag.readBlocking([
 
 ```
 1. Ignition Gateway (this workstream)
-   └─> Timer Script updates 105 tags every 1 second
+   > Timer Script updates 105 tags every 1 second
 
 2. MQTT Publisher (next workstream)
-   └─> Reads tags, publishes JSON to MQTT broker
-   └─> Topic: mining/equipment/{id}/telemetry
+   > Reads tags, publishes JSON to MQTT broker
+   > Topic: mining/equipment/{id}/telemetry
 
 3. Databricks Delta Live Tables
-   └─> Auto Loader ingests MQTT messages
-   └─> Bronze → Silver → Gold tables
+   > Auto Loader ingests MQTT messages
+   > Bronze → Silver → Gold tables
 
 4. Genie Chat Interface
-   └─> User asks: "Why is CR_002 vibration high?"
-   └─> SQL query → ML inference → Natural language response
+   > User asks: "Why is CR_002 vibration high?"
+   > SQL query → ML inference → Natural language response
 ```
 
 ---
@@ -305,16 +305,16 @@ Then create corresponding tag instances in Designer.
 
 ```
 /Users/pravin.varma/Documents/Demo/genie-at-the-edge/
-└── ignition/
-    └── scripts/
-        ├── mining_physics_simulation.py   (deploy to Gateway Timer Scripts)
-        ├── fault_injection_cr002.py       (load in Script Console)
-        ├── physics_utils.py               (reference only, not deployed)
-        ├── testing_script.py              (load in Script Console)
-        ├── deployment_guide.md            (step-by-step instructions)
-        ├── README.md                      (project overview)
-        ├── IMPLEMENTATION_SUMMARY.md      (complete technical docs)
-        └── QUICK_REFERENCE.md             (this file)
+ ignition/
+     scripts/
+         mining_physics_simulation.py   (deploy to Gateway Timer Scripts)
+         fault_injection_cr002.py       (load in Script Console)
+         physics_utils.py               (reference only, not deployed)
+         testing_script.py              (load in Script Console)
+         deployment_guide.md            (step-by-step instructions)
+         README.md                      (project overview)
+         IMPLEMENTATION_SUMMARY.md      (complete technical docs)
+         QUICK_REFERENCE.md             (this file)
 ```
 
 ---

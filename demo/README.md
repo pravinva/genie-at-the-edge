@@ -22,15 +22,15 @@ This directory contains all production-ready materials for delivering the Mining
 
 ```
 demo/
-├── README.md                      # This file - overview and navigation
-├── demo_script.md                 # 15-minute presentation with exact timing
-├── pre_demo_checklist.md          # 30-minute warmup and system verification
-├── presentation_deck.md           # Customer-facing slide deck (markdown)
-├── technical_architecture.md      # Detailed architecture documentation
-├── business_value_calculator.md   # ROI and value justification
-├── qna_preparation.md             # Anticipated questions with answers
-├── backup_plan.md                 # Failure scenarios and recovery
-└── customer_handout.md            # Post-demo leave-behind document
+ README.md                      # This file - overview and navigation
+ demo_script.md                 # 15-minute presentation with exact timing
+ pre_demo_checklist.md          # 30-minute warmup and system verification
+ presentation_deck.md           # Customer-facing slide deck (markdown)
+ technical_architecture.md      # Detailed architecture documentation
+ business_value_calculator.md   # ROI and value justification
+ qna_preparation.md             # Anticipated questions with answers
+ backup_plan.md                 # Failure scenarios and recovery
+ customer_handout.md            # Post-demo leave-behind document
 ```
 
 ---

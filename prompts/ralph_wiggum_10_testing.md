@@ -12,22 +12,22 @@
 
 ```
 1. FUNCTIONAL TESTING
-   └─> Does everything work as designed?
+   > Does everything work as designed?
 
 2. PERFORMANCE TESTING  
-   └─> Is latency acceptable (<5s)?
+   > Is latency acceptable (<5s)?
 
 3. STABILITY TESTING
-   └─> Does it run 24 hours without crashes?
+   > Does it run 24 hours without crashes?
 
 4. UX TESTING
-   └─> Does UI match Perspective quality?
+   > Does UI match Perspective quality?
 
 5. INTEGRATION TESTING
-   └─> Do all components work together?
+   > Do all components work together?
 
 6. FAILURE TESTING
-   └─> What happens when things break?
+   > What happens when things break?
 ```
 
 ---
@@ -47,10 +47,10 @@ Steps:
 5. Check no NaN, Infinity, or nonsense values
 
 Pass Criteria:
-✅ All 105 tags updating every second
-✅ Values within expected ranges
-✅ Truck completes full cycle in 23 minutes
-✅ No errors in Gateway logs
+ All 105 tags updating every second
+ Values within expected ranges
+ Truck completes full cycle in 23 minutes
+ No errors in Gateway logs
 
 Fail: Values stuck, unrealistic, or errors present
 ```
@@ -70,10 +70,10 @@ Steps:
 5. Check JSON structure is valid (no parse errors)
 
 Pass Criteria:
-✅ Records accumulating (>100/minute expected)
-✅ All 15 equipment IDs present
-✅ Timestamps are current (within last minute)
-✅ JSON is valid (no _rescued_data)
+ Records accumulating (>100/minute expected)
+ All 15 equipment IDs present
+ Timestamps are current (within last minute)
+ JSON is valid (no _rescued_data)
 
 Fail: No data, missing equipment, old timestamps, malformed JSON
 ```
@@ -95,9 +95,9 @@ Steps:
 5. Calculate: T1 - T0
 
 Pass Criteria:
-✅ Data appears in gold within 3 seconds
-✅ Value is correct (45 or aggregated value containing 45)
-✅ No processing errors in DLT UI
+ Data appears in gold within 3 seconds
+ Value is correct (45 or aggregated value containing 45)
+ No processing errors in DLT UI
 
 Fail: Data takes >5s, values incorrect, pipeline errors
 ```
@@ -160,10 +160,10 @@ Actual: ___________
 PASS/FAIL: ___
 
 Pass Criteria:
-✅ 8/10 questions answered correctly and helpfully
-✅ Responses use proper mining terminology
-✅ SQL generated is sensible (check query performance tab)
-✅ No hallucinations (answers must be based on data)
+ 8/10 questions answered correctly and helpfully
+ Responses use proper mining terminology
+ SQL generated is sensible (check query performance tab)
+ No hallucinations (answers must be based on data)
 
 Fail: <7/10 correct, nonsense answers, hallucinations
 ```
@@ -176,16 +176,16 @@ Objective: "Ask AI" button pre-fills chat correctly
 Steps:
 1. Trigger alarm: Set CR_002.Vibration_MM_S = 50
 2. Wait for alarm to appear in table
-3. Click 💬 button in alarm row
+3. Click  button in alarm row
 4. Verify chat input pre-fills with question
 5. Press Enter, verify Genie responds relevantly
 6. Response should reference the specific alarm
 
 Pass Criteria:
-✅ Button click pre-fills question correctly
-✅ Question mentions correct equipment and alarm
-✅ Genie response is relevant to alarm
-✅ Process feels smooth (<2s to pre-fill)
+ Button click pre-fills question correctly
+ Question mentions correct equipment and alarm
+ Genie response is relevant to alarm
+ Process feels smooth (<2s to pre-fill)
 
 Fail: Question doesn't pre-fill, wrong equipment, Genie confused
 ```
@@ -244,9 +244,9 @@ Steps:
    - Responses are correct (not mixed up between users)
 
 Pass Criteria:
-✅ All sessions get responses within 10s
-✅ No errors or timeouts
-✅ SQL Warehouse handles load without cold start
+ All sessions get responses within 10s
+ No errors or timeouts
+ SQL Warehouse handles load without cold start
 
 Fail: Timeouts, errors, responses take >15s
 ```
@@ -294,10 +294,10 @@ Automated checks:
 - Count bronze records every hour, should be ~216,000/hour (60 records/min * 60 min * 60 records/batch)
 
 Pass Criteria:
-✅ Ignition runs 24 hours, <5% CPU, no errors
-✅ DLT pipeline processes continuously, no failures
-✅ Browser memory stable (<500MB after 24h)
-✅ Chat still responsive after 24 hours
+ Ignition runs 24 hours, <5% CPU, no errors
+ DLT pipeline processes continuously, no failures
+ Browser memory stable (<500MB after 24h)
+ Chat still responsive after 24 hours
 
 Fail: Crashes, memory leaks, data gaps, errors
 ```
@@ -316,10 +316,10 @@ Steps:
 6. Verify recovers and works
 
 Pass Criteria:
-✅ Shows clear error: "Network error - check connection"
-✅ Retry button appears
-✅ After reconnect, retry works
-✅ No data loss (Ignition → Databricks has buffer)
+ Shows clear error: "Network error - check connection"
+ Retry button appears
+ After reconnect, retry works
+ No data loss (Ignition → Databricks has buffer)
 
 Fail: Silent failure, confusing error, data lost
 ```
@@ -334,22 +334,22 @@ Fail: Silent failure, confusing error, data lost
 Comparison: Side-by-side Perspective vs Genie Chat
 
 Checklist:
-□ Colors match exactly (use color picker to verify)
-□ Fonts are identical (Inter for body, Roboto Mono for code)
-□ Spacing follows 8px grid system
-□ Border radius matches (4px)
-□ Shadows are subtle and consistent
-□ Buttons look like Perspective buttons
-□ Inputs look like Perspective inputs
-□ Dark theme is cohesive (no light theme elements)
+ Colors match exactly (use color picker to verify)
+ Fonts are identical (Inter for body, Roboto Mono for code)
+ Spacing follows 8px grid system
+ Border radius matches (4px)
+ Shadows are subtle and consistent
+ Buttons look like Perspective buttons
+ Inputs look like Perspective inputs
+ Dark theme is cohesive (no light theme elements)
 
 Get second opinion: Show to Ignition developer, ask:
 "Does this look like a native Perspective component?"
 
 Pass Criteria:
-✅ Indistinguishable from Perspective native components
-✅ Professional, polished appearance
-✅ No obvious style mismatches
+ Indistinguishable from Perspective native components
+ Professional, polished appearance
+ No obvious style mismatches
 
 Fail: Looks "hacked together", colors off, unprofessional
 ```
@@ -360,23 +360,23 @@ Fail: Looks "hacked together", colors off, unprofessional
 UX checklist:
 
 Animations:
-□ Messages slide in smoothly (no jank)
-□ Typing indicator animates at 60 FPS
-□ Scroll is smooth (no stuttering)
-□ Button hovers have subtle transitions
-□ No layout shift when content loads
+ Messages slide in smoothly (no jank)
+ Typing indicator animates at 60 FPS
+ Scroll is smooth (no stuttering)
+ Button hovers have subtle transitions
+ No layout shift when content loads
 
 Response times:
-□ Button click feedback: Instant (<100ms)
-□ Typing shows in input: Instant
-□ Send button becomes disabled: Instant
-□ Typing indicator appears: <200ms
-□ Scroll to new message: <300ms
+ Button click feedback: Instant (<100ms)
+ Typing shows in input: Instant
+ Send button becomes disabled: Instant
+ Typing indicator appears: <200ms
+ Scroll to new message: <300ms
 
 Pass Criteria:
-✅ All interactions feel instant and smooth
-✅ 60 FPS maintained during animations
-✅ No perceived lag or jank
+ All interactions feel instant and smooth
+ 60 FPS maintained during animations
+ No perceived lag or jank
 
 Fail: Laggy, stuttering, unresponsive feeling
 ```
@@ -404,10 +404,10 @@ Use browser accessibility tools:
    - Buttons: Clear in all states
 
 Pass Criteria:
-✅ Lighthouse score >90
-✅ Full keyboard navigation
-✅ Focus states clearly visible
-✅ Contrast ratios pass WCAG 2.1 AA
+ Lighthouse score >90
+ Full keyboard navigation
+ Focus states clearly visible
+ Contrast ratios pass WCAG 2.1 AA
 
 Fail: Score <80, keyboard nav broken, poor contrast
 ```
@@ -427,10 +427,10 @@ End-to-end validation:
 4. Verify response mentions value close to 55
 
 Flow traced:
-✅ Tag change → Zerobus → Bronze (check table)
-✅ Bronze → Silver → Gold (check DLT graph)
-✅ Genie queries gold (check SQL in query history)
-✅ Response reflects recent data (not stale)
+ Tag change → Zerobus → Bronze (check table)
+ Bronze → Silver → Gold (check DLT graph)
+ Genie queries gold (check SQL in query history)
+ Response reflects recent data (not stale)
 
 Pass: Response shows recent data (<2 min old)
 Fail: Response shows old data or wrong value
@@ -445,10 +445,10 @@ Alarm button integration:
 2. Verify alarm appears in table
 3. Click "Ask AI" button
 4. Verify:
-   ✅ Chat input pre-fills correctly
-   ✅ Equipment ID is correct
-   ✅ Alarm type is correct
-   ✅ Cursor is in input field (ready to edit/send)
+    Chat input pre-fills correctly
+    Equipment ID is correct
+    Alarm type is correct
+    Cursor is in input field (ready to edit/send)
 
 Test edge cases:
 - Multiple alarms present: Correct alarm selected
@@ -510,10 +510,10 @@ T=36min: Operator investigates
   
 T=37min: Diagnosis received
   - Response should mention:
-    ✅ Current vibration value (>40)
-    ✅ Comparison to normal (2x baseline)
-    ✅ Pattern match (Jan 15 incident if in data)
-    ✅ Recommendation (inspect belt)
+     Current vibration value (>40)
+     Comparison to normal (2x baseline)
+     Pattern match (Jan 15 incident if in data)
+     Recommendation (inspect belt)
   
 T=40min: Severe fault state
   - Vibration oscillating 55-65 mm/s
@@ -521,10 +521,10 @@ T=40min: Severe fault state
   - Throughput severely reduced
 
 Pass Criteria:
-✅ Fault progresses realistically over 10 minutes
-✅ Alarm fires at correct threshold
-✅ Genie diagnosis is accurate and helpful
-✅ Complete demo story flows smoothly
+ Fault progresses realistically over 10 minutes
+ Alarm fires at correct threshold
+ Genie diagnosis is accurate and helpful
+ Complete demo story flows smoothly
 
 Fail: Fault doesn't trigger, alarm doesn't fire, Genie gives irrelevant answer
 ```
@@ -543,10 +543,10 @@ Steps:
 2. Open Perspective session
 3. Try asking question
 4. Verify error handling:
-   ✅ Clear error message: "Cannot reach AI assistant"
-   ✅ Retry button appears
-   ✅ Perspective view still works (tags update)
-   ✅ No crashes or white screens
+    Clear error message: "Cannot reach AI assistant"
+    Retry button appears
+    Perspective view still works (tags update)
+    No crashes or white screens
 
 5. Restore connection
 6. Click retry
@@ -566,10 +566,10 @@ Steps:
 2. Restart Ignition Gateway
 3. Wait for restart complete
 4. Verify:
-   ✅ Tags reset to initial values OR resume state (depending on config)
-   ✅ Simulation resumes automatically
-   ✅ Zerobus reconnects and sends data
-   ✅ DLT pipeline continues processing
+    Tags reset to initial values OR resume state (depending on config)
+    Simulation resumes automatically
+    Zerobus reconnects and sends data
+    DLT pipeline continues processing
 
 Pass: System recovers automatically within 2-3 minutes
 Fail: Manual intervention needed, data gaps, stuck state
@@ -604,18 +604,18 @@ Deliverable: Document cold start behavior, plan for demo
 Script: Follow File 12 (Demo Script) exactly
 
 Checklist:
-□ Introduction flows naturally (2 min)
-□ Ignition view loads without issues
-□ Tags are updating visibly
-□ Fault scenario is at right stage (or can be triggered)
-□ Alarm fires on cue
-□ "Ask AI" button works
-□ Chat responds in <5 seconds
-□ Follow-up questions work
-□ Drill-down into SQL/data works if shown
-□ Architecture explanation is clear
-□ Business value is compelling
-□ Q&A handling is confident
+ Introduction flows naturally (2 min)
+ Ignition view loads without issues
+ Tags are updating visibly
+ Fault scenario is at right stage (or can be triggered)
+ Alarm fires on cue
+ "Ask AI" button works
+ Chat responds in <5 seconds
+ Follow-up questions work
+ Drill-down into SQL/data works if shown
+ Architecture explanation is clear
+ Business value is compelling
+ Q&A handling is confident
 
 Time the demo: Should be 12-15 minutes (leaves buffer for Q&A)
 

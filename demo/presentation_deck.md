@@ -54,30 +54,30 @@
 **Architecture Overview:**
 
 ```
-┌─────────────────┐
-│  Ignition SCADA │ ─────► Real-time streaming
-└─────────────────┘
-         │
-         │ Zerobus Connector
-         ▼
-┌─────────────────┐
-│   Databricks    │ ─────► Real-Time Processing (< 1 sec)
-│   Lakehouse     │        Medallion Architecture
-└─────────────────┘        Bronze → Silver → Gold
-         │
-         │ Unified Data
-         ▼
-┌─────────────────┐
-│  Genie AI       │ ─────► Natural Language Queries
-│  Assistant      │        Historical Context
-└─────────────────┘        Predictive Insights
-         │
-         │ Embedded Chat
-         ▼
-┌─────────────────┐
-│  Perspective    │ ─────► Operators get answers
-│  HMI Interface  │        No app switching
-└─────────────────┘        Single pane of glass
+
+  Ignition SCADA   Real-time streaming
+
+         
+          Zerobus Connector
+         
+
+   Databricks      Real-Time Processing (< 1 sec)
+   Lakehouse             Medallion Architecture
+        Bronze → Silver → Gold
+         
+          Unified Data
+         
+
+  Genie AI         Natural Language Queries
+  Assistant              Historical Context
+        Predictive Insights
+         
+          Embedded Chat
+         
+
+  Perspective      Operators get answers
+  HMI Interface          No app switching
+        Single pane of glass
 ```
 
 **Key Innovation:** AI assistant lives IN the control interface, not as a separate tool.

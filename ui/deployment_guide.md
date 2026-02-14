@@ -125,10 +125,10 @@ https://adb-1234567890123456.azuredatabricks.net/files/mining-demo/genie_chat_pe
 **3.2 Open URL in Browser**
 
 Expected results:
-- ✅ Chat UI loads with dark theme
-- ✅ Header shows "Online" status (green indicator)
-- ✅ Welcome message with 4 suggested questions
-- ✅ Input field active and ready
+-  Chat UI loads with dark theme
+-  Header shows "Online" status (green indicator)
+-  Welcome message with 4 suggested questions
+-  Input field active and ready
 
 **3.3 Test Functionality**
 
@@ -160,8 +160,8 @@ https://adb-{workspace_id}.azuredatabricks.net/files/mining-demo/genie_chat_pers
 ```
 
 Expected:
-- ✅ Question appears in input field
-- ✅ Can edit or send as-is
+-  Question appears in input field
+-  Can edit or send as-is
 
 ---
 
@@ -312,11 +312,11 @@ Press `Ctrl+S` (or `Cmd+S` on Mac)
 
 **7.3 Verify Functionality**
 
-- ✅ Chat loads without errors
-- ✅ Dark theme matches Perspective
-- ✅ Can type and send messages
-- ✅ Responses appear
-- ✅ No layout issues or scrollbars
+-  Chat loads without errors
+-  Dark theme matches Perspective
+-  Can type and send messages
+-  Responses appear
+-  No layout issues or scrollbars
 
 **7.4 Check Output Console**
 
@@ -463,10 +463,10 @@ def runAction(self, event):
 2. Navigate to alarm table
 3. Click "Ask AI" on an alarm
 4. Verify:
-   - ✅ Chat popup opens
-   - ✅ Question pre-filled with alarm details
-   - ✅ Can send or edit question
-   - ✅ Response is relevant
+   -  Chat popup opens
+   -  Question pre-filled with alarm details
+   -  Can send or edit question
+   -  Response is relevant
 
 ---
 
@@ -482,7 +482,7 @@ Find equipment detail view (e.g., `Equipment/Detail`)
 
 1. Add button to view
 2. Position: Top-right corner or bottom toolbar
-3. Text: "🤖 Ask AI Assistant"
+3. Text: " Ask AI Assistant"
 4. Style:
    ```json
    {
@@ -555,38 +555,38 @@ def runAction(self, event):
 
 | Test | Expected Result | Status |
 |------|----------------|--------|
-| Chat loads standalone | UI renders correctly | ⬜ |
-| Chat loads in iframe | No errors, proper styling | ⬜ |
-| Send simple question | Response within 5 seconds | ⬜ |
-| Send complex question | Detailed response with data | ⬜ |
-| Pre-filled question works | Question appears in input | ⬜ |
-| Suggested questions clickable | Question sent when clicked | ⬜ |
-| Clear chat button works | Conversation resets | ⬜ |
-| Alarm integration | Opens with alarm details | ⬜ |
-| Equipment integration | Opens with equipment details | ⬜ |
-| SQL query displays | Properly formatted with syntax highlighting | ⬜ |
-| Data table displays | Properly formatted and scrollable | ⬜ |
-| Copy SQL button works | SQL copied to clipboard | ⬜ |
+| Chat loads standalone | UI renders correctly |  |
+| Chat loads in iframe | No errors, proper styling |  |
+| Send simple question | Response within 5 seconds |  |
+| Send complex question | Detailed response with data |  |
+| Pre-filled question works | Question appears in input |  |
+| Suggested questions clickable | Question sent when clicked |  |
+| Clear chat button works | Conversation resets |  |
+| Alarm integration | Opens with alarm details |  |
+| Equipment integration | Opens with equipment details |  |
+| SQL query displays | Properly formatted with syntax highlighting |  |
+| Data table displays | Properly formatted and scrollable |  |
+| Copy SQL button works | SQL copied to clipboard |  |
 
 **11.2 Error Handling Tests**
 
 | Test | Expected Result | Status |
 |------|----------------|--------|
-| Invalid token | Shows "Authentication expired" error | ⬜ |
-| Network disconnected | Shows retry option | ⬜ |
-| Genie Space deleted | Shows connection error | ⬜ |
-| SQL warehouse stopped | Graceful error message | ⬜ |
-| Invalid question | Genie handles gracefully | ⬜ |
+| Invalid token | Shows "Authentication expired" error |  |
+| Network disconnected | Shows retry option |  |
+| Genie Space deleted | Shows connection error |  |
+| SQL warehouse stopped | Graceful error message |  |
+| Invalid question | Genie handles gracefully |  |
 
 **11.3 Performance Tests**
 
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
-| Initial load time | <2 seconds | _____ | ⬜ |
-| First message response | <5 seconds | _____ | ⬜ |
-| Subsequent responses | <3 seconds | _____ | ⬜ |
-| Scrolling framerate | 60 FPS | _____ | ⬜ |
-| Memory usage (30 min) | <100 MB | _____ | ⬜ |
+| Initial load time | <2 seconds | _____ |  |
+| First message response | <5 seconds | _____ |  |
+| Subsequent responses | <3 seconds | _____ |  |
+| Scrolling framerate | 60 FPS | _____ |  |
+| Memory usage (30 min) | <100 MB | _____ |  |
 
 **11.4 Cross-Browser Tests**
 

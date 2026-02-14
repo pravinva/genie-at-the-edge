@@ -21,12 +21,12 @@ Production-quality chat interface for Databricks Genie AI Assistant, designed fo
 
 ```
 ui/
-├── README.md                           # This file
-├── genie_chat_perspective.html         # Main single-file application (94KB)
-├── perspective_view_spec.json          # Ignition Perspective view configuration
-├── integration_config.md               # Integration guide (35 pages)
-├── deployment_guide.md                 # Deployment instructions (30 pages)
-└── testing_checklist.md                # Comprehensive testing checklist (20 pages)
+ README.md                           # This file
+ genie_chat_perspective.html         # Main single-file application (94KB)
+ perspective_view_spec.json          # Ignition Perspective view configuration
+ integration_config.md               # Integration guide (35 pages)
+ deployment_guide.md                 # Deployment instructions (30 pages)
+ testing_checklist.md                # Comprehensive testing checklist (20 pages)
 ```
 
 ## Quick Start
@@ -80,29 +80,29 @@ concat(
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Ignition Perspective View                                   │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │ Embedded Frame Component                           │    │
-│  │                                                     │    │
-│  │  ┌──────────────────────────────────────────┐     │    │
-│  │  │ genie_chat_perspective.html              │     │    │
-│  │  │ (hosted on Databricks Files)             │     │    │
-│  │  │                                           │     │    │
-│  │  │  ┌────────────────────────────────┐      │     │    │
-│  │  │  │ Databricks Genie API           │      │     │    │
-│  │  │  │                                 │      │     │    │
-│  │  │  │  ┌──────────────────────┐      │      │     │    │
-│  │  │  │  │ Unity Catalog Tables │      │      │     │    │
-│  │  │  │  │ - equipment_telemetry│      │      │     │    │
-│  │  │  │  │ - alarms             │      │      │     │    │
-│  │  │  │  │ - production_metrics │      │      │     │    │
-│  │  │  │  └──────────────────────┘      │      │     │    │
-│  │  │  └────────────────────────────────┘      │     │    │
-│  │  └──────────────────────────────────────────┘     │    │
-│  └────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
+
+ Ignition Perspective View                                   
+                                                              
+      
+   Embedded Frame Component                               
+                                                           
+             
+     genie_chat_perspective.html                       
+     (hosted on Databricks Files)                      
+                                                        
+                     
+       Databricks Genie API                          
+                                                      
+                             
+         Unity Catalog Tables                      
+         - equipment_telemetry                     
+         - alarms                                  
+         - production_metrics                      
+                             
+                     
+             
+      
+
 ```
 
 ## Usage Patterns
@@ -399,36 +399,36 @@ Use the comprehensive testing checklist in `testing_checklist.md`.
 
 **Quick smoke test:**
 
-1. ✅ Standalone HTML loads
-2. ✅ Can type and send message
-3. ✅ Response appears within 5 seconds
-4. ✅ Pre-filled question works (`&question=Test`)
-5. ✅ Embedded in Perspective without errors
-6. ✅ Alarm integration opens with details
-7. ✅ No console errors (F12)
+1.  Standalone HTML loads
+2.  Can type and send message
+3.  Response appears within 5 seconds
+4.  Pre-filled question works (`&question=Test`)
+5.  Embedded in Perspective without errors
+6.  Alarm integration opens with details
+7.  No console errors (F12)
 
 ## Browser Compatibility
 
 **Tested and supported:**
 
-- ✅ Chrome 90+ (Windows, Mac, Linux)
-- ✅ Firefox 88+ (Windows, Mac, Linux)
-- ✅ Safari 14+ (Mac, iOS)
-- ✅ Edge 90+ (Windows)
+-  Chrome 90+ (Windows, Mac, Linux)
+-  Firefox 88+ (Windows, Mac, Linux)
+-  Safari 14+ (Mac, iOS)
+-  Edge 90+ (Windows)
 
 **Not supported:**
-- ❌ Internet Explorer (use Edge instead)
-- ❌ Browsers without ES6 support
+-  Internet Explorer (use Edge instead)
+-  Browsers without ES6 support
 
 ## Accessibility
 
 **WCAG 2.1 AA Compliant:**
 
-- ✅ Keyboard navigation (Tab, Enter, Escape)
-- ✅ Screen reader support (ARIA labels)
-- ✅ Color contrast 4.5:1 minimum
-- ✅ Focus indicators visible
-- ✅ Semantic HTML structure
+-  Keyboard navigation (Tab, Enter, Escape)
+-  Screen reader support (ARIA labels)
+-  Color contrast 4.5:1 minimum
+-  Focus indicators visible
+-  Semantic HTML structure
 
 **Screen reader tested with:**
 - NVDA (Windows)

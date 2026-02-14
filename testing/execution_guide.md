@@ -70,11 +70,11 @@ python test_ignition_tags.py
 ```
 
 Expected Results:
-- ✓ Gateway connectivity: PASS
-- ✓ Tags updating: PASS (105 tags)
-- ✓ Tag values realistic: PASS
-- ✓ No invalid values: PASS
-- ✓ CPU/Memory usage: PASS (<10% CPU)
+-  Gateway connectivity: PASS
+-  Tags updating: PASS (105 tags)
+-  Tag values realistic: PASS
+-  No invalid values: PASS
+-  CPU/Memory usage: PASS (<10% CPU)
 
 Action if fails: Check Ignition Gateway logs, verify simulation scripts are running.
 
@@ -86,12 +86,12 @@ python test_databricks_pipeline.py
 ```
 
 Expected Results:
-- ✓ Databricks connectivity: PASS
-- ✓ SQL Warehouse status: PASS (RUNNING)
-- ✓ DLT pipeline status: PASS (RUNNING, HEALTHY)
-- ✓ Bronze ingestion: PASS (>500 records/5min, 15 equipment)
-- ✓ Gold table quality: PASS
-- ✓ All equipment present: PASS
+-  Databricks connectivity: PASS
+-  SQL Warehouse status: PASS (RUNNING)
+-  DLT pipeline status: PASS (RUNNING, HEALTHY)
+-  Bronze ingestion: PASS (>500 records/5min, 15 equipment)
+-  Gold table quality: PASS
+-  All equipment present: PASS
 
 Action if fails:
 - Bronze ingestion fails: Check Zerobus configuration, verify Gateway is sending data
@@ -106,11 +106,11 @@ python test_genie_api.py
 ```
 
 Expected Results:
-- ✓ Genie connectivity: PASS
-- ✓ Simple query: PASS (<5s)
-- ✓ Query accuracy (10 questions): PASS (8+/10 correct)
-- ✓ Query latency: PASS (<5s average)
-- ✓ Alarm integration: PASS
+-  Genie connectivity: PASS
+-  Simple query: PASS (<5s)
+-  Query accuracy (10 questions): PASS (8+/10 correct)
+-  Query latency: PASS (<5s average)
+-  Alarm integration: PASS
 
 Action if fails:
 - Connectivity fails: Verify Genie Space ID, check PAT token permissions
@@ -127,10 +127,10 @@ python test_integration_e2e.py
 ```
 
 Expected Results:
-- ✓ Ignition → Databricks flow: PASS
-- ✓ Perspective → Chat: PASS
-- ✓ Real-time tag bindings: PASS
-- ✓ Fault scenario E2E: PASS
+-  Ignition → Databricks flow: PASS
+-  Perspective → Chat: PASS
+-  Real-time tag bindings: PASS
+-  Fault scenario E2E: PASS
 
 Action if fails:
 - Flow test fails: Check each component individually
@@ -144,10 +144,10 @@ python test_chat_ui.py
 ```
 
 Expected Results:
-- ✓ Chat UI loads: PASS
-- ✓ Visual quality: PASS (Perspective match)
-- ✓ Accessibility: PASS (score >90)
-- ✓ Responsive design: PASS
+-  Chat UI loads: PASS
+-  Visual quality: PASS (Perspective match)
+-  Accessibility: PASS (score >90)
+-  Responsive design: PASS
 
 Action if fails:
 - Visual quality fails: Review CSS, compare with Perspective styles

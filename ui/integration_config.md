@@ -8,10 +8,10 @@ This document provides configuration details for integrating the Genie Chat UI i
 
 ```
 Ignition Perspective View
-    └── Embedded Frame Component
-            └── genie_chat_perspective.html (hosted on Databricks)
-                    └── Databricks Genie API
-                            └── Lakehouse Data (equipment, production, alarms)
+     Embedded Frame Component
+             genie_chat_perspective.html (hosted on Databricks)
+                     Databricks Genie API
+                             Lakehouse Data (equipment, production, alarms)
 ```
 
 ## Prerequisites
@@ -93,8 +93,8 @@ Create a new Perspective view for the chat interface.
 
 ```
 View Root (Flex Container)
-  └── Embedded Frame
-        └── props.url = [Expression Binding]
+   Embedded Frame
+         props.url = [Expression Binding]
 ```
 
 ### Embedded Frame Configuration

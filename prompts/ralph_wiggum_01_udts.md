@@ -313,20 +313,20 @@ Alarm Configuration:
 1. **Browse tag structure:**
    ```
    [default]Mining/Equipment/
-     ├─ HT_001/
-     │  ├─ Location_Lat = -31.9505
-     │  ├─ Speed_KPH = 0.0
-     │  └─ ... (12 more)
-     ├─ HT_002/
-     ├─ ... (3 more trucks)
-     ├─ CR_001/
-     │  ├─ Status = "RUNNING"
-     │  ├─ Vibration_MM_S = 20.0
-     │  └─ ... (7 more)
-     ├─ CR_002/
-     ├─ CR_003/
-     ├─ CV_001/
-     └─ CV_002/
+      HT_001/
+        Location_Lat = -31.9505
+        Speed_KPH = 0.0
+        ... (12 more)
+      HT_002/
+      ... (3 more trucks)
+      CR_001/
+        Status = "RUNNING"
+        Vibration_MM_S = 20.0
+        ... (7 more)
+      CR_002/
+      CR_003/
+      CV_001/
+      CV_002/
    ```
 
 2. **Manual test:**

@@ -133,11 +133,11 @@ Expected: Natural language responses with data from gold tables, <5s response ti
 
 ## Success Criteria
 
-✅ Pipeline running without errors
-✅ All 15 equipment reporting data
-✅ Latency < 1 second end-to-end
-✅ Genie responds accurately to questions
-✅ No data quality issues
+ Pipeline running without errors
+ All 15 equipment reporting data
+ Latency < 1 second end-to-end
+ Genie responds accurately to questions
+ No data quality issues
 
 ---
 

@@ -24,68 +24,68 @@ This document provides detailed technical architecture for the Mining Operations
 ### High-Level Components
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    IGNITION SCADA LAYER                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │   PLC    │  │  Tags    │  │ Alarms   │  │ Scripts  │  │
-│  │ Drivers  │  │ 5,000+   │  │  Engine  │  │  Python  │  │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
-│                                                             │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │          Perspective HMI (Operator Interface)        │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │  │
-│  │  │  Equipment   │  │    Alarms    │  │    AI     │  │  │
-│  │  │  Dashboard   │  │    Table     │  │   Chat    │  │  │
-│  │  └──────────────┘  └──────────────┘  └───────────┘  │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                             │
-                             │ Zerobus Connector
-                             │ (HTTPS, Port 443 Outbound)
-                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  DATABRICKS LAKEHOUSE                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │             Delta Live Tables Pipeline                │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐          │  │
-│  │  │  Bronze  │→ │  Silver  │→ │   Gold   │          │  │
-│  │  │   Raw    │  │ Cleansed │  │ Business │          │  │
-│  │  └──────────┘  └──────────┘  └──────────┘          │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │                Unity Catalog                          │  │
-│  │   - Governance & Access Control                       │  │
-│  │   - Schema: main.mining_ops.*                         │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │                 Genie AI Space                        │  │
-│  │   - Natural Language Processing                       │  │
-│  │   - SQL Generation                                    │  │
-│  │   - Context-Aware Responses                           │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │            SQL Warehouse (Serverless)                 │  │
-│  │   - Query Engine                                      │  │
-│  │   - Auto-scaling                                      │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                             │
-                             │ REST API
-                             │ (HTTPS)
-                             ▼
-┌─────────────────────────────────────────────────────────────┐
-│              PERSPECTIVE WEBDEV MODULE                      │
-│   - Iframe embedding                                        │
-│   - API calls to Genie                                      │
-│   - Response rendering                                      │
-└─────────────────────────────────────────────────────────────┘
+
+                    IGNITION SCADA LAYER                     
+
+                                                             
+          
+     PLC        Tags       Alarms      Scripts    
+   Drivers     5,000+       Engine      Python    
+          
+                                                             
+    
+            Perspective HMI (Operator Interface)          
+            
+      Equipment         Alarms          AI         
+      Dashboard         Table          Chat        
+            
+    
+
+                             
+                              Zerobus Connector
+                              (HTTPS, Port 443 Outbound)
+                             
+
+                  DATABRICKS LAKEHOUSE                       
+
+                                                             
+    
+               Delta Live Tables Pipeline                  
+                    
+      Bronze  →   Silver  →    Gold               
+       Raw       Cleansed    Business             
+                    
+    
+                                                             
+    
+                  Unity Catalog                            
+     - Governance & Access Control                         
+     - Schema: main.mining_ops.*                           
+    
+                                                             
+    
+                   Genie AI Space                          
+     - Natural Language Processing                         
+     - SQL Generation                                      
+     - Context-Aware Responses                             
+    
+                                                             
+    
+              SQL Warehouse (Serverless)                   
+     - Query Engine                                        
+     - Auto-scaling                                        
+    
+
+                             
+                              REST API
+                              (HTTPS)
+                             
+
+              PERSPECTIVE WEBDEV MODULE                      
+   - Iframe embedding                                        
+   - API calls to Genie                                      
+   - Response rendering                                      
+
 ```
 
 ---
@@ -195,14 +195,14 @@ config = {
 **Catalog Structure:**
 ```
 main (catalog)
-└── mining_ops (schema)
-    ├── sensor_data_bronze (raw ingestion)
-    ├── sensor_data_silver (cleansed)
-    ├── sensor_data_gold (business-ready)
-    ├── incidents (historical failures)
-    ├── work_orders (maintenance data)
-    ├── equipment_metadata (asset registry)
-    └── production_metrics (shift reports)
+ mining_ops (schema)
+     sensor_data_bronze (raw ingestion)
+     sensor_data_silver (cleansed)
+     sensor_data_gold (business-ready)
+     incidents (historical failures)
+     work_orders (maintenance data)
+     equipment_metadata (asset registry)
+     production_metrics (shift reports)
 ```
 
 ---
@@ -348,13 +348,13 @@ Response: "Crusher 2 vibration increased to 42 mm/s at 2:23 PM (2.1x normal base
 Query: "Compare all crushers right now"
 Response: "Current crusher vibration levels:
 - Crusher 1: 21 mm/s (normal, last updated 2:28 PM)
-- Crusher 2: 42 mm/s (elevated, last updated 2:28 PM) ⚠️
+- Crusher 2: 42 mm/s (elevated, last updated 2:28 PM) 
 - Crusher 3: 19 mm/s (normal, last updated 2:28 PM)
 Only Crusher 2 shows elevated vibration. Other crushers operating normally."
 
 Query: "What haul trucks have low efficiency today?"
 Response: "Haul truck efficiency analysis for February 15, 2026:
-- Truck 3: 72% (below fleet average of 89%) ⚠️
+- Truck 3: 72% (below fleet average of 89%) 
 - Truck 1: 91% (normal)
 - Truck 2: 88% (normal)
 - Truck 4: 90% (normal)

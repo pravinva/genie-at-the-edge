@@ -22,9 +22,9 @@ python deploy_all.py --environment dev
 ## What This Does
 
 Automated deployment of:
-- ✓ Databricks DLT pipeline and dimension tables
-- ✓ Genie chat UI upload and configuration
-- ✓ Integration guides for Ignition components
+-  Databricks DLT pipeline and dimension tables
+-  Genie chat UI upload and configuration
+-  Integration guides for Ignition components
 
 Manual configuration required for:
 - Ignition UDTs, tags, and Gateway scripts (2-3 hours)
@@ -35,24 +35,24 @@ Manual configuration required for:
 
 ```
 build/
-├── README.md                              # This file
-├── requirements.txt                       # Python dependencies
-├── environment_config.yaml                # Environment configuration
-│
-├── deploy_all.py                          # Master deployment orchestrator
-├── deploy_databricks.py                   # Databricks component deployment
-├── deploy_ignition.py                     # Ignition deployment instructions
-├── deploy_ui.py                           # Chat UI deployment
-│
-├── build_sequence.md                      # Complete step-by-step guide
-├── rollback_procedures.md                 # Rollback and recovery procedures
-│
-└── [Generated during deployment]
-    ├── deployment_summary_dev.md          # Deployment results summary
-    ├── deployment_state_dev.json          # Deployment state for rollback
-    ├── ignition_deployment_checklist_dev.md
-    ├── genie_integration_config_dev.md
-    └── perspective_integration_guide_dev.md
+ README.md                              # This file
+ requirements.txt                       # Python dependencies
+ environment_config.yaml                # Environment configuration
+
+ deploy_all.py                          # Master deployment orchestrator
+ deploy_databricks.py                   # Databricks component deployment
+ deploy_ignition.py                     # Ignition deployment instructions
+ deploy_ui.py                           # Chat UI deployment
+
+ build_sequence.md                      # Complete step-by-step guide
+ rollback_procedures.md                 # Rollback and recovery procedures
+
+ [Generated during deployment]
+     deployment_summary_dev.md          # Deployment results summary
+     deployment_state_dev.json          # Deployment state for rollback
+     ignition_deployment_checklist_dev.md
+     genie_integration_config_dev.md
+     perspective_integration_guide_dev.md
 ```
 
 ## Deployment Scripts
@@ -298,13 +298,13 @@ Tests:
 ### Success Criteria
 
 System is ready when:
-- ✓ Tags update every second (1 Hz)
-- ✓ Data flows to Databricks in <2s
-- ✓ DLT pipeline processes in <3s
-- ✓ Genie responds in <5s
-- ✓ End-to-end latency <15s
-- ✓ System stable for 1+ hour
-- ✓ Demo rehearsed successfully
+-  Tags update every second (1 Hz)
+-  Data flows to Databricks in <2s
+-  DLT pipeline processes in <3s
+-  Genie responds in <5s
+-  End-to-end latency <15s
+-  System stable for 1+ hour
+-  Demo rehearsed successfully
 
 ## Rollback
 
@@ -492,9 +492,9 @@ Zerobus Module (500ms batches)
 Databricks Streaming (Autoloader)
     ↓
 DLT Pipeline Real-Time
-    ├─ Bronze (Raw JSON)
-    ├─ Silver (Normalized)
-    └─ Gold (Aggregated 1-min windows)
+     Bronze (Raw JSON)
+     Silver (Normalized)
+     Gold (Aggregated 1-min windows)
         ↓
 Genie Space (Natural Language SQL)
     ↓
@@ -504,31 +504,31 @@ Chat UI (HTML5 in Perspective iframe)
 ### Component Relationships
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     DEPLOYMENT SCOPE                         │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │ Automated (30 min)                                 │    │
-│  │  - Databricks tables, pipeline                     │    │
-│  │  - UI upload                                       │    │
-│  │  - Configuration generation                        │    │
-│  └────────────────────────────────────────────────────┘    │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │ Manual (2-3 hours)                                 │    │
-│  │  - Ignition UDTs, tags, scripts                    │    │
-│  │  - Genie space creation                            │    │
-│  │  - Perspective view integration                    │    │
-│  └────────────────────────────────────────────────────┘    │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │ Validation (1 hour)                                │    │
-│  │  - Component tests                                 │    │
-│  │  - Integration tests                               │    │
-│  │  - End-to-end tests                                │    │
-│  │  - Performance tests                               │    │
-│  └────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
+
+                     DEPLOYMENT SCOPE                         
+                                                              
+      
+   Automated (30 min)                                     
+    - Databricks tables, pipeline                         
+    - UI upload                                           
+    - Configuration generation                            
+      
+                                                              
+      
+   Manual (2-3 hours)                                     
+    - Ignition UDTs, tags, scripts                        
+    - Genie space creation                                
+    - Perspective view integration                        
+      
+                                                              
+      
+   Validation (1 hour)                                    
+    - Component tests                                     
+    - Integration tests                                   
+    - End-to-end tests                                    
+    - Performance tests                                   
+      
+
 ```
 
 ### Technology Stack

@@ -29,7 +29,7 @@ export DATABRICKS_TOKEN=dapi1234567890abcdef
 python deploy_all.py --check-only
 ```
 
-Expected output: All checks should show ✓ PASS
+Expected output: All checks should show  PASS
 
 ---
 

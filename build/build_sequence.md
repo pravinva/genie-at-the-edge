@@ -19,25 +19,25 @@ Complete step-by-step guide for building and deploying the Mining Operations Gen
 ### Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    IGNITION EDGE GATEWAY                     │
-│                                                              │
-│  UDTs → Memory Tags → Gateway Scripts → Perspective View    │
-│                                │                             │
-│                          Zerobus Module                      │
-└──────────────────────────────┼───────────────────────────────┘
-                                │ (500ms batches)
-                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   DATABRICKS LAKEHOUSE                       │
-│                                                              │
-│  Bronze (Raw) → Silver (Clean) → Gold (Aggregated)          │
-│  DLT Pipeline (<3s latency)                                 │
-│                                │                             │
-│                      Genie Space (NLP)                       │
-└──────────────────────────────┼───────────────────────────────┘
-                                │ (<5s response)
-                                ▼
+
+                    IGNITION EDGE GATEWAY                     
+                                                              
+  UDTs → Memory Tags → Gateway Scripts → Perspective View    
+                                                             
+                          Zerobus Module                      
+
+                                 (500ms batches)
+                                
+
+                   DATABRICKS LAKEHOUSE                       
+                                                              
+  Bronze (Raw) → Silver (Clean) → Gold (Aggregated)          
+  DLT Pipeline (<3s latency)                                 
+                                                             
+                      Genie Space (NLP)                       
+
+                                 (<5s response)
+                                
                            Chat UI (HTML5)
 ```
 
@@ -125,17 +125,17 @@ python deploy_all.py --check-only
 Expected output:
 ```
 Prerequisites Check
-┏━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Component              ┃ Status   ┃ Details                 ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Python version         │ ✓ PASS   │ 3.12.x                  │
-│ Python dependencies    │ ✓ PASS   │ All required packages   │
-│ DATABRICKS_TOKEN       │ ✓ PASS   │ Set                     │
-│ Configuration file     │ ✓ PASS   │ environment_config.yaml │
-│ Databricks directory   │ ✓ PASS   │ ../databricks           │
-│ Ignition directory     │ ✓ PASS   │ ../ignition             │
-│ UI directory           │ ✓ PASS   │ ../ui                   │
-└────────────────────────┴──────────┴─────────────────────────┘
+
+ Component               Status    Details                 
+
+ Python version           PASS    3.12.x                  
+ Python dependencies      PASS    All required packages   
+ DATABRICKS_TOKEN         PASS    Set                     
+ Configuration file       PASS    environment_config.yaml 
+ Databricks directory     PASS    ../databricks           
+ Ignition directory       PASS    ../ignition             
+ UI directory             PASS    ../ui                   
+
 ```
 
 ---
@@ -166,20 +166,20 @@ python deploy_databricks.py --environment dev
 Mining Operations Genie Demo
 Databricks Deployment - Environment: DEV
 
-✓ Connected to Databricks workspace
-✓ Catalog exists: field_engineering
-✓ Schema exists: field_engineering.mining_demo
-✓ Warehouse running: 4b9b953939869799
+ Connected to Databricks workspace
+ Catalog exists: field_engineering
+ Schema exists: field_engineering.mining_demo
+ Warehouse running: 4b9b953939869799
 
 Deploying Dimension Tables
-✓ Dimension tables deployed
+ Dimension tables deployed
 
 Deploying DLT Pipeline
-✓ Uploaded pipeline notebook
-✓ DLT pipeline deployed: abc123def456
-✓ Pipeline started
+ Uploaded pipeline notebook
+ DLT pipeline deployed: abc123def456
+ Pipeline started
 
-✓ Deployment Complete!
+ Deployment Complete!
 ```
 
 **Validation**:
@@ -217,17 +217,17 @@ python deploy_ui.py --environment dev
 UI Deployment - Environment: DEV
 
 Validating UI Files
-✓ Found: genie_chat_perspective.html (45,231 bytes)
+ Found: genie_chat_perspective.html (45,231 bytes)
 
 Uploading UI to Databricks Files
-✓ Created directory: /Volumes/field_engineering/mining_demo/files/ui
-✓ Uploaded successfully
+ Created directory: /Volumes/field_engineering/mining_demo/files/ui
+ Uploaded successfully
 
 Chat UI URL:
 https://field-eng.cloud.databricks.com/files/Volumes/field_engineering/mining_demo/files/ui/genie_chat_perspective.html
 
-✓ Configuration saved to: genie_integration_config_dev.md
-✓ Integration guide saved to: perspective_integration_guide_dev.md
+ Configuration saved to: genie_integration_config_dev.md
+ Integration guide saved to: perspective_integration_guide_dev.md
 ```
 
 **Save the URL** - you'll need it for Perspective view configuration.
@@ -520,30 +520,30 @@ Natural language query interface:
 
 **Layout**:
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ HEADER: Mining Operations Dashboard          [Status Icons] │
-├─────────────────────────────────┬───────────────────────────┤
-│                                 │                           │
-│  EQUIPMENT STATUS (70%)         │   GENIE CHAT (30%)        │
-│                                 │                           │
-│  ┌─────────────────────────┐   │  ┌─────────────────────┐  │
-│  │  Crusher 1              │   │  │ Chat Interface      │  │
-│  │  Vibration: 25 mm/s     │   │  │ [iframe]            │  │
-│  │  Status: Normal         │   │  │                     │  │
-│  └─────────────────────────┘   │  │                     │  │
-│                                 │  │                     │  │
-│  ┌─────────────────────────┐   │  │                     │  │
-│  │  Crusher 2              │   │  │                     │  │
-│  │  Vibration: 45 mm/s     │   │  │                     │  │
-│  │  Status: ⚠ High Vib     │   │  │                     │  │
-│  └─────────────────────────┘   │  └─────────────────────┘  │
-│                                 │                           │
-│  [More equipment cards...]      │                           │
-│                                 │                           │
-├─────────────────────────────────┴───────────────────────────┤
-│ ALARMS:                                                     │
-│ Crusher 2 High Vibration  |  [Ask AI]  |  10:34 AM         │
-└─────────────────────────────────────────────────────────────┘
+
+ HEADER: Mining Operations Dashboard          [Status Icons] 
+
+                                                            
+  EQUIPMENT STATUS (70%)            GENIE CHAT (30%)        
+                                                            
+         
+    Crusher 1                    Chat Interface        
+    Vibration: 25 mm/s           [iframe]              
+    Status: Normal                                     
+                              
+                                                          
+                              
+    Crusher 2                                          
+    Vibration: 45 mm/s                                 
+    Status:  High Vib                                 
+         
+                                                            
+  [More equipment cards...]                                 
+                                                            
+
+ ALARMS:                                                     
+ Crusher 2 High Vibration  |  [Ask AI]  |  10:34 AM         
+
 ```
 
 ### UI Component

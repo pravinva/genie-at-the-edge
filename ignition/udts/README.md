@@ -310,43 +310,43 @@ After setup, tags will be accessible at:
 
 ```
 [default]Mining/Equipment/
-├── HT_001/
-│   ├── Location_Lat           (Float8)  -31.9505 degrees
-│   ├── Location_Lon           (Float8)  115.8605 degrees
-│   ├── Speed_KPH              (Float4)  0.0 km/h
-│   ├── Load_Tonnes            (Float4)  0.0 tonnes
-│   ├── Fuel_Level_Pct         (Float4)  100.0 %
-│   ├── Engine_Temp_C          (Float4)  85.0 °C
-│   ├── Tire_Pressure_FL_PSI   (Float4)  100.0 PSI
-│   ├── Tire_Pressure_FR_PSI   (Float4)  100.0 PSI
-│   ├── Tire_Pressure_RL_PSI   (Float4)  100.0 PSI
-│   ├── Tire_Pressure_RR_PSI   (Float4)  100.0 PSI
-│   ├── Vibration_MM_S         (Float4)  3.0 mm/s
-│   ├── Operator_ID            (String)  "OP_101"
-│   ├── Cycle_State            (String)  "stopped"
-│   ├── Cycle_Time_Sec         (Int4)    0 seconds
-│   └── Hours_Operated         (Float4)  0.0 hours
-├── HT_002/ ... HT_005/ (same structure)
-│
-├── CR_001/
-│   ├── Status                 (String)  "RUNNING"
-│   ├── Throughput_TPH         (Float4)  2400.0 tonnes/hour
-│   ├── Vibration_MM_S         (Float4)  20.0 mm/s [ALARMS: >40 HIGH, >60 CRITICAL]
-│   ├── Motor_Current_A        (Float4)  200.0 Amps
-│   ├── Belt_Speed_M_S         (Float4)  2.0 m/s
-│   ├── Chute_Level_Pct        (Float4)  60.0 %
-│   ├── Runtime_Hours          (Float4)  0.0 hours
-│   ├── Feed_Rate_TPH          (Float4)  2500.0 tonnes/hour
-│   └── Motor_Temp_C           (Float4)  75.0 °C
-├── CR_002/ ... CR_003/ (same structure)
-│
-├── CV_001/
-│   ├── Speed_M_S              (Float4)  2.5 m/s
-│   ├── Load_Pct               (Float4)  60.0 %
-│   ├── Motor_Temp_C           (Float4)  65.0 °C
-│   ├── Belt_Alignment_MM      (Float4)  0.0 mm [ALARMS: <-5 or >5 WARNING]
-│   └── Status                 (String)  "RUNNING"
-└── CV_002/ (same structure)
+ HT_001/
+    Location_Lat           (Float8)  -31.9505 degrees
+    Location_Lon           (Float8)  115.8605 degrees
+    Speed_KPH              (Float4)  0.0 km/h
+    Load_Tonnes            (Float4)  0.0 tonnes
+    Fuel_Level_Pct         (Float4)  100.0 %
+    Engine_Temp_C          (Float4)  85.0 °C
+    Tire_Pressure_FL_PSI   (Float4)  100.0 PSI
+    Tire_Pressure_FR_PSI   (Float4)  100.0 PSI
+    Tire_Pressure_RL_PSI   (Float4)  100.0 PSI
+    Tire_Pressure_RR_PSI   (Float4)  100.0 PSI
+    Vibration_MM_S         (Float4)  3.0 mm/s
+    Operator_ID            (String)  "OP_101"
+    Cycle_State            (String)  "stopped"
+    Cycle_Time_Sec         (Int4)    0 seconds
+    Hours_Operated         (Float4)  0.0 hours
+ HT_002/ ... HT_005/ (same structure)
+
+ CR_001/
+    Status                 (String)  "RUNNING"
+    Throughput_TPH         (Float4)  2400.0 tonnes/hour
+    Vibration_MM_S         (Float4)  20.0 mm/s [ALARMS: >40 HIGH, >60 CRITICAL]
+    Motor_Current_A        (Float4)  200.0 Amps
+    Belt_Speed_M_S         (Float4)  2.0 m/s
+    Chute_Level_Pct        (Float4)  60.0 %
+    Runtime_Hours          (Float4)  0.0 hours
+    Feed_Rate_TPH          (Float4)  2500.0 tonnes/hour
+    Motor_Temp_C           (Float4)  75.0 °C
+ CR_002/ ... CR_003/ (same structure)
+
+ CV_001/
+    Speed_M_S              (Float4)  2.5 m/s
+    Load_Pct               (Float4)  60.0 %
+    Motor_Temp_C           (Float4)  65.0 °C
+    Belt_Alignment_MM      (Float4)  0.0 mm [ALARMS: <-5 or >5 WARNING]
+    Status                 (String)  "RUNNING"
+ CV_002/ (same structure)
 ```
 
 ### Alarm Summary

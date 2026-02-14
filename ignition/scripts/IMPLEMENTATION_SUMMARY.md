@@ -418,18 +418,18 @@ Where:
 - **Cycle Timing:** Precise 23-minute cycles, state transitions smooth
 
 ### Correlations Verified
-- ✓ High speed → Higher fuel consumption
-- ✓ Heavy load → Higher engine temperature
-- ✓ Movement → Vibration increases
-- ✓ High throughput → Higher motor current
-- ✓ Bearing wear → Exponentially increasing vibration
+-  High speed → Higher fuel consumption
+-  Heavy load → Higher engine temperature
+-  Movement → Vibration increases
+-  High throughput → Higher motor current
+-  Bearing wear → Exponentially increasing vibration
 
 ### Edge Cases Handled
-- ✓ Cycle time wrap-around (1380 → 0)
-- ✓ Fuel refueling (automatic at 20%)
-- ✓ Tag read/write failures (graceful degradation)
-- ✓ Null values (validation and error logging)
-- ✓ Value clamping (prevents out-of-range values)
+-  Cycle time wrap-around (1380 → 0)
+-  Fuel refueling (automatic at 20%)
+-  Tag read/write failures (graceful degradation)
+-  Null values (validation and error logging)
+-  Value clamping (prevents out-of-range values)
 
 ---
 
@@ -438,9 +438,9 @@ Where:
 ### Current: Ignition Gateway Tags
 ```
 [default]Mining/Equipment/
-├── HT_001/ ... HT_005/  (Haul Trucks)
-├── CR_001/ ... CR_003/  (Crushers)
-└── CV_001/ ... CV_002/  (Conveyors)
+ HT_001/ ... HT_005/  (Haul Trucks)
+ CR_001/ ... CR_003/  (Crushers)
+ CV_001/ ... CV_002/  (Conveyors)
 
 Update Rate: 1 Hz (every 1 second)
 Total Tags: 105 tags
@@ -612,13 +612,13 @@ Genie Queries:
 
 ### None Identified
 This implementation is production-ready with:
-- ✓ No placeholder code
-- ✓ No TODO comments
-- ✓ No hardcoded "magic numbers" without explanation
-- ✓ Comprehensive error handling
-- ✓ Structured logging
-- ✓ Complete documentation
-- ✓ Validation test suite
+-  No placeholder code
+-  No TODO comments
+-  No hardcoded "magic numbers" without explanation
+-  Comprehensive error handling
+-  Structured logging
+-  Complete documentation
+-  Validation test suite
 
 ### Code Quality Metrics
 - **Documentation Coverage:** 100% (all functions have docstrings)
@@ -713,13 +713,13 @@ This implementation is production-ready with:
 ## Conclusion
 
 The mining physics simulation is **production-ready** and demonstrates:
-- ✓ Realistic, physics-based equipment behavior
-- ✓ Smooth state transitions and correlations
-- ✓ Fault injection for predictive maintenance demos
-- ✓ Comprehensive testing and validation
-- ✓ Complete documentation and deployment guides
-- ✓ Performance optimized (<50ms execution time)
-- ✓ No placeholder code or fallbacks
+-  Realistic, physics-based equipment behavior
+-  Smooth state transitions and correlations
+-  Fault injection for predictive maintenance demos
+-  Comprehensive testing and validation
+-  Complete documentation and deployment guides
+-  Performance optimized (<50ms execution time)
+-  No placeholder code or fallbacks
 
 **Next Steps:**
 1. Deploy to Ignition Gateway (15-20 minutes)

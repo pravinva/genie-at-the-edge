@@ -303,73 +303,73 @@ WHERE minute > CURRENT_TIMESTAMP - INTERVAL '10 minutes';
 ## Pipeline Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  ZEROBUS STREAM (Ignition Gateway)                      │
-│  15 Equipment × 10 Sensors = 150 updates/second         │
-└────────────────────┬────────────────────────────────────┘
-                     │ JSON Batches (HTTPS POST)
+
+  ZEROBUS STREAM (Ignition Gateway)                      
+  15 Equipment × 10 Sensors = 150 updates/second         
+
+                      JSON Batches (HTTPS POST)
                      ↓
-┌─────────────────────────────────────────────────────────┐
-│  BRONZE: ot_telemetry_bronze                            │
-│  - Raw JSON ingestion                                   │
-│  - Auto Loader (cloudFiles)                             │
-│  - Schema evolution                                     │
-│  - Retention: 30 days                                   │
-│  Latency: Immediate                                     │
-└────────────────────┬────────────────────────────────────┘
-                     │ Real-Time Mode (<500ms)
+
+  BRONZE: ot_telemetry_bronze                            
+  - Raw JSON ingestion                                   
+  - Auto Loader (cloudFiles)                             
+  - Schema evolution                                     
+  - Retention: 30 days                                   
+  Latency: Immediate                                     
+
+                      Real-Time Mode (<500ms)
                      ↓
-┌─────────────────────────────────────────────────────────┐
-│  SILVER: ot_sensors_normalized                          │
-│  - Flattened sensor readings                            │
-│  - Enriched with equipment metadata                     │
-│  - Data quality validations                             │
-│  - Liquid clustering by equipment_id                    │
-│  - Retention: 90 days                                   │
-│  Latency: <500ms from Bronze                            │
-└────────────────────┬────────────────────────────────────┘
-                     │ Real-Time Aggregation (<500ms)
+
+  SILVER: ot_sensors_normalized                          
+  - Flattened sensor readings                            
+  - Enriched with equipment metadata                     
+  - Data quality validations                             
+  - Liquid clustering by equipment_id                    
+  - Retention: 90 days                                   
+  Latency: <500ms from Bronze                            
+
+                      Real-Time Aggregation (<500ms)
                      ↓
-┌─────────────────────────────────────────────────────────┐
-│  GOLD LAYER (5 Tables)                                  │
-│                                                          │
-│  1. equipment_performance_1min                          │
-│     - 1-minute windowed aggregates                      │
-│     - Stats: avg, min, max, stddev, count               │
-│     - Partitioned by date                               │
-│     - Liquid clustering: equipment_id + date            │
-│                                                          │
-│  2. equipment_current_status                            │
-│     - Latest reading per equipment/sensor               │
-│     - Materialized view for fast lookups                │
-│     - Staleness detection                               │
-│                                                          │
-│  3. ml_predictions                                      │
-│     - Statistical anomaly detection                     │
-│     - Severity classification                           │
-│     - Actionable recommendations                        │
-│     - Ready for MLflow integration                      │
-│                                                          │
-│  4. equipment_performance_1hour                         │
-│     - Hourly rollups for historical analysis            │
-│     - Trend analysis and comparisons                    │
-│                                                          │
-│  5. pipeline_quality_metrics                            │
-│     - Pipeline health monitoring                        │
-│     - Latency tracking                                  │
-│     - Coverage metrics                                  │
-│                                                          │
-│  Latency: <300ms from Silver                            │
-└────────────────────┬────────────────────────────────────┘
-                     │ SQL Queries
+
+  GOLD LAYER (5 Tables)                                  
+                                                          
+  1. equipment_performance_1min                          
+     - 1-minute windowed aggregates                      
+     - Stats: avg, min, max, stddev, count               
+     - Partitioned by date                               
+     - Liquid clustering: equipment_id + date            
+                                                          
+  2. equipment_current_status                            
+     - Latest reading per equipment/sensor               
+     - Materialized view for fast lookups                
+     - Staleness detection                               
+                                                          
+  3. ml_predictions                                      
+     - Statistical anomaly detection                     
+     - Severity classification                           
+     - Actionable recommendations                        
+     - Ready for MLflow integration                      
+                                                          
+  4. equipment_performance_1hour                         
+     - Hourly rollups for historical analysis            
+     - Trend analysis and comparisons                    
+                                                          
+  5. pipeline_quality_metrics                            
+     - Pipeline health monitoring                        
+     - Latency tracking                                  
+     - Coverage metrics                                  
+                                                          
+  Latency: <300ms from Silver                            
+
+                      SQL Queries
                      ↓
-┌─────────────────────────────────────────────────────────┐
-│  GENIE SPACE                                            │
-│  - Natural language queries                             │
-│  - <5 second response time                              │
-│  - 30+ sample questions                                 │
-│  - Mining operations context                            │
-└─────────────────────────────────────────────────────────┘
+
+  GENIE SPACE                                            
+  - Natural language queries                             
+  - <5 second response time                              
+  - 30+ sample questions                                 
+  - Mining operations context                            
+
 ```
 
 **Total End-to-End Latency: <1 second (event → queryable)**
@@ -710,24 +710,24 @@ custom_tags={
 ## Success Metrics
 
 ### Technical KPIs
-- ✅ Latency: <1s end-to-end (Bronze → Gold)
-- ✅ Uptime: >99.9% over 24-hour test
-- ✅ Data Quality: >99% pass rate
-- ✅ Query Response: <5s for Genie
-- ✅ Coverage: 100% equipment reporting (15/15)
+-  Latency: <1s end-to-end (Bronze → Gold)
+-  Uptime: >99.9% over 24-hour test
+-  Data Quality: >99% pass rate
+-  Query Response: <5s for Genie
+-  Coverage: 100% equipment reporting (15/15)
 
 ### Business KPIs
-- ✅ Investigation Time: 30min → 30sec (60x improvement)
-- ✅ Early Detection: 2-4 hours advance warning
-- ✅ Operator Satisfaction: 8+/10 rating
-- ✅ Reduce Unplanned Downtime: 20-30% improvement
+-  Investigation Time: 30min → 30sec (60x improvement)
+-  Early Detection: 2-4 hours advance warning
+-  Operator Satisfaction: 8+/10 rating
+-  Reduce Unplanned Downtime: 20-30% improvement
 
 ### Demo Success Criteria
-- ✅ Reliable 24+ hour continuous operation
-- ✅ Professional UI quality (matches Databricks/Perspective)
-- ✅ Accurate Genie responses (>90% satisfaction)
-- ✅ Smooth operator workflow (no context switching)
-- ✅ Customer requests production pilot
+-  Reliable 24+ hour continuous operation
+-  Professional UI quality (matches Databricks/Perspective)
+-  Accurate Genie responses (>90% satisfaction)
+-  Smooth operator workflow (no context switching)
+-  Customer requests production pilot
 
 ---
 

@@ -92,10 +92,10 @@ All test results are saved to `test_reports/` with timestamps:
 
 ```
 test_reports/
-├── test_run_20260215_143022.json       # Complete test results
-├── benchmark_20260215.json              # Performance metrics
-├── load_test_20260215_10users.json     # Load test results
-└── soak_test_24h_20260215.json         # Stability test results
+ test_run_20260215_143022.json       # Complete test results
+ benchmark_20260215.json              # Performance metrics
+ load_test_20260215_10users.json     # Load test results
+ soak_test_24h_20260215.json         # Stability test results
 ```
 
 ## Performance Targets

@@ -365,11 +365,11 @@ Expected performance ranges based on environment:
 This testing infrastructure provides comprehensive validation of the Mining Operations Genie Demo system. Execute the tests according to the schedule in `execution_guide.md`, review results, and sign off when all quality gates are met.
 
 **Testing validates:**
-- ✓ All components working correctly (functional)
-- ✓ Performance meets targets (latency, throughput)
-- ✓ System stable over time (reliability)
-- ✓ Components integrated properly (end-to-end)
-- ✓ User experience is polished (UX, accessibility)
+-  All components working correctly (functional)
+-  Performance meets targets (latency, throughput)
+-  System stable over time (reliability)
+-  Components integrated properly (end-to-end)
+-  User experience is polished (UX, accessibility)
 
 **System is demo-ready when:**
 - Grade A: All critical tests pass, minor issues acceptable

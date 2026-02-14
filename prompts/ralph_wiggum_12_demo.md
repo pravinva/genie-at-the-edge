@@ -95,7 +95,7 @@
 
 *"Instead of spending 30 minutes digging through logs and trend charts, I click this 'Ask AI' button."*
 
-**[Click the 💬 button]**
+**[Click the  button]**
 
 *"Watch what happens..."*
 
@@ -321,21 +321,21 @@ Response:
 ## DEMO TIPS
 
 **DO:**
-- ✅ Practice 3+ times before live demo
-- ✅ Have backup video ready
-- ✅ Keep energy high (enthusiasm is contagious)
-- ✅ Pause for questions if audience engaged
-- ✅ Show confidence in the technology
-- ✅ Relate to customer's specific pain points
-- ✅ Use their terminology (not generic "manufacturing")
+-  Practice 3+ times before live demo
+-  Have backup video ready
+-  Keep energy high (enthusiasm is contagious)
+-  Pause for questions if audience engaged
+-  Show confidence in the technology
+-  Relate to customer's specific pain points
+-  Use their terminology (not generic "manufacturing")
 
 **DON'T:**
-- ❌ Rush through (15 min is enough, don't compress to 8)
-- ❌ Over-explain architecture (unless asked)
-- ❌ Apologize for "just a demo" (it's production-quality)
-- ❌ Get defensive if questioned (listen, address calmly)
-- ❌ Oversell (be honest about limitations)
-- ❌ Ignore questions to stay on script (adapt to audience)
+-  Rush through (15 min is enough, don't compress to 8)
+-  Over-explain architecture (unless asked)
+-  Apologize for "just a demo" (it's production-quality)
+-  Get defensive if questioned (listen, address calmly)
+-  Oversell (be honest about limitations)
+-  Ignore questions to stay on script (adapt to audience)
 
 ---
 
@@ -465,17 +465,17 @@ Pravin
 ## SUCCESS INDICATORS
 
 **Demo went well if:**
-- ✅ Audience asks technical questions (shows engagement)
-- ✅ Customer mentions specific use cases ("This would help with...")
-- ✅ Discussion of pilot timeline happens naturally
-- ✅ Positive body language (nodding, taking notes)
-- ✅ Request for follow-up demo to broader team
+-  Audience asks technical questions (shows engagement)
+-  Customer mentions specific use cases ("This would help with...")
+-  Discussion of pilot timeline happens naturally
+-  Positive body language (nodding, taking notes)
+-  Request for follow-up demo to broader team
 
 **Demo needs work if:**
-- ⚠️ Audience seems confused or disengaged
-- ⚠️ Questions are basic ("What is Databricks?")
-- ⚠️ Lots of objections with no path forward
-- ⚠️ "We'll think about it" with no next step
+-  Audience seems confused or disengaged
+-  Questions are basic ("What is Databricks?")
+-  Lots of objections with no path forward
+-  "We'll think about it" with no next step
 
 **Action:** Debrief after each demo, refine script based on what works
 
