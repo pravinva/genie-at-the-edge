@@ -1,0 +1,221 @@
+{
+  "name": "Mining Operations DLT Pipeline Monitoring",
+  "description": "Real-time monitoring dashboard for mining equipment DLT pipeline performance and data quality",
+  "widgets": [
+    {
+      "name": "Pipeline Health",
+      "type": "counter",
+      "query": "SELECT \n  CASE \n    WHEN AVG(avg_latency_sec) < 1.0 THEN 'Healthy'\n    WHEN AVG(avg_latency_sec) < 2.0 THEN 'Warning'\n    ELSE 'Critical'\n  END as health_status\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '10 minutes'",
+      "position": {"x": 0, "y": 0, "width": 2, "height": 2},
+      "description": "Overall pipeline health based on latency"
+    },
+    {
+      "name": "Average Latency (Last Hour)",
+      "type": "counter",
+      "query": "SELECT \n  ROUND(AVG(avg_latency_sec), 3) as avg_latency\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '1 hour'",
+      "position": {"x": 2, "y": 0, "width": 2, "height": 2},
+      "description": "Target: < 1.0s"
+    },
+    {
+      "name": "Equipment Reporting",
+      "type": "counter",
+      "query": "SELECT \n  COUNT(DISTINCT equipment_id) as equipment_count\nFROM field_engineering.mining_demo.equipment_current_status\nWHERE event_timestamp > CURRENT_TIMESTAMP - INTERVAL '5 minutes'",
+      "position": {"x": 4, "y": 0, "width": 2, "height": 2},
+      "description": "Target: 15 equipment"
+    },
+    {
+      "name": "Records/Minute (Last Hour)",
+      "type": "counter",
+      "query": "SELECT \n  ROUND(AVG(total_records), 0) as avg_records_per_min\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '1 hour'",
+      "position": {"x": 6, "y": 0, "width": 2, "height": 2},
+      "description": "Throughput monitoring"
+    },
+    {
+      "name": "Active Anomalies",
+      "type": "counter",
+      "query": "SELECT \n  COUNT(*) as anomaly_count\nFROM field_engineering.mining_demo.ml_predictions\nWHERE window_start > CURRENT_TIMESTAMP - INTERVAL '1 hour'",
+      "position": {"x": 8, "y": 0, "width": 2, "height": 2},
+      "description": "Recent anomaly detections"
+    },
+    {
+      "name": "Critical Alerts",
+      "type": "counter",
+      "query": "SELECT \n  COUNT(*) as critical_count\nFROM field_engineering.mining_demo.ml_predictions\nWHERE window_start > CURRENT_TIMESTAMP - INTERVAL '1 hour'\n  AND severity = 'Critical'",
+      "position": {"x": 10, "y": 0, "width": 2, "height": 2},
+      "description": "Urgent attention required"
+    },
+    {
+      "name": "Latency Trend (Last 2 Hours)",
+      "type": "line_chart",
+      "query": "SELECT \n  minute,\n  avg_latency_sec,\n  max_latency_sec\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '2 hours'\nORDER BY minute",
+      "position": {"x": 0, "y": 2, "width": 6, "height": 4},
+      "x_column": "minute",
+      "y_columns": ["avg_latency_sec", "max_latency_sec"],
+      "description": "Pipeline latency over time (target: < 1s avg)"
+    },
+    {
+      "name": "Equipment Coverage Trend",
+      "type": "line_chart",
+      "query": "SELECT \n  minute,\n  distinct_equipment,\n  distinct_sensors\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '2 hours'\nORDER BY minute",
+      "position": {"x": 6, "y": 2, "width": 6, "height": 4},
+      "x_column": "minute",
+      "y_columns": ["distinct_equipment", "distinct_sensors"],
+      "description": "Equipment and sensor reporting over time"
+    },
+    {
+      "name": "Throughput Trend (Records/Min)",
+      "type": "line_chart",
+      "query": "SELECT \n  minute,\n  total_records\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '2 hours'\nORDER BY minute",
+      "position": {"x": 0, "y": 6, "width": 6, "height": 4},
+      "x_column": "minute",
+      "y_columns": ["total_records"],
+      "description": "Data ingestion rate"
+    },
+    {
+      "name": "Anomalies by Severity (Last 24h)",
+      "type": "bar_chart",
+      "query": "SELECT \n  severity,\n  COUNT(*) as count\nFROM field_engineering.mining_demo.ml_predictions\nWHERE window_start > CURRENT_TIMESTAMP - INTERVAL '24 hours'\nGROUP BY severity\nORDER BY \n  CASE severity\n    WHEN 'Critical' THEN 1\n    WHEN 'High' THEN 2\n    WHEN 'Medium' THEN 3\n    ELSE 4\n  END",
+      "position": {"x": 6, "y": 6, "width": 6, "height": 4},
+      "x_column": "severity",
+      "y_columns": ["count"],
+      "description": "Anomaly distribution by severity"
+    },
+    {
+      "name": "Equipment Status by Type",
+      "type": "table",
+      "query": "SELECT \n  equipment_type,\n  COUNT(DISTINCT equipment_id) as equipment_count,\n  COUNT(DISTINCT sensor_name) as sensor_types,\n  MAX(event_timestamp) as last_seen,\n  ROUND((UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) - UNIX_TIMESTAMP(MAX(event_timestamp))) / 60, 1) as minutes_ago\nFROM field_engineering.mining_demo.equipment_current_status\nGROUP BY equipment_type\nORDER BY equipment_type",
+      "position": {"x": 0, "y": 10, "width": 6, "height": 4},
+      "description": "Equipment reporting status by type"
+    },
+    {
+      "name": "Critical Equipment Anomalies",
+      "type": "table",
+      "query": "SELECT \n  equipment_id,\n  sensor_name,\n  prediction_type,\n  severity,\n  ROUND(current_value, 2) as current_value,\n  ROUND(baseline_avg, 2) as baseline,\n  ROUND(deviation_score, 2) as deviation,\n  LEFT(recommendation, 60) as recommendation\nFROM field_engineering.mining_demo.ml_predictions\nWHERE window_start > CURRENT_TIMESTAMP - INTERVAL '1 hour'\n  AND severity IN ('Critical', 'High')\nORDER BY \n  CASE severity WHEN 'Critical' THEN 1 ELSE 2 END,\n  deviation_score DESC\nLIMIT 10",
+      "position": {"x": 6, "y": 10, "width": 6, "height": 4},
+      "description": "High priority anomalies requiring attention"
+    },
+    {
+      "name": "Data Quality - Health Status",
+      "type": "table",
+      "query": "SELECT \n  latency_status,\n  coverage_status,\n  COUNT(*) as window_count,\n  ROUND(AVG(avg_latency_sec), 3) as avg_latency,\n  ROUND(AVG(distinct_equipment), 1) as avg_equipment\nFROM field_engineering.mining_demo.pipeline_quality_metrics\nWHERE minute > CURRENT_TIMESTAMP - INTERVAL '1 hour'\nGROUP BY latency_status, coverage_status\nORDER BY \n  CASE latency_status \n    WHEN 'Healthy' THEN 1\n    WHEN 'Warning' THEN 2\n    ELSE 3\n  END",
+      "position": {"x": 0, "y": 14, "width": 6, "height": 4},
+      "description": "Pipeline health breakdown"
+    },
+    {
+      "name": "Equipment by Criticality",
+      "type": "pie_chart",
+      "query": "SELECT \n  criticality,\n  COUNT(DISTINCT equipment_id) as count\nFROM field_engineering.mining_demo.equipment_current_status\nGROUP BY criticality",
+      "position": {"x": 6, "y": 14, "width": 3, "height": 4},
+      "description": "Equipment distribution by criticality level"
+    },
+    {
+      "name": "Anomaly Types (Last 24h)",
+      "type": "pie_chart",
+      "query": "SELECT \n  prediction_type,\n  COUNT(*) as count\nFROM field_engineering.mining_demo.ml_predictions\nWHERE window_start > CURRENT_TIMESTAMP - INTERVAL '24 hours'\nGROUP BY prediction_type",
+      "position": {"x": 9, "y": 14, "width": 3, "height": 4},
+      "description": "Anomaly distribution by type"
+    },
+    {
+      "name": "Stale Equipment (No Recent Data)",
+      "type": "table",
+      "query": "SELECT \n  equipment_id,\n  equipment_type,\n  location,\n  criticality,\n  MAX(event_timestamp) as last_seen,\n  ROUND((UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) - UNIX_TIMESTAMP(MAX(event_timestamp))) / 60, 1) as minutes_ago\nFROM field_engineering.mining_demo.equipment_current_status\nGROUP BY equipment_id, equipment_type, location, criticality\nHAVING MAX(event_timestamp) < CURRENT_TIMESTAMP - INTERVAL '5 minutes'\nORDER BY criticality DESC, last_seen ASC",
+      "position": {"x": 0, "y": 18, "width": 6, "height": 4},
+      "description": "Equipment not reporting data (potential issues)"
+    },
+    {
+      "name": "Top Equipment by Vibration",
+      "type": "table",
+      "query": "SELECT \n  equipment_id,\n  equipment_type,\n  location,\n  ROUND(sensor_value, 2) as vibration_mm_s,\n  event_timestamp,\n  CASE \n    WHEN sensor_value > 10 THEN 'Critical'\n    WHEN sensor_value > 7 THEN 'High'\n    WHEN sensor_value > 5 THEN 'Medium'\n    ELSE 'Normal'\n  END as status\nFROM field_engineering.mining_demo.equipment_current_status\nWHERE sensor_name LIKE '%Vibration%'\nORDER BY sensor_value DESC\nLIMIT 10",
+      "position": {"x": 6, "y": 18, "width": 6, "height": 4},
+      "description": "Equipment with highest vibration levels"
+    },
+    {
+      "name": "Production Rate by Equipment Type",
+      "type": "bar_chart",
+      "query": "SELECT \n  equipment_type,\n  ROUND(AVG(sensor_value), 2) as avg_production_tph\nFROM field_engineering.mining_demo.equipment_current_status\nWHERE sensor_name = 'Production_Rate_TPH'\nGROUP BY equipment_type\nORDER BY avg_production_tph DESC",
+      "position": {"x": 0, "y": 22, "width": 6, "height": 4},
+      "x_column": "equipment_type",
+      "y_columns": ["avg_production_tph"],
+      "description": "Current production rates by equipment type"
+    },
+    {
+      "name": "Temperature Distribution",
+      "type": "histogram",
+      "query": "SELECT \n  ROUND(sensor_value, 0) as temperature_c,\n  COUNT(*) as count\nFROM field_engineering.mining_demo.equipment_current_status\nWHERE sensor_name LIKE '%Temperature%'\nGROUP BY ROUND(sensor_value, 0)\nORDER BY temperature_c",
+      "position": {"x": 6, "y": 22, "width": 6, "height": 4},
+      "description": "Temperature readings distribution across equipment"
+    },
+    {
+      "name": "Pipeline Performance Summary",
+      "type": "table",
+      "query": "SELECT \n  'Bronze Table' as layer,\n  COUNT(*) as total_records,\n  MAX(ingestion_timestamp) as latest_timestamp,\n  ROUND((UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) - UNIX_TIMESTAMP(MAX(ingestion_timestamp))) / 60, 2) as minutes_ago\nFROM field_engineering.mining_demo.ot_telemetry_bronze\nWHERE ingestion_timestamp > CURRENT_TIMESTAMP - INTERVAL '1 hour'\n\nUNION ALL\n\nSELECT \n  'Silver Table' as layer,\n  COUNT(*) as total_records,\n  MAX(event_timestamp) as latest_timestamp,\n  ROUND((UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) - UNIX_TIMESTAMP(MAX(event_timestamp))) / 60, 2) as minutes_ago\nFROM field_engineering.mining_demo.ot_sensors_normalized\nWHERE event_timestamp > CURRENT_TIMESTAMP - INTERVAL '1 hour'\n\nUNION ALL\n\nSELECT \n  'Gold - 1min Agg' as layer,\n  COUNT(*) as total_records,\n  MAX(window_start) as latest_timestamp,\n  ROUND((UNIX_TIMESTAMP(CURRENT_TIMESTAMP()) - UNIX_TIMESTAMP(MAX(window_start))) / 60, 2) as minutes_ago\nFROM field_engineering.mining_demo.equipment_performance_1min\nWHERE window_start > CURRENT_TIMESTAMP - INTERVAL '1 hour'\n\nORDER BY layer",
+      "position": {"x": 0, "y": 26, "width": 12, "height": 4},
+      "description": "Pipeline layer freshness and record counts"
+    }
+  ],
+  "refresh_schedule": {
+    "interval": 60,
+    "unit": "seconds"
+  },
+  "filters": [
+    {
+      "name": "Time Range",
+      "column": "minute",
+      "type": "time_range",
+      "default": "Last 2 hours"
+    },
+    {
+      "name": "Equipment Type",
+      "column": "equipment_type",
+      "type": "multi_select",
+      "values": ["Crusher", "Conveyor", "Stacker", "Reclaimer", "ShipLoader", "Screen", "Feeder"]
+    },
+    {
+      "name": "Criticality",
+      "column": "criticality",
+      "type": "multi_select",
+      "values": ["Critical", "High", "Medium", "Low"]
+    }
+  ],
+  "alerts": [
+    {
+      "name": "High Latency Alert",
+      "query": "SELECT AVG(avg_latency_sec) as avg_latency FROM field_engineering.mining_demo.pipeline_quality_metrics WHERE minute > CURRENT_TIMESTAMP - INTERVAL '10 minutes'",
+      "condition": "avg_latency > 2.0",
+      "message": "Pipeline latency exceeded 2 seconds. Current: {{avg_latency}}s. Investigate pipeline performance.",
+      "severity": "warning",
+      "channels": ["email", "slack"]
+    },
+    {
+      "name": "Critical Equipment Offline",
+      "query": "SELECT COUNT(DISTINCT equipment_id) as offline_count FROM field_engineering.mining_demo.equipment_master em WHERE is_active = true AND criticality = 'Critical' AND NOT EXISTS (SELECT 1 FROM field_engineering.mining_demo.equipment_current_status ecs WHERE ecs.equipment_id = em.equipment_id AND ecs.event_timestamp > CURRENT_TIMESTAMP - INTERVAL '10 minutes')",
+      "condition": "offline_count > 0",
+      "message": "{{offline_count}} critical equipment not reporting. Immediate attention required.",
+      "severity": "critical",
+      "channels": ["email", "slack", "pagerduty"]
+    },
+    {
+      "name": "Critical Anomaly Detected",
+      "query": "SELECT COUNT(*) as critical_anomalies FROM field_engineering.mining_demo.ml_predictions WHERE window_start > CURRENT_TIMESTAMP - INTERVAL '15 minutes' AND severity = 'Critical'",
+      "condition": "critical_anomalies > 0",
+      "message": "{{critical_anomalies}} critical anomalies detected. Review ml_predictions table for details.",
+      "severity": "high",
+      "channels": ["email", "slack"]
+    },
+    {
+      "name": "Low Equipment Coverage",
+      "query": "SELECT AVG(distinct_equipment) as equipment_count FROM field_engineering.mining_demo.pipeline_quality_metrics WHERE minute > CURRENT_TIMESTAMP - INTERVAL '10 minutes'",
+      "condition": "equipment_count < 12",
+      "message": "Only {{equipment_count}} of 15 equipment reporting. Check Zerobus stream and equipment connectivity.",
+      "severity": "warning",
+      "channels": ["email"]
+    }
+  ],
+  "metadata": {
+    "created_by": "pravin.varma@databricks.com",
+    "created_at": "2024-02-14",
+    "version": "1.0",
+    "tags": ["mining", "dlt", "real-time", "monitoring", "production"],
+    "documentation": "https://github.com/databricks/genie-at-the-edge/databricks/pipelines/README.md"
+  }
+}
