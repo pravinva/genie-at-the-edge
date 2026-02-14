@@ -1,0 +1,111 @@
+{
+  "component": "EmbeddedFrame",
+  "name": "GenieChat",
+  "description": "Databricks Genie AI Assistant embedded in Perspective view",
+  "properties": {
+    "url": {
+      "binding": "expression",
+      "expression": "concat(\n  'https://adb-',\n  {session.custom.databricks_workspace_id},\n  '.azuredatabricks.net/files/mining-demo/genie_chat_perspective.html',\n  '?token=', {session.custom.databricks_token},\n  '&workspace=', {session.custom.databricks_workspace_id},\n  '&space=', {session.custom.genie_space_id},\n  if({view.custom.pending_question}, concat('&question=', urlEncode({view.custom.pending_question})), '')\n)"
+    },
+    "style": {
+      "width": "100%",
+      "height": "100%",
+      "border": "none"
+    }
+  },
+  "custom": {
+    "pending_question": {
+      "type": "string",
+      "value": "",
+      "description": "Question to pre-fill when opening chat (set from alarm/equipment views)"
+    }
+  },
+  "session_properties": {
+    "databricks_workspace_id": {
+      "type": "string",
+      "value": "YOUR_WORKSPACE_ID",
+      "description": "Databricks workspace ID (e.g., '1234567890123456')"
+    },
+    "databricks_token": {
+      "type": "string",
+      "value": "",
+      "description": "Databricks personal access token (stored securely)",
+      "security": "encrypted"
+    },
+    "genie_space_id": {
+      "type": "string",
+      "value": "YOUR_SPACE_ID",
+      "description": "Genie space ID created in workstream 07"
+    }
+  },
+  "layout": {
+    "container": "flex",
+    "position": "right-panel",
+    "width": "500px",
+    "height": "100%",
+    "collapse_behavior": "slide",
+    "z_index": 100
+  },
+  "integration_patterns": {
+    "alarm_click": {
+      "description": "User clicks 'Ask AI' button on alarm",
+      "script": "system.perspective.sendMessage(\n  'genie-chat',\n  {\n    'action': 'setQuestion',\n    'question': 'Why did alarm {alarm_name} trigger at {alarm_time}? Equipment: {equipment_id}'\n  }\n)",
+      "view_update": "self.custom.pending_question = question\nself.custom.visible = True"
+    },
+    "equipment_click": {
+      "description": "User clicks equipment on HMI/SCADA view",
+      "script": "system.perspective.sendMessage(\n  'genie-chat',\n  {\n    'action': 'setQuestion',\n    'question': 'What is the status of {equipment_name}? Show recent issues.'\n  }\n)",
+      "view_update": "self.custom.pending_question = question\nself.custom.visible = True"
+    },
+    "trend_analysis": {
+      "description": "User selects time range on trend chart",
+      "script": "system.perspective.sendMessage(\n  'genie-chat',\n  {\n    'action': 'setQuestion',\n    'question': 'Analyze {tag_name} trend from {start_time} to {end_time}'\n  }\n)",
+      "view_update": "self.custom.pending_question = question\nself.custom.visible = True"
+    }
+  },
+  "messaging": {
+    "message_handler_id": "genie-chat",
+    "incoming_messages": [
+      {
+        "type": "setQuestion",
+        "handler": "function(message) {\n  self.custom.pending_question = message.question;\n  // Reload iframe with new question parameter\n  self.props.url = self.props.url.split('&question=')[0] + '&question=' + encodeURIComponent(message.question);\n}"
+      },
+      {
+        "type": "clearChat",
+        "handler": "function(message) {\n  self.custom.pending_question = '';\n  // Reload iframe to reset conversation\n  self.props.url = self.props.url.split('&question=')[0];\n}"
+      }
+    ],
+    "outgoing_messages": []
+  },
+  "security": {
+    "token_storage": "session_encrypted",
+    "iframe_sandbox": "allow-same-origin allow-scripts allow-forms",
+    "csp_policy": "frame-src https://*.azuredatabricks.net",
+    "token_rotation": "24_hours",
+    "fallback_on_auth_failure": "Show 'Authentication Required' message in iframe"
+  },
+  "performance": {
+    "lazy_load": true,
+    "cache_duration": 0,
+    "preload_on_session_start": false,
+    "load_on_demand": true
+  },
+  "testing": {
+    "standalone_url": "https://adb-WORKSPACE.azuredatabricks.net/files/mining-demo/genie_chat_perspective.html?token=TOKEN&workspace=WORKSPACE&space=SPACE",
+    "test_questions": [
+      "Why is Crusher 2 vibrating?",
+      "Show me production for the last 24 hours",
+      "Which equipment needs maintenance?",
+      "What caused the alarm at 14:23?"
+    ]
+  },
+  "notes": [
+    "Replace YOUR_WORKSPACE_ID and YOUR_SPACE_ID with actual values from Databricks",
+    "Token should be stored in session properties (encrypted)",
+    "HTML file must be uploaded to Databricks Files at /FileStore/mining-demo/",
+    "Pre-filled questions work via URL parameter &question=...",
+    "Chat maintains conversation state across page interactions",
+    "If iframe fails to load, check CORS and token validity",
+    "For production, consider token refresh mechanism"
+  ]
+}

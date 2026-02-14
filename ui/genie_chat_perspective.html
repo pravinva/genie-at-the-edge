@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Mining Operations AI Assistant - Databricks Genie Integration">
+  <title>AI Operations Assistant</title>
+
+  <!-- Fonts: Inter for UI, Roboto Mono for code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- React via CDN (no build process) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <style>
+    /* ===== EXACT PERSPECTIVE DARK THEME COLORS ===== */
+    :root {
+      /* Backgrounds - Match Perspective precisely */
+      --bg-primary: #1a1d23;
+      --bg-secondary: #242830;
+      --bg-tertiary: #2a2e38;
+      --bg-hover: #343841;
+
+      /* Ignition/Databricks Blue Accent */
+      --accent-primary: #0084ff;
+      --accent-hover: #0073e6;
+      --accent-active: #0062cc;
+
+      /* Status Colors */
+      --success: #00cc66;
+      --warning: #ff9500;
+      --danger: #ff3b30;
+      --info: #0084ff;
+
+      /* Text */
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --text-tertiary: #6b6b6b;
+      --text-disabled: #4a4a4a;
+
+      /* Borders */
+      --border-color: rgba(255,255,255,0.1);
+      --border-focus: rgba(0,132,255,0.4);
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    /* ===== RESET & BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== TYPOGRAPHY ===== */
+    h1, h2, h3 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    h1 { font-size: 18px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+
+    .monospace {
+      font-family: 'Roboto Mono', 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100%;
+    }
+
+    /* ===== HEADER (48px fixed) ===== */
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .robot-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-indicator.online {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .status-indicator.offline {
+      background: var(--text-disabled);
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ===== MESSAGES CONTAINER (flex-grow, scrollable) ===== */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .messages-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+      background: var(--bg-hover);
+      border-radius: 4px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb:hover {
+      background: var(--text-tertiary);
+    }
+
+    /* ===== MESSAGE COMPONENTS ===== */
+    .message {
+      display: flex;
+      flex-direction: column;
+      margin: 4px 0;
+    }
+
+    .message-user {
+      align-self: flex-end;
+      max-width: 85%;
+      background: linear-gradient(135deg, #0084ff 0%, #0073e6 100%);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 12px 12px 4px 12px;
+      box-shadow: var(--shadow-sm);
+      animation: slideInRight 200ms ease-out;
+      word-wrap: break-word;
+    }
+
+    .message-ai {
+      align-self: flex-start;
+      max-width: 85%;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 12px 12px 12px 4px;
+      border-left: 3px solid var(--success);
+      box-shadow: var(--shadow-sm);
+      animation: slideInLeft 200ms ease-out;
+      word-wrap: break-word;
+    }
+
+    .message-ai.typing {
+      padding: 16px;
+      border-left-color: var(--text-tertiary);
+    }
+
+    .message-error {
+      align-self: center;
+      max-width: 90%;
+      background: rgba(255, 59, 48, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeIn 300ms ease-out;
+    }
+
+    .error-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .error-text {
+      flex: 1;
+      font-size: 12px;
+    }
+
+    /* ===== TYPING INDICATOR ===== */
+    .typing-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background: var(--text-secondary);
+      border-radius: 50%;
+      animation: typingDot 1.4s infinite;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typingDot {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+      30% {
+        transform: translateY(-8px);
+        opacity: 1;
+      }
+    }
+
+    /* ===== DATA TABLE ===== */
+    .data-table-wrapper {
+      margin: 12px 0;
+      overflow-x: auto;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-table th {
+      background: var(--bg-tertiary);
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table tr:hover {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ===== SQL BLOCK ===== */
+    .sql-block {
+      background: #16181d;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .sql-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .sql-content {
+      padding: 12px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      overflow-x: auto;
+      color: #e6e6e6;
+      line-height: 1.6;
+    }
+
+    .sql-content::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .sql-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sql-content::-webkit-scrollbar-thumb {
+      background: var(--bg-hover);
+      border-radius: 3px;
+    }
+
+    /* Simple syntax highlighting */
+    .keyword {
+      color: #569cd6;
+      font-weight: 500;
+    }
+
+    .string {
+      color: #ce9178;
+    }
+
+    .number {
+      color: #b5cea8;
+    }
+
+    .btn-copy {
+      padding: 4px 8px;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      color: var(--text-secondary);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .btn-copy:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    .btn-copy:active {
+      transform: scale(0.95);
+    }
+
+    /* ===== SUGGESTIONS (conditional, 56px when visible) ===== */
+    .suggestions-container {
+      padding: 8px 16px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 56px;
+      align-items: center;
+    }
+
+    .suggestions-container.hidden {
+      display: none;
+    }
+
+    .suggestion-chip {
+      display: inline-block;
+      padding: 8px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 200ms ease;
+      white-space: nowrap;
+    }
+
+    .suggestion-chip:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .suggestion-chip:active {
+      transform: translateY(0);
+    }
+
+    /* ===== INPUT AREA (72px fixed) ===== */
+    .input-container {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      resize: none;
+      outline: none;
+      transition: all 200ms ease;
+      max-height: 80px;
+      line-height: 1.5;
+    }
+
+    #messageInput:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--border-focus);
+    }
+
+    #messageInput::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-send,
+    .btn-voice,
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 200ms ease;
+    }
+
+    .btn-send {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-send:hover {
+      background: var(--accent-hover);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-send:active {
+      background: var(--accent-active);
+      transform: scale(0.95);
+    }
+
+    .btn-send:disabled {
+      background: var(--bg-tertiary);
+      color: var(--text-disabled);
+      cursor: not-allowed;
+    }
+
+    .btn-voice {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .btn-voice:hover:not(:disabled) {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .btn-voice:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 20px;
+    }
+
+    .btn-icon:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .btn-retry {
+      padding: 6px 12px;
+      background: var(--accent-primary);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .btn-retry:hover {
+      background: var(--accent-hover);
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    /* Base: Optimized for 500px (Perspective right panel) */
+
+    /* Narrow mode (<450px) */
+    @media (max-width: 450px) {
+      .message-user,
+      .message-ai {
+        max-width: 95%;
+        font-size: 12px;
+      }
+
+      .suggestion-chip {
+        font-size: 11px;
+        padding: 6px 10px;
+      }
+
+      .chat-header {
+        padding: 0 12px;
+      }
+
+      h1 {
+        font-size: 16px;
+      }
+    }
+
+    /* Wide mode (>800px) */
+    @media (min-width: 800px) {
+      .messages-container {
+        padding: 20px;
+      }
+
+      .message-user,
+      .message-ai {
+        max-width: 75%;
+      }
+    }
+
+    /* ===== WELCOME MESSAGE ===== */
+    .welcome-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+
+    .welcome-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .welcome-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .welcome-subtitle {
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+
+    .welcome-suggestions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .welcome-suggestion {
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .welcome-suggestion:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      transform: translateX(4px);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="header-left">
+        <div class="robot-icon">🤖</div>
+        <h1>AI Operations Assistant</h1>
+      </div>
+      <div class="header-right">
+        <div class="status-indicator online" id="statusIndicator"></div>
+        <span class="status-text" id="statusText">Online</span>
+        <button class="btn-icon" onclick="clearChat()" title="Clear chat" aria-label="Clear chat">🗑️</button>
+      </div>
+    </header>
+
+    <!-- Messages Area -->
+    <div class="messages-container" id="messagesContainer" role="log" aria-live="polite" aria-atomic="false">
+      <!-- Welcome message shown on first load -->
+      <div class="welcome-message" id="welcomeMessage">
+        <div class="welcome-icon">👋</div>
+        <div class="welcome-title">Welcome to Mining Operations AI</div>
+        <div class="welcome-subtitle">Ask me about equipment status, production metrics, or maintenance issues</div>
+        <div class="welcome-suggestions">
+          <div class="welcome-suggestion" onclick="sendQuestion('Why is Crusher 2 vibrating?')">
+            Why is Crusher 2 vibrating?
+          </div>
+          <div class="welcome-suggestion" onclick="sendQuestion('Show me production for the last 24 hours')">
+            Show me production for the last 24 hours
+          </div>
+          <div class="welcome-suggestion" onclick="sendQuestion('Which equipment needs maintenance?')">
+            Which equipment needs maintenance?
+          </div>
+          <div class="welcome-suggestion" onclick="sendQuestion('What caused the alarm at 14:23?')">
+            What caused the alarm at 14:23?
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggestions Area -->
+    <div class="suggestions-container hidden" id="suggestionsContainer">
+      <!-- Dynamic suggestions will be rendered here -->
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-container">
+      <textarea
+        id="messageInput"
+        placeholder="Ask about equipment, production, or maintenance..."
+        rows="1"
+        maxlength="500"
+        aria-label="Type your question"
+      ></textarea>
+      <button class="btn-send" onclick="handleSend()" id="sendButton" aria-label="Send message">
+        <span class="send-icon">➤</span>
+      </button>
+      <button class="btn-voice" onclick="handleVoice()" disabled title="Voice input coming soon" aria-label="Voice input">
+        <span class="voice-icon">🎤</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIGURATION =====
+    const urlParams = new URLSearchParams(window.location.search);
+    const CONFIG = {
+      workspace: urlParams.get('workspace') || 'YOUR_WORKSPACE_ID',
+      spaceId: urlParams.get('space') || 'YOUR_SPACE_ID',
+      token: urlParams.get('token') || localStorage.getItem('db_token') || '',
+      apiBase: urlParams.get('workspace')
+        ? `https://adb-${urlParams.get('workspace')}.azuredatabricks.net`
+        : 'https://your-workspace.azuredatabricks.net'
+    };
+
+    // State
+    let conversationId = null;
+    let messageHistory = [];
+    let lastQuestion = '';
+    let isTyping = false;
+
+    // ===== DEMO DATA (Fallback for offline demo) =====
+    const DEMO_RESPONSES = {
+      'why is crusher 2 vibrating': {
+        text: 'Crusher 2 vibration increased to 42.3mm/s at 14:23 (2.1x normal baseline). Pattern matches belt misalignment from Jan 15 incident (87% confidence). Recommend immediate belt inspection.',
+        sql: 'SELECT timestamp, vibration_rms, belt_tension, bearing_temp\nFROM equipment_telemetry\nWHERE equipment_id = \'CRUSHER_02\'\n  AND timestamp >= NOW() - INTERVAL 24 HOURS\nORDER BY timestamp DESC',
+        suggestions: ['Show Jan 15 incident details', 'Compare to other crushers', 'What maintenance is recommended?']
+      },
+      'show me production for the last 24 hours': {
+        text: 'Last 24 hours production summary: 2,847 tonnes processed (94% of target). Peak throughput at 08:00-12:00 (142 t/h). Downtime: 37 minutes due to Conveyor 3 jam.',
+        data: [
+          ['Hour', 'Throughput (t/h)', 'Downtime (min)'],
+          ['00:00-04:00', '118', '0'],
+          ['04:00-08:00', '124', '12'],
+          ['08:00-12:00', '142', '0'],
+          ['12:00-16:00', '135', '25'],
+          ['16:00-20:00', '128', '0'],
+          ['20:00-24:00', '121', '0']
+        ],
+        suggestions: ['Show trend graph', 'What caused the jam?', 'Compare to yesterday']
+      },
+      'which equipment needs maintenance': {
+        text: 'Priority maintenance required for 3 assets:\n\n1. Crusher 2 - Belt alignment (High priority)\n2. Conveyor 5 - Bearing replacement (Medium priority)\n3. Pump 7 - Seal inspection (Low priority)',
+        suggestions: ['Show Crusher 2 history', 'Schedule maintenance', 'Export report']
+      },
+      'what caused the alarm at 14:23': {
+        text: 'Alarm at 14:23: High vibration on Crusher 2 (42.3mm/s, threshold 20mm/s). Root cause analysis suggests belt misalignment based on vibration frequency pattern (4.2 Hz). Similar to incident on Jan 15.',
+        suggestions: ['Show vibration trend', 'What should I do?', 'Has this happened before?']
+      }
+    };
+
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+      // Auto-expand textarea
+      const textarea = document.getElementById('messageInput');
+      textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+      });
+
+      // Keyboard shortcuts
+      textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+        if (e.key === 'Escape') {
+          this.value = '';
+          this.style.height = 'auto';
+        }
+      });
+
+      // Check for pre-filled question from URL
+      const question = urlParams.get('question');
+      if (question) {
+        const decoded = decodeURIComponent(question);
+        textarea.value = decoded;
+        textarea.focus();
+        // Optionally auto-send after delay
+        // setTimeout(() => handleSend(), 500);
+      }
+
+      // Initialize conversation
+      if (CONFIG.token && CONFIG.workspace !== 'YOUR_WORKSPACE_ID') {
+        initializeConversation();
+      } else {
+        updateStatus('offline', 'Demo Mode');
+      }
+    });
+
+    // ===== API FUNCTIONS =====
+    async function initializeConversation() {
+      try {
+        updateStatus('online', 'Connecting...');
+        await startConversation();
+        updateStatus('online', 'Online');
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        updateStatus('offline', 'Offline');
+      }
+    }
+
+    async function startConversation() {
+      try {
+        const response = await fetch(
+          `${CONFIG.apiBase}/api/2.0/genie/spaces/${CONFIG.spaceId}/start-conversation`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${CONFIG.token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        conversationId = data.conversation_id;
+        return conversationId;
+      } catch (error) {
+        console.error('Error starting conversation:', error);
+        throw error;
+      }
+    }
+
+    async function sendMessageToGenie(question) {
+      // Ensure conversation exists
+      if (!conversationId) {
+        await startConversation();
+      }
+
+      try {
+        const response = await fetch(
+          `${CONFIG.apiBase}/api/2.0/genie/spaces/${CONFIG.spaceId}/conversations/${conversationId}/messages`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${CONFIG.token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              content: question
+            })
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        return parseGenieResponse(data);
+      } catch (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
+    }
+
+    function parseGenieResponse(response) {
+      const result = {
+        text: '',
+        sql: null,
+        data: null,
+        suggestions: []
+      };
+
+      // Extract text from attachments
+      if (response.attachments && response.attachments.length > 0) {
+        for (const attachment of response.attachments) {
+          if (attachment.text && attachment.text.content) {
+            result.text += attachment.text.content + '\n';
+          }
+
+          if (attachment.query && attachment.query.query) {
+            result.sql = attachment.query.query;
+          }
+
+          if (attachment.query && attachment.query.result) {
+            result.data = attachment.query.result.data_array;
+          }
+        }
+      }
+
+      result.text = result.text.trim();
+      result.suggestions = generateFollowUps(result.text);
+
+      return result;
+    }
+
+    function generateFollowUps(responseText) {
+      const suggestions = [];
+
+      if (responseText.includes('Crusher') || responseText.includes('equipment')) {
+        suggestions.push('Show me the trend for this equipment');
+      }
+
+      if (responseText.includes('failure') || responseText.includes('issue') || responseText.includes('problem') || responseText.includes('alarm')) {
+        suggestions.push('Show similar past incidents');
+      }
+
+      if (responseText.includes('vibration') || responseText.includes('temperature')) {
+        suggestions.push('Compare to other equipment');
+      }
+
+      if (responseText.includes('production') || responseText.includes('throughput')) {
+        suggestions.push('Show trend graph');
+      }
+
+      suggestions.push('What should I do?');
+      suggestions.push('Tell me more');
+
+      return suggestions.slice(0, 4);
+    }
+
+    // ===== DEMO FALLBACK =====
+    function getDemoResponse(question) {
+      const normalized = question.toLowerCase().trim();
+
+      for (const key in DEMO_RESPONSES) {
+        if (normalized.includes(key) || key.includes(normalized.substring(0, 15))) {
+          return DEMO_RESPONSES[key];
+        }
+      }
+
+      // Generic fallback
+      return {
+        text: `I understand you're asking about: "${question}"\n\nIn production, I would analyze your Databricks data to provide specific insights about equipment, production, and maintenance. This is a demo response.`,
+        suggestions: ['Show equipment status', 'Show production metrics', 'Show maintenance schedule']
+      };
+    }
+
+    // ===== UI FUNCTIONS =====
+    function handleSend() {
+      const textarea = document.getElementById('messageInput');
+      const question = textarea.value.trim();
+
+      if (!question || isTyping) return;
+
+      // Clear input
+      textarea.value = '';
+      textarea.style.height = 'auto';
+
+      // Send question
+      sendQuestion(question);
+    }
+
+    async function sendQuestion(question) {
+      lastQuestion = question;
+      isTyping = true;
+
+      // Hide welcome message
+      const welcomeMsg = document.getElementById('welcomeMessage');
+      if (welcomeMsg) {
+        welcomeMsg.style.display = 'none';
+      }
+
+      // Add user message
+      addMessage({
+        type: 'user',
+        text: question
+      });
+
+      // Show typing indicator
+      const typingId = addTypingIndicator();
+
+      // Disable send button
+      document.getElementById('sendButton').disabled = true;
+
+      try {
+        let response;
+
+        // Try real API first, fall back to demo
+        if (CONFIG.token && CONFIG.workspace !== 'YOUR_WORKSPACE_ID') {
+          try {
+            response = await sendMessageToGenie(question);
+          } catch (error) {
+            console.warn('API call failed, using demo data:', error);
+            response = getDemoResponse(question);
+          }
+        } else {
+          // Demo mode
+          await sleep(1500); // Simulate network delay
+          response = getDemoResponse(question);
+        }
+
+        // Remove typing indicator
+        removeTypingIndicator(typingId);
+
+        // Add AI response
+        addMessage({
+          type: 'ai',
+          text: response.text,
+          sql: response.sql,
+          data: response.data
+        });
+
+        // Update suggestions
+        updateSuggestions(response.suggestions || []);
+
+      } catch (error) {
+        console.error('Error:', error);
+        removeTypingIndicator(typingId);
+        addErrorMessage('Sorry, I encountered an error. Please try again.');
+      } finally {
+        isTyping = false;
+        document.getElementById('sendButton').disabled = false;
+      }
+    }
+
+    function addMessage(message) {
+      const container = document.getElementById('messagesContainer');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+
+      if (message.type === 'user') {
+        messageDiv.innerHTML = `<div class="message-user">${escapeHtml(message.text)}</div>`;
+      } else if (message.type === 'ai') {
+        let content = `<div class="message-ai">`;
+        content += `<div>${escapeHtml(message.text).replace(/\n/g, '<br>')}</div>`;
+
+        // Add SQL block if present
+        if (message.sql) {
+          content += renderSQLBlock(message.sql);
+        }
+
+        // Add data table if present
+        if (message.data && message.data.length > 0) {
+          content += renderDataTable(message.data);
+        }
+
+        content += `</div>`;
+        messageDiv.innerHTML = content;
+      }
+
+      container.appendChild(messageDiv);
+      messageHistory.push(message);
+      scrollToBottom();
+    }
+
+    function addTypingIndicator() {
+      const container = document.getElementById('messagesContainer');
+      const typingDiv = document.createElement('div');
+      const id = 'typing-' + Date.now();
+      typingDiv.id = id;
+      typingDiv.className = 'message';
+      typingDiv.innerHTML = `
+        <div class="message-ai typing">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      `;
+      container.appendChild(typingDiv);
+      scrollToBottom();
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.remove();
+      }
+    }
+
+    function addErrorMessage(message) {
+      const container = document.getElementById('messagesContainer');
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'message';
+      errorDiv.innerHTML = `
+        <div class="message-error" role="alert">
+          <div class="error-icon">⚠️</div>
+          <div class="error-text">${escapeHtml(message)}</div>
+          <button class="btn-retry" onclick="retryLastMessage()">Retry</button>
+        </div>
+      `;
+      container.appendChild(errorDiv);
+      scrollToBottom();
+    }
+
+    function renderSQLBlock(sql) {
+      const highlighted = highlightSQL(sql);
+      return `
+        <div class="sql-block">
+          <div class="sql-header">
+            <span>SQL Query</span>
+            <button class="btn-copy" onclick="copySQL('${escapeHtml(sql).replace(/'/g, "\\'")}')">Copy</button>
+          </div>
+          <div class="sql-content">${highlighted}</div>
+        </div>
+      `;
+    }
+
+    function renderDataTable(data) {
+      if (!data || data.length === 0) return '';
+
+      const headers = data[0];
+      const rows = data.slice(1);
+
+      let html = '<div class="data-table-wrapper"><table class="data-table">';
+
+      // Headers
+      html += '<thead><tr>';
+      headers.forEach(header => {
+        html += `<th>${escapeHtml(String(header))}</th>`;
+      });
+      html += '</tr></thead>';
+
+      // Rows
+      html += '<tbody>';
+      rows.forEach(row => {
+        html += '<tr>';
+        row.forEach(cell => {
+          html += `<td>${escapeHtml(String(cell))}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+
+      return html;
+    }
+
+    function highlightSQL(sql) {
+      const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ORDER BY', 'GROUP BY', 'HAVING', 'JOIN', 'LEFT', 'RIGHT', 'INNER', 'OUTER', 'ON', 'AS', 'LIMIT', 'OFFSET', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER', 'TABLE', 'INDEX', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IN', 'NOT', 'NULL', 'IS', 'LIKE', 'BETWEEN', 'EXISTS', 'INTERVAL', 'NOW'];
+
+      let highlighted = escapeHtml(sql);
+
+      keywords.forEach(keyword => {
+        const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+        highlighted = highlighted.replace(regex, `<span class="keyword">${keyword}</span>`);
+      });
+
+      // Highlight strings
+      highlighted = highlighted.replace(/'([^']*)'/g, `<span class="string">'$1'</span>`);
+
+      // Highlight numbers
+      highlighted = highlighted.replace(/\b(\d+)\b/g, `<span class="number">$1</span>`);
+
+      return highlighted;
+    }
+
+    function updateSuggestions(suggestions) {
+      const container = document.getElementById('suggestionsContainer');
+
+      if (!suggestions || suggestions.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      container.innerHTML = suggestions.map(s =>
+        `<div class="suggestion-chip" onclick="sendQuestion('${escapeHtml(s).replace(/'/g, "\\'")}')">
+          ${escapeHtml(s)}
+        </div>`
+      ).join('');
+    }
+
+    function clearChat() {
+      if (!confirm('Clear all messages?')) return;
+
+      const container = document.getElementById('messagesContainer');
+      container.innerHTML = `
+        <div class="welcome-message" id="welcomeMessage">
+          <div class="welcome-icon">👋</div>
+          <div class="welcome-title">Welcome to Mining Operations AI</div>
+          <div class="welcome-subtitle">Ask me about equipment status, production metrics, or maintenance issues</div>
+          <div class="welcome-suggestions">
+            <div class="welcome-suggestion" onclick="sendQuestion('Why is Crusher 2 vibrating?')">
+              Why is Crusher 2 vibrating?
+            </div>
+            <div class="welcome-suggestion" onclick="sendQuestion('Show me production for the last 24 hours')">
+              Show me production for the last 24 hours
+            </div>
+            <div class="welcome-suggestion" onclick="sendQuestion('Which equipment needs maintenance?')">
+              Which equipment needs maintenance?
+            </div>
+            <div class="welcome-suggestion" onclick="sendQuestion('What caused the alarm at 14:23?')">
+              What caused the alarm at 14:23?
+            </div>
+          </div>
+        </div>
+      `;
+
+      messageHistory = [];
+      updateSuggestions([]);
+
+      // Restart conversation
+      conversationId = null;
+      if (CONFIG.token && CONFIG.workspace !== 'YOUR_WORKSPACE_ID') {
+        initializeConversation();
+      }
+    }
+
+    function retryLastMessage() {
+      if (lastQuestion) {
+        sendQuestion(lastQuestion);
+      }
+    }
+
+    function updateStatus(status, text) {
+      const indicator = document.getElementById('statusIndicator');
+      const statusText = document.getElementById('statusText');
+
+      indicator.className = `status-indicator ${status}`;
+      statusText.textContent = text;
+    }
+
+    function copySQL(sql) {
+      navigator.clipboard.writeText(sql).then(() => {
+        // Visual feedback
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+
+    function scrollToBottom(smooth = true) {
+      const container = document.getElementById('messagesContainer');
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+
+    function handleVoice() {
+      // Placeholder for future voice input
+      alert('Voice input coming soon!');
+    }
+
+    // ===== UTILITY FUNCTIONS =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // ===== ACCESSIBILITY =====
+    // Announce messages to screen readers
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.classList && node.classList.contains('message-ai')) {
+              // Screen reader will announce this automatically due to aria-live
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.getElementById('messagesContainer'), {
+      childList: true,
+      subtree: true
+    });
+  </script>
+</body>
+</html>

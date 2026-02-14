@@ -1,0 +1,184 @@
+# Mining Operations Genie Demo - Environment Configuration
+# This file defines deployment targets and configurations
+
+# Global Settings
+project_name: "Mining Operations Genie Demo"
+project_version: "1.0.0"
+demo_type: "edge_analytics"
+
+# Databricks Configuration
+databricks:
+  # Development Environment
+  dev:
+    workspace_url: "https://field-eng.cloud.databricks.com"
+    workspace_id: "4b9b953939869799"
+    catalog: "field_engineering"
+    schema: "mining_demo"
+    warehouse_id: "4b9b953939869799"
+    region: "us-west-2"
+
+  # Production Environment
+  prod:
+    workspace_url: "https://field-eng.cloud.databricks.com"
+    workspace_id: "4b9b953939869799"
+    catalog: "field_engineering"
+    schema: "mining_demo_prod"
+    warehouse_id: "4b9b953939869799"
+    region: "us-west-2"
+
+# Ignition Configuration
+ignition:
+  # Development Environment
+  dev:
+    gateway_url: "http://localhost:8088"
+    gateway_name: "MiningDemo_Dev"
+    project_name: "MiningOperations"
+    perspective_enabled: true
+
+  # Production Environment
+  prod:
+    gateway_url: "https://ignition.customer.com:8043"
+    gateway_name: "MiningDemo_Prod"
+    project_name: "MiningOperations"
+    perspective_enabled: true
+
+# Component Settings
+components:
+  # Ignition UDTs
+  udts:
+    enabled: true
+    tag_provider: "[default]"
+    base_path: "Mining/Equipment"
+    update_interval_ms: 1000
+
+  # Ignition Scripts
+  scripts:
+    physics_simulation:
+      enabled: true
+      interval_ms: 1000
+      timeout_ms: 30000
+
+    fault_injection:
+      enabled: true
+      interval_ms: 1000
+      target: "CR_002"
+      start_delay_minutes: 30
+
+  # DLT Pipeline
+  dlt_pipeline:
+    name: "mining_realtime_pipeline"
+    mode: "REAL_TIME"
+    runtime: "16.4.x-scala2.12"
+    channel: "CURRENT"
+    min_workers: 1
+    max_workers: 4
+    autoscale: true
+    target_latency_seconds: 3
+
+  # Genie Space
+  genie:
+    space_name: "Mining Operations Intelligence"
+    warehouse_id: "4b9b953939869799"
+    max_query_timeout_seconds: 30
+    enable_sql_display: true
+
+  # Chat UI
+  ui:
+    deployment_target: "databricks_files"
+    public_access: true
+    cors_enabled: true
+
+# Deployment Settings
+deployment:
+  # Validation checks before deployment
+  pre_deploy_checks:
+    - validate_credentials
+    - check_network_connectivity
+    - verify_workspace_access
+    - check_catalog_permissions
+    - validate_warehouse_running
+
+  # Post-deployment validation
+  post_deploy_checks:
+    - verify_tables_created
+    - validate_pipeline_running
+    - check_genie_space_active
+    - test_ui_accessibility
+    - run_smoke_tests
+
+  # Rollback configuration
+  rollback:
+    enabled: true
+    backup_before_deploy: true
+    max_rollback_versions: 3
+
+  # Notification settings
+  notifications:
+    enabled: false
+    slack_webhook: ""
+    email_recipients: []
+
+# Testing Configuration
+testing:
+  # Smoke tests
+  smoke_tests:
+    enabled: true
+    timeout_seconds: 300
+
+  # Integration tests
+  integration_tests:
+    enabled: true
+    timeout_seconds: 600
+
+  # End-to-end tests
+  e2e_tests:
+    enabled: false
+    timeout_seconds: 900
+
+# Monitoring Configuration
+monitoring:
+  health_checks:
+    enabled: true
+    interval_seconds: 60
+
+  metrics:
+    - pipeline_latency
+    - query_response_time
+    - data_freshness
+    - error_rate
+
+# Security Settings
+security:
+  # Authentication
+  auth:
+    method: "token"  # Options: token, oauth
+    token_env_var: "DATABRICKS_TOKEN"
+
+  # Secrets management
+  secrets:
+    provider: "env"  # Options: env, databricks_secrets, external
+    scope: "mining_demo"
+
+  # Network
+  network:
+    ssl_verify: true
+    proxy_enabled: false
+    proxy_url: ""
+
+# Backup Configuration
+backup:
+  enabled: true
+  retention_days: 30
+  backup_location: "dbfs:/FileStore/backups/mining_demo"
+  components:
+    - dimension_tables
+    - pipeline_configuration
+    - genie_space_config
+    - ui_artifacts
+
+# Feature Flags
+features:
+  advanced_ml: true
+  real_time_alerts: true
+  mobile_support: false
+  multi_site: false
