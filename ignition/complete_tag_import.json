@@ -1,0 +1,376 @@
+{
+  "name": "MiningOperations",
+  "tagType": "Folder",
+  "tags": [
+    {
+      "name": "_types_",
+      "tagType": "Folder",
+      "tags": [
+        {
+          "name": "HaulTruck",
+          "tagType": "UdtType",
+          "typeId": "HaulTruck",
+          "description": "Mining haul truck with realistic operational parameters",
+          "tags": [
+            {
+              "name": "Location_Lat",
+              "tagType": "AtomicTag",
+              "dataType": "Float8",
+              "value": -31.9505,
+              "tooltip": "GPS Latitude (West Australia)",
+              "engUnit": "degrees"
+            },
+            {
+              "name": "Location_Lon",
+              "tagType": "AtomicTag",
+              "dataType": "Float8",
+              "value": 115.8605,
+              "tooltip": "GPS Longitude (West Australia)",
+              "engUnit": "degrees"
+            },
+            {
+              "name": "Speed_KPH",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0,
+              "tooltip": "Current speed",
+              "engUnit": "km/h",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 60.0
+            },
+            {
+              "name": "Load_Tonnes",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0,
+              "tooltip": "Current payload",
+              "engUnit": "tonnes",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 250.0
+            },
+            {
+              "name": "Fuel_Level_Pct",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 100.0,
+              "tooltip": "Fuel tank level",
+              "engUnit": "%",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 100.0
+            },
+            {
+              "name": "Engine_Temp_C",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 85.0,
+              "tooltip": "Engine coolant temperature",
+              "engUnit": "°C",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 120.0
+            },
+            {
+              "name": "Tire_Pressure_FL_PSI",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 100.0,
+              "tooltip": "Front Left tire pressure",
+              "engUnit": "PSI",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 150.0
+            },
+            {
+              "name": "Tire_Pressure_FR_PSI",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 100.0,
+              "tooltip": "Front Right tire pressure",
+              "engUnit": "PSI",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 150.0
+            },
+            {
+              "name": "Tire_Pressure_RL_PSI",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 100.0,
+              "tooltip": "Rear Left tire pressure",
+              "engUnit": "PSI",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 150.0
+            },
+            {
+              "name": "Tire_Pressure_RR_PSI",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 100.0,
+              "tooltip": "Rear Right tire pressure",
+              "engUnit": "PSI",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 150.0
+            },
+            {
+              "name": "Vibration_MM_S",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 3.0,
+              "tooltip": "Chassis vibration",
+              "engUnit": "mm/s",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 20.0
+            },
+            {
+              "name": "Operator_ID",
+              "tagType": "AtomicTag",
+              "dataType": "String",
+              "value": "OP_101",
+              "tooltip": "Current operator badge ID"
+            },
+            {
+              "name": "Cycle_State",
+              "tagType": "AtomicTag",
+              "dataType": "String",
+              "value": "stopped",
+              "tooltip": "Current cycle state (stopped, loading, hauling_loaded, dumping, returning_empty)"
+            },
+            {
+              "name": "Cycle_Time_Sec",
+              "tagType": "AtomicTag",
+              "dataType": "Int4",
+              "value": 0,
+              "tooltip": "Seconds elapsed in current cycle",
+              "engUnit": "seconds",
+              "engLow": 0,
+              "engHigh": 1380
+            },
+            {
+              "name": "Hours_Operated",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0,
+              "tooltip": "Cumulative operating hours",
+              "engUnit": "hours",
+              "formatString": "#0.0"
+            }
+          ]
+        },
+        {
+          "name": "Crusher",
+          "tagType": "UdtType",
+          "typeId": "Crusher",
+          "description": "Primary crusher with vibration monitoring",
+          "tags": [
+            {
+              "name": "Throughput_TPH",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 2000.0,
+              "tooltip": "Throughput rate",
+              "engUnit": "tonnes/hour",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 3000.0
+            },
+            {
+              "name": "Vibration_MM_S",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 12.0,
+              "tooltip": "Bearing vibration",
+              "engUnit": "mm/s",
+              "formatString": "#0.1",
+              "engLow": 0.0,
+              "engHigh": 50.0
+            },
+            {
+              "name": "Motor_Current_A",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 180.0,
+              "tooltip": "Motor current draw",
+              "engUnit": "A",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 300.0
+            },
+            {
+              "name": "Motor_Temp_C",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 65.0,
+              "tooltip": "Motor winding temperature",
+              "engUnit": "°C",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 120.0
+            },
+            {
+              "name": "Bearing_Temp_C",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 55.0,
+              "tooltip": "Bearing temperature",
+              "engUnit": "°C",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 100.0
+            },
+            {
+              "name": "Feed_Level_Pct",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 60.0,
+              "tooltip": "Feed hopper level",
+              "engUnit": "%",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 100.0
+            },
+            {
+              "name": "Hours_Operated",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0,
+              "tooltip": "Cumulative operating hours",
+              "engUnit": "hours",
+              "formatString": "#0.0"
+            },
+            {
+              "name": "Status",
+              "tagType": "AtomicTag",
+              "dataType": "String",
+              "value": "running",
+              "tooltip": "Operational status (running, stopped, faulted)"
+            },
+            {
+              "name": "Alarm_Active",
+              "tagType": "AtomicTag",
+              "dataType": "Boolean",
+              "value": false,
+              "tooltip": "True if any alarm is active"
+            }
+          ]
+        },
+        {
+          "name": "Conveyor",
+          "tagType": "UdtType",
+          "typeId": "Conveyor",
+          "description": "Ore conveyor belt system",
+          "tags": [
+            {
+              "name": "Speed_M_S",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 3.5,
+              "tooltip": "Belt speed",
+              "engUnit": "m/s",
+              "formatString": "#0.1",
+              "engLow": 0.0,
+              "engHigh": 5.0
+            },
+            {
+              "name": "Load_Pct",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 70.0,
+              "tooltip": "Belt load percentage",
+              "engUnit": "%",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 100.0
+            },
+            {
+              "name": "Belt_Alignment_MM",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0,
+              "tooltip": "Belt tracking offset from center",
+              "engUnit": "mm",
+              "formatString": "#0.0",
+              "engLow": -50.0,
+              "engHigh": 50.0
+            },
+            {
+              "name": "Motor_Temp_C",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 60.0,
+              "tooltip": "Drive motor temperature",
+              "engUnit": "°C",
+              "formatString": "#0.0",
+              "engLow": 0.0,
+              "engHigh": 120.0
+            },
+            {
+              "name": "Hours_Operated",
+              "tagType": "AtomicTag",
+              "dataType": "Float4",
+              "value": 0.0,
+              "tooltip": "Cumulative operating hours",
+              "engUnit": "hours",
+              "formatString": "#0.0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HT_001",
+      "tagType": "UdtInstance",
+      "typeId": "HaulTruck"
+    },
+    {
+      "name": "HT_002",
+      "tagType": "UdtInstance",
+      "typeId": "HaulTruck"
+    },
+    {
+      "name": "HT_003",
+      "tagType": "UdtInstance",
+      "typeId": "HaulTruck"
+    },
+    {
+      "name": "HT_004",
+      "tagType": "UdtInstance",
+      "typeId": "HaulTruck"
+    },
+    {
+      "name": "HT_005",
+      "tagType": "UdtInstance",
+      "typeId": "HaulTruck"
+    },
+    {
+      "name": "CR_001",
+      "tagType": "UdtInstance",
+      "typeId": "Crusher"
+    },
+    {
+      "name": "CR_002",
+      "tagType": "UdtInstance",
+      "typeId": "Crusher"
+    },
+    {
+      "name": "CR_003",
+      "tagType": "UdtInstance",
+      "typeId": "Crusher"
+    },
+    {
+      "name": "CV_001",
+      "tagType": "UdtInstance",
+      "typeId": "Conveyor"
+    },
+    {
+      "name": "CV_002",
+      "tagType": "UdtInstance",
+      "typeId": "Conveyor"
+    }
+  ]
+}
