@@ -1,0 +1,23 @@
+services:
+  ignition:
+    image: "inductiveautomation/ignition:${IGNITION_TAG:-8.1.51}"
+    container_name: genie-at-edge-ignition
+    ports:
+      - "8181:8088"    # HTTP Gateway
+      - "8143:8043"    # HTTPS Gateway
+    environment:
+      ACCEPT_IGNITION_EULA: "Y"
+      GATEWAY_ADMIN_USERNAME: "admin"
+      GATEWAY_ADMIN_PASSWORD: "password"
+      IGNITION_EDITION: "standard"
+    volumes:
+      - ignition-data:/usr/local/bin/ignition/data
+      - ./ignition-init:/restore
+    command:
+      - "--"
+      - "-Dignition.allowunsignedmodules=true"
+    restart: unless-stopped
+
+volumes:
+  ignition-data:
+    name: genie-at-edge-ignition-data
