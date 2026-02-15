@@ -6,6 +6,7 @@ Creates the mining_operations_realtime DLT pipeline via Databricks SDK
 
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.pipelines import *
+from databricks.sdk.service.workspace import ImportFormat
 import json
 
 w = WorkspaceClient()
