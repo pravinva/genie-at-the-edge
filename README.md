@@ -11,7 +11,7 @@ A complete, production-ready system integrating Ignition SCADA with Databricks A
 
 ---
 
-##  Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
@@ -28,7 +28,7 @@ A complete, production-ready system integrating Ignition SCADA with Databricks A
 
 ---
 
-##  Overview
+## Overview
 
 **Problem:** Mining operators spend 20-30 minutes manually investigating equipment issues, switching between multiple systems, and relying on tribal knowledge.
 
@@ -38,16 +38,16 @@ A complete, production-ready system integrating Ignition SCADA with Databricks A
 
 ### Key Capabilities
 
--  **Natural Language Queries** - "Why is Crusher 2 vibrating excessively?"
--  **Sub-5-Second Responses** - Real-time insights from unified data
--  **Context-Aware** - Pre-filled questions from alarms and equipment status
--  **Rich Visualizations** - SQL blocks, data tables, trend analysis
--  **Predictive Analytics** - ML-powered anomaly detection
--  **Production-Ready** - <1s data latency, 99.9%+ uptime
+- **Natural Language Queries** - "Why is Crusher 2 vibrating excessively?"
+- **Sub-5-Second Responses** - Real-time insights from unified data
+- **Context-Aware** - Pre-filled questions from alarms and equipment status
+- **Rich Visualizations** - SQL blocks, data tables, trend analysis
+- **Predictive Analytics** - ML-powered anomaly detection
+- **Production-Ready** - <1s data latency, 99.9%+ uptime
 
 ---
 
-##  Architecture
+## Architecture
 
 ### System Overview
 
@@ -222,7 +222,7 @@ COMMUNICATION PROTOCOLS:
 
 ---
 
-##  Features
+## Features
 
 ### For Operators
 
@@ -250,7 +250,7 @@ COMMUNICATION PROTOCOLS:
 
 ---
 
-##  Folder Structure
+## Folder Structure
 
 ```
 genie-at-the-edge/
@@ -290,12 +290,14 @@ genie-at-the-edge/
         DEPLOYMENT_SUMMARY.md        # Complete deployment guide
 
   ui/                                # User Interface
-    genie_chat_perspective.html      # Single-file chat app (35KB)
-    perspective_view_spec.json       # Ignition Perspective config
-    integration_config.md            # Perspective integration guide
-    deployment_guide.md              # UI deployment steps
-    testing_checklist.md            # UI testing procedures
+    mining_genie_chat.html           # Single-file chat app (25KB)
     README.md                        # UI documentation
+
+  ignition/
+    scripts/
+      genie_proxy.py                 # CORS proxy for Genie API (8KB)
+      mining_physics_simulation.py   # Physics engine
+      README.md                      # Scripts documentation
 
   testing/                           # Testing Infrastructure
     test_suite.py                    # Main test orchestrator
@@ -363,7 +365,7 @@ TOTAL: 76 files, 37,688 lines of code and documentation
 
 ---
 
-##  Code Flow
+## Code Flow
 
 ### 1. Data Generation (Ignition Gateway)
 
@@ -583,7 +585,7 @@ def onAlarmButtonClick(alarm):
 
 ---
 
-##  Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -650,7 +652,7 @@ After running `deploy_all.py`:
 
 ---
 
-##  Deployment
+## Deployment
 
 ### Deployment Modes
 
@@ -711,7 +713,7 @@ For complete deployment instructions, see:
 
 ---
 
-##  Technology Stack
+## Technology Stack
 
 ### Ignition Components
 
@@ -805,7 +807,7 @@ cd testing
 
 ---
 
-##  Demo
+## Demo
 
 ### 15-Minute Customer Demo
 
@@ -862,7 +864,7 @@ For complete demo guide, see `demo/README.md`
 
 ---
 
-##  Documentation
+## Documentation
 
 ### Getting Started
 
@@ -896,7 +898,7 @@ Common issues and solutions documented in:
 
 ---
 
-##  Contributing
+## Contributing
 
 This project was generated using Claude Code and follows production-ready standards:
 
@@ -948,13 +950,13 @@ Please include:
 
 ---
 
-##  License
+## License
 
 MIT License - See `LICENSE` file for details
 
 ---
 
-##  Acknowledgments
+## Acknowledgments
 
 **Generated with Claude Code**
 - https://claude.com/claude-code
@@ -974,7 +976,7 @@ MIT License - See `LICENSE` file for details
 
 ---
 
-##  Support
+## Support
 
 - **Documentation:** See component-specific README files
 - **Repository:** https://github.com/pravinva/genie-at-the-edge
@@ -982,7 +984,7 @@ MIT License - See `LICENSE` file for details
 
 ---
 
-##  Project Status
+## Project Status
 
 ** 100% COMPLETE - PRODUCTION READY**
 

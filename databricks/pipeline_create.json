@@ -1,0 +1,31 @@
+{
+  "name": "mining_operations_realtime",
+  "catalog": "ignition_genie",
+  "target": "mining_ops",
+  "development": true,
+  "continuous": true,
+  "photon": true,
+  "edition": "ADVANCED",
+  "configuration": {
+    "spark.databricks.streaming.mode": "realtime",
+    "spark.sql.shuffle.partitions": "200"
+  },
+  "libraries": [
+    {
+      "notebook": {
+        "path": "/Users/pravin.varma@databricks.com/mining-genie-demo/mining_realtime_dlt.py"
+      }
+    }
+  ],
+  "clusters": [
+    {
+      "label": "default",
+      "num_workers": 2,
+      "node_type_id": "i3.xlarge",
+      "custom_tags": {
+        "project": "genie-at-the-edge",
+        "component": "dlt-pipeline"
+      }
+    }
+  ]
+}

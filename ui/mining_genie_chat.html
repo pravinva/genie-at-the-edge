@@ -9,43 +9,45 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
         /* ========================================
            PERSPECTIVE DARK THEME - EXACT COLORS
            ======================================== */
         :root {
-            /* Backgrounds */
-            --bg-primary: #1a1d23;
-            --bg-secondary: #242830;
-            --bg-tertiary: #2a2e38;
-            --bg-hover: #343841;
+            /* Ignition Light Theme Colors */
+            --bg-primary: #e8e8e8;        /* Light gray background */
+            --bg-secondary: #f5f5f5;      /* Lighter panel/header */
+            --bg-tertiary: #ffffff;       /* White input/card backgrounds */
+            --bg-hover: #d0d0d0;          /* Hover state */
 
-            /* Accent */
-            --accent-primary: #0084ff;
-            --accent-hover: #0073e6;
-            --accent-active: #0062cc;
+            /* Ignition Orange Accent */
+            --accent-primary: #f47920;    /* Ignition brand orange */
+            --accent-hover: #ff8c3a;      /* Lighter orange hover */
+            --accent-active: #d86a1a;     /* Darker orange active */
 
             /* Status */
-            --success: #00cc66;
-            --warning: #ff9500;
-            --danger: #ff3b30;
-            --info: #0084ff;
+            --success: #4caf50;           /* Green */
+            --warning: #ff9800;           /* Orange warning */
+            --danger: #f44336;            /* Red */
+            --info: #2196f3;              /* Blue info */
 
             /* Text */
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-tertiary: #6b6b6b;
-            --text-disabled: #4a4a4a;
+            --text-primary: #333333;      /* Dark gray text */
+            --text-secondary: #666666;    /* Medium gray */
+            --text-tertiary: #999999;     /* Light gray */
+            --text-disabled: #cccccc;     /* Disabled */
 
             /* Borders */
-            --border-color: rgba(255,255,255,0.1);
-            --border-focus: rgba(0,132,255,0.4);
+            --border-color: rgba(0,0,0,0.12);
+            --border-focus: rgba(244,121,32,0.5);
 
             /* Shadows */
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
-            --shadow-md: 0 2px 8px rgba(0,0,0,0.3);
-            --shadow-lg: 0 4px 16px rgba(0,0,0,0.4);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.15);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.2);
         }
 
         /* Typography */
@@ -109,16 +111,23 @@
         .robot-icon {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-            border-radius: 8px;
+            background: #ff3621;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
+        /* Databricks logo SVG as background */
         .robot-icon::before {
-            content: '🤖';
-            font-size: 18px;
+            content: '';
+            width: 24px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.82 8 12 11.82 4.18 8 12 4.18zM4 9.82l7 3.5v7.36l-7-3.5V9.82zm16 0v7.36l-7 3.5v-7.36l7-3.5z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .header-right {
@@ -222,8 +231,15 @@
 
         .message-timestamp {
             font-size: 11px;
-            color: var(--text-tertiary);
             margin-top: 4px;
+        }
+
+        .message-user .message-timestamp {
+            color: rgba(255, 255, 255, 0.7); /* Light color for user messages (orange background) */
+        }
+
+        .message-ai .message-timestamp {
+            color: var(--text-secondary); /* Darker color for AI messages (light background) */
         }
 
         /* Typing Indicator */
@@ -356,17 +372,27 @@
             cursor: not-allowed;
         }
 
-        /* Icons (using emoji for simplicity) */
+        /* Icons using SVG */
         .send-icon::before {
-            content: '→';
-            font-size: 20px;
-            font-weight: bold;
-            color: white;
+            content: '';
+            width: 20px;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M2.01 21L23 12 2.01 3 2 10l15 2-15 2z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: block;
         }
 
         .voice-icon::before {
-            content: '🎤';
-            font-size: 18px;
+            content: '';
+            width: 18px;
+            height: 18px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666666'%3E%3Cpath d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z'/%3E%3Cpath d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: block;
         }
 
         /* Animations */
@@ -432,6 +458,122 @@
         .data-table tr:hover {
             background: var(--bg-hover);
         }
+
+        /* Markdown Formatting in Messages */
+        .message-ai .markdown-content {
+            line-height: 1.6;
+        }
+
+        .message-ai .markdown-content h1,
+        .message-ai .markdown-content h2,
+        .message-ai .markdown-content h3 {
+            margin-top: 12px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .message-ai .markdown-content h1 { font-size: 18px; }
+        .message-ai .markdown-content h2 { font-size: 16px; }
+        .message-ai .markdown-content h3 { font-size: 14px; }
+
+        .message-ai .markdown-content p {
+            margin: 8px 0;
+        }
+
+        .message-ai .markdown-content ul,
+        .message-ai .markdown-content ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .message-ai .markdown-content li {
+            margin: 4px 0;
+        }
+
+        .message-ai .markdown-content strong {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .message-ai .markdown-content em {
+            font-style: italic;
+        }
+
+        .message-ai .markdown-content code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+            border: 1px solid var(--border-color);
+        }
+
+        .message-ai .markdown-content pre {
+            background: var(--bg-tertiary);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .message-ai .markdown-content pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            font-size: 12px;
+        }
+
+        .message-ai .markdown-content blockquote {
+            border-left: 3px solid var(--accent-primary);
+            padding-left: 12px;
+            margin: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .message-ai .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        .message-ai .markdown-content table th,
+        .message-ai .markdown-content table td {
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .message-ai .markdown-content table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+        }
+
+        .message-ai .markdown-content a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .message-ai .markdown-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            min-height: 400px;
+            position: relative;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 400px !important;
+        }
     </style>
 </head>
 <body>
@@ -440,14 +582,190 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // Chart Component
+        function ChartComponent({ data }) {
+            const canvasRef = useRef(null);
+            const chartRef = useRef(null);
+
+            useEffect(() => {
+                if (!canvasRef.current || !data) return;
+
+                // Destroy previous chart if exists
+                if (chartRef.current) {
+                    chartRef.current.destroy();
+                }
+
+                const ctx = canvasRef.current.getContext('2d');
+                const { columns, rows } = data;
+
+                // Determine chart type based on data
+                // If first column looks like timestamp/date, use line chart
+                // Otherwise use bar chart for categorical data
+                const firstValue = rows[0]?.[0];
+                const isTimeSeries = typeof firstValue === 'string' && (
+                    firstValue.includes('T') ||
+                    firstValue.includes(':') ||
+                    firstValue.match(/\d{4}-\d{2}-\d{2}/)
+                );
+                const chartType = isTimeSeries ? 'line' : 'bar';
+
+                // X-axis: first column
+                const labels = rows.map(row => {
+                    const val = row[0];
+                    // Format timestamp if it looks like one
+                    if (typeof val === 'string' && val.includes('T')) {
+                        const date = new Date(val);
+                        return date.toLocaleTimeString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                    return val;
+                });
+
+                // Y-axis: Find numeric columns (skip first column which is X-axis)
+                const numericColumns = [];
+                for (let colIdx = 1; colIdx < columns.length; colIdx++) {
+                    const firstVal = rows[0]?.[colIdx];
+                    if (typeof firstVal === 'number' || !isNaN(parseFloat(firstVal))) {
+                        numericColumns.push(colIdx);
+                    }
+                }
+
+                // Limit to first 3 numeric columns to avoid clutter
+                const columnsToPlot = numericColumns.slice(0, 3);
+
+                // Color palette
+                const colors = [
+                    { border: '#00a8a8', bg: 'rgba(0, 168, 168, 0.1)' },  // Teal
+                    { border: '#ff9800', bg: 'rgba(255, 152, 0, 0.1)' },   // Orange
+                    { border: '#9c27b0', bg: 'rgba(156, 39, 176, 0.1)' }   // Purple
+                ];
+
+                // Create datasets for each numeric column
+                const datasets = columnsToPlot.map((colIdx, idx) => {
+                    const values = rows.map(row => parseFloat(row[colIdx]) || 0);
+                    const color = colors[idx % colors.length];
+
+                    return {
+                        label: columns[colIdx] || `Series ${idx + 1}`,
+                        data: values,
+                        borderColor: color.border,
+                        backgroundColor: color.bg,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: chartType === 'line',
+                        pointRadius: chartType === 'line' ? 2 : 0,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: color.border,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1
+                    };
+                });
+
+                chartRef.current = new Chart(ctx, {
+                    type: chartType,
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 13,
+                                        family: 'Inter'
+                                    },
+                                    color: '#333333',
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleFont: {
+                                    size: 13,
+                                    family: 'Inter'
+                                },
+                                bodyFont: {
+                                    size: 12,
+                                    family: 'Inter'
+                                },
+                                padding: 12,
+                                displayColors: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: true,
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11,
+                                        family: 'Inter'
+                                    },
+                                    color: '#666666',
+                                    maxRotation: 45,
+                                    minRotation: 0
+                                }
+                            },
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    display: true,
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 11,
+                                        family: 'Inter'
+                                    },
+                                    color: '#666666'
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+
+                return () => {
+                    if (chartRef.current) {
+                        chartRef.current.destroy();
+                    }
+                };
+            }, [data]);
+
+            if (!data) return null;
+
+            return (
+                <div className="chart-container">
+                    <canvas ref={canvasRef}></canvas>
+                </div>
+            );
+        }
+
         // Sample questions
         const SAMPLE_QUESTIONS = [
             "What is the current status of all haul trucks?",
             "Show me crusher CR_002 performance",
             "Which equipment has anomalies?",
             "What is HT_001's current speed?",
-            "Average fuel level across all trucks"
+            "Show vibration trends for CR_002 over time"
         ];
+
+        // Genie Proxy Configuration
+        const GENIE_PROXY_URL = 'http://localhost:8185/api/genie/query';
 
         // Main App Component
         function App() {
@@ -455,12 +773,64 @@
             const [inputValue, setInputValue] = useState('');
             const [isTyping, setIsTyping] = useState(false);
             const [showSuggestions, setShowSuggestions] = useState(true);
+            const [conversationId, setConversationId] = useState(null);
+            const [suggestedQuestions, setSuggestedQuestions] = useState(SAMPLE_QUESTIONS);
             const messagesEndRef = useRef(null);
 
             // Scroll to bottom when messages change
             useEffect(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }, [messages]);
+
+            // Call Genie API via proxy
+            const queryGenie = async (question) => {
+                try {
+                    const response = await fetch(GENIE_PROXY_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            question: question,
+                            conversationId: conversationId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Proxy error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // Save conversation ID for follow-ups
+                    if (data.conversationId) {
+                        setConversationId(data.conversationId);
+                    }
+
+                    // Update suggested questions if Genie provided any
+                    // Combine Genie's suggestions with default questions
+                    if (data.suggestedQuestions && data.suggestedQuestions.length > 0) {
+                        // Show Genie's suggestions first, then fill with defaults
+                        const combined = [...data.suggestedQuestions];
+                        const remaining = SAMPLE_QUESTIONS.filter(q => !combined.includes(q));
+                        setSuggestedQuestions([...combined, ...remaining].slice(0, 5));
+                    }
+
+                    // Return the full data object (response + chartData)
+                    return {
+                        text: data.response || "I couldn't process that query. Please try again.",
+                        chartData: data.chartData || null
+                    };
+
+                } catch (error) {
+                    console.error('Genie API Error:', error);
+                    // Fallback to mock response if API fails
+                    return {
+                        text: generateMockResponse(question) + "\n\n⚠️ (Using mock data - proxy server not running)",
+                        chartData: null
+                    };
+                }
+            };
 
             // Handle send message
             const handleSend = async () => {
@@ -472,26 +842,30 @@
                     timestamp: new Date().toLocaleTimeString()
                 };
 
+                const questionText = inputValue; // Store before clearing
                 setMessages(prev => [...prev, userMessage]);
                 setInputValue('');
                 setShowSuggestions(false);
                 setIsTyping(true);
 
-                // Simulate API call to Genie
-                setTimeout(() => {
-                    const aiMessage = {
-                        type: 'ai',
-                        text: generateMockResponse(inputValue),
-                        timestamp: new Date().toLocaleTimeString()
-                    };
-                    setMessages(prev => [...prev, aiMessage]);
-                    setIsTyping(false);
-                }, 1500);
+                // Call real Genie API
+                const responseData = await queryGenie(questionText);
+
+                const aiMessage = {
+                    type: 'ai',
+                    text: responseData.text,
+                    timestamp: new Date().toLocaleTimeString(),
+                    chartData: responseData.chartData || null
+                };
+                setMessages(prev => [...prev, aiMessage]);
+                setIsTyping(false);
+                setShowSuggestions(true); // Show suggestions after response
             };
 
             // Handle suggestion click
             const handleSuggestionClick = (question) => {
                 setInputValue(question);
+                setShowSuggestions(false); // Hide suggestions while processing
                 setTimeout(() => handleSend(), 100);
             };
 
@@ -507,6 +881,8 @@
             const clearChat = () => {
                 setMessages([]);
                 setShowSuggestions(true);
+                setConversationId(null); // Reset conversation for fresh start
+                setSuggestedQuestions(SAMPLE_QUESTIONS); // Reset to default questions
             };
 
             return (
@@ -519,8 +895,10 @@
                         <div className="header-right">
                             <div className="status-indicator online"></div>
                             <span className="status-text">Online</span>
-                            <button className="btn-icon" onClick={clearChat} title="Clear chat">
-                                🗑️
+                            <button className="btn-icon clear-btn" onClick={clearChat} title="Clear chat">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
                             </button>
                         </div>
                     </header>
@@ -536,7 +914,17 @@
 
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`message-${msg.type}`}>
-                                {msg.text}
+                                {msg.type === 'ai' ? (
+                                    <>
+                                        <div
+                                            className="markdown-content"
+                                            dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }}
+                                        />
+                                        {msg.chartData && <ChartComponent data={msg.chartData} />}
+                                    </>
+                                ) : (
+                                    msg.text
+                                )}
                                 <div className="message-timestamp">{msg.timestamp}</div>
                             </div>
                         ))}
@@ -554,9 +942,9 @@
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {showSuggestions && messages.length === 0 && (
+                    {showSuggestions && (
                         <div className="suggestions-container">
-                            {SAMPLE_QUESTIONS.map((q, idx) => (
+                            {suggestedQuestions.map((q, idx) => (
                                 <div key={idx} className="suggestion-chip" onClick={() => handleSuggestionClick(q)}>
                                     {q}
                                 </div>

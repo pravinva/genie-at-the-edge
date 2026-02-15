@@ -1,0 +1,6 @@
+{
+  "warehouse_id": "4b9b953939869799",
+  "title": "Mining Operations AI Assistant",
+  "description": "AI-powered assistant for mining equipment monitoring and analysis",
+  "serialized_space": "{\n  \"version\": 2,\n  \"data_sources\": {\n    \"tables\": [\n      { \"identifier\": \"ignition_genie.mining_ops.equipment_current_status\" },\n      { \"identifier\": \"ignition_genie.mining_ops.equipment_performance_1min\" },\n      { \"identifier\": \"ignition_genie.mining_ops.equipment_sensors_normalized\" },\n      { \"identifier\": \"ignition_genie.mining_ops.haul_truck_cycles\" },\n      { \"identifier\": \"ignition_genie.mining_ops.pipeline_quality_metrics\" },\n      { \"identifier\": \"ignition_genie.mining_ops.sensor_anomalies\" },\n      { \"identifier\": \"ignition_genie.mining_ops.tag_events_bronze\" }\n    ]\n  }\n}\n"
+}
