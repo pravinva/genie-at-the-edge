@@ -1,13 +1,23 @@
-# Genie at the Edge
+# Genie at the Edge - Perspective Native
 
-**Embed Databricks Genie AI Chat in Ignition Perspective**
+**Embed Databricks Genie AI Chat in Ignition Perspective (No External Proxy)**
 
-A production-ready solution for integrating Databricks Genie conversational AI directly into Ignition Perspective HMIs. Works with any Genie Space and any data - no domain-specific customization required.
+A production-ready solution that runs **entirely inside Ignition Gateway** - no external Python proxy required. Integrates Databricks Genie conversational AI directly into Perspective HMIs using native Gateway scripts. Works with any Genie Space and any data.
 
 [![Repository](https://img.shields.io/badge/GitHub-genie--at--the--edge-blue?logo=github)](https://github.com/pravinva/genie-at-the-edge)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Ignition](https://img.shields.io/badge/Ignition-8.1%2B-orange)]()
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)]()
+[![Branch](https://img.shields.io/badge/Branch-Perspective--Native-purple)]()
+
+---
+
+> **🔀 Alternative Implementation Available**
+>
+> This branch uses **Perspective-native** approach (no external proxy, everything inside Ignition).
+>
+> For the **external proxy** implementation (Python 3, independent updates), see the [`main`](https://github.com/pravinva/genie-at-the-edge/tree/main) branch.
+>
+> **Comparison:** See [docs/IMPLEMENTATION_COMPARISON.md](docs/IMPLEMENTATION_COMPARISON.md) to understand the differences.
 
 ---
 
@@ -16,94 +26,97 @@ A production-ready solution for integrating Databricks Genie conversational AI d
 - [Overview](#overview)
 - [How It Works](#how-it-works)
 - [Quick Start](#quick-start)
-- [Perspective Integration](#perspective-integration)
+- [Implementation Guide](#implementation-guide)
 - [Configuration](#configuration)
-- [Deployment](#deployment)
 - [Performance](#performance)
-- [Example: Mining Demo](#example-mining-demo)
 - [Documentation](#documentation)
+- [Migration](#migration)
 
 ---
 
 ## Overview
 
-This project provides a **data-agnostic** solution to embed Databricks Genie conversational AI into Ignition Perspective views. Operators can ask natural language questions about their data directly from the HMI without leaving Ignition.
+This **Perspective-native implementation** eliminates the external Python proxy entirely. Everything runs inside Ignition Gateway using Jython scripts and Perspective's native capabilities.
 
 ### What You Get
 
-- **Conversational AI Chat UI** - React-based interface with markdown rendering and chart visualization
-- **CORS Proxy Server** - Python server handling authentication and cross-origin requests
-- **Perspective Integration Guide** - Step-by-step instructions for embedding in Perspective (works on Ignition 8.1+)
-- **Performance Optimizations** - Response caching, token management, fast polling (280x speedup)
-- **Production-Ready** - Deployment guides for Docker, Windows, and Linux edge gateways
+- **Gateway Script Module** - Jython code running inside Ignition
+- **Perspective View Components** - Native Perspective UI (no HTML/React)
+- **No External Processes** - Everything managed in Designer
+- **No CORS Issues** - Server-side communication only
+- **Performance Optimizations** - Same 280x speedup as external proxy
+- **Single Process** - Only Ignition Gateway
 
-### Key Features
+### Key Advantages
 
-- **Data Agnostic** - Works with any Databricks Genie Space (manufacturing, energy, retail, etc.)
-- **No Code Changes Required** - Just configure your workspace URL and Genie Space ID
-- **Ignition 8.1+ Compatible** - Works on all modern Ignition versions with Perspective
-- **Embedded in Perspective** - Native Inline Frame component integration
-- **Natural Language Queries** - Leverage Genie's AI to query your lakehouse data
-- **Automatic Chart Generation** - Time series and categorical data visualized automatically
-- **Response Caching** - 280x faster for repeated queries (8s → 0.03s)
-- **Production Deployment** - Systemd, NSSM, Docker support
+- ✅ **No External Proxy** - Runs entirely in Ignition Gateway
+- ✅ **No CORS Issues** - Server-side communication only
+- ✅ **Single Process** - Only Ignition, no external services
+- ✅ **Single Port** - Only gateway port (8088), no additional ports
+- ✅ **Designer-Managed** - All configuration in Designer
+- ✅ **Unified Backup** - Gateway script included in project backup
+- ✅ **Auto-Start** - Starts automatically with Ignition
+- ✅ **Data Agnostic** - Works with any Genie Space
+- ✅ **Ignition 8.1+ Compatible** - Works on all modern versions
+
+### Trade-offs vs External Proxy
+
+- ⚠️ **Jython 2.7** - No Python 3 features (f-strings, async/await)
+- ⚠️ **Coupled Updates** - Must update Ignition project to change script
+- ⚠️ **Harder Debugging** - Limited to gateway logs and Script Console
+- ⚠️ **Perspective-Specific** - Tightly coupled to Perspective
+
+**Use this if:** You want minimal infrastructure, simplified deployment, or can't run external processes.
+
+**Use external proxy if:** You need Python 3 features, independent updates, or multi-gateway architecture.
 
 ---
 
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    IGNITION PERSPECTIVE VIEW                        │
-│                                                                     │
-│  ┌───────────────┐           ┌─────────────────────────────────┐  │
-│  │   Your HMI    │           │   Inline Frame Component       │  │
-│  │   Dashboard   │           │                                 │  │
-│  │               │           │   ┌─────────────────────────┐   │  │
-│  │   Equipment   │           │   │  Genie Chat Interface   │   │  │
-│  │   Alarms      │           │   │                         │   │  │
-│  │   Trends      │           │   │  User: "Show trends"    │   │  │
-│  │               │           │   │  AI: [Response + Chart] │   │  │
-│  └───────────────┘           │   └─────────────────────────┘   │  │
-│                              │   URL: /mining_genie_chat.html  │  │
-│                              └─────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
-                                       ↓ HTTP
-                    ┌──────────────────────────────────┐
-                    │     Genie Proxy Server          │
-                    │     (Python, Port 8185)         │
-                    │                                  │
-                    │  • Handles CORS                 │
-                    │  • OAuth token management       │
-                    │  • Response caching (5 min)     │
-                    │  • Fast polling (500ms)         │
-                    └──────────────────────────────────┘
-                                       ↓ HTTPS
-                    ┌──────────────────────────────────┐
-                    │   Databricks Genie API          │
-                    │                                  │
-                    │   • Conversation API            │
-                    │   • Your Genie Space            │
-                    │   • Your Lakehouse Data         │
-                    └──────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                       IGNITION GATEWAY                           │
+│                                                                  │
+│  ┌─────────────────────┐        ┌──────────────────────────┐  │
+│  │  Perspective View   │        │  Gateway Script          │  │
+│  │                     │        │  (genie_api module)      │  │
+│  │  • Chat messages    │───────▶│                          │  │
+│  │  • User input       │ script │  • Token caching         │  │
+│  │  • Chart display    │  call  │  • Response caching      │  │
+│  │  • Native bindings  │        │  • Genie API calls       │  │
+│  │                     │◀───────│  • Async polling         │  │
+│  │                     │callback│                          │  │
+│  └─────────────────────┘        └──────────────────────────┘  │
+│                                                                  │
+│  Custom Methods:                 Module Functions:              │
+│  • sendMessage()                 • queryGenie()                 │
+│  • clearChat()                   • _get_databricks_token()     │
+│                                  • _fetch_chart_data()          │
+└──────────────────────────────────────────────────────────────────┘
+                                    ↓ HTTPS
+                    ┌────────────────────────────────┐
+                    │   Databricks Genie API        │
+                    │                                │
+                    │   • Conversation API          │
+                    │   • Your Genie Space          │
+                    │   • Your Lakehouse Data       │
+                    └────────────────────────────────┘
 ```
 
-### Components
+### Architecture Benefits
 
-1. **Chat UI (`ui/mining_genie_chat.html`)**
-   - Single HTML file with React + Chart.js
-   - Served from Ignition webserver
-   - No domain-specific code - works with any Genie Space
+**No Browser-to-External-Proxy Hops:**
+- External Proxy: Browser → Ignition Webserver → Proxy (port 8185) → Databricks
+- **This Approach:** Browser → Perspective View → Gateway Script → Databricks
 
-2. **Proxy Server (`ignition/scripts/genie_proxy.py`)**
-   - Python HTTP server handling CORS and authentication
-   - Caches responses and OAuth tokens
-   - Runs on gateway host or separate server
+**No CORS:**
+- External Proxy: Must add CORS headers for browser security
+- **This Approach:** Server-side only, no CORS needed
 
-3. **Perspective View**
-   - Inline Frame component pointing to chat UI
-   - Configured in Page Configuration
-   - Works on Ignition 8.1, 8.2, 8.3+
+**No Service Management:**
+- External Proxy: Systemd/NSSM service, monitoring, logs
+- **This Approach:** Starts with Ignition automatically
 
 ---
 
@@ -113,236 +126,146 @@ This project provides a **data-agnostic** solution to embed Databricks Genie con
 
 - Ignition Gateway 8.1+ with Perspective module
 - Databricks workspace with Genie enabled
-- Python 3.7+ on the host running the proxy
+- Python 3.7+ on gateway host (for databricks CLI only)
 - Databricks CLI configured with OAuth
 
 ### 5-Minute Setup
 
 ```bash
-# 1. Clone repository
+# 1. Clone repository and switch to this branch
 git clone https://github.com/pravinva/genie-at-the-edge.git
 cd genie-at-the-edge
+git checkout feature/perspective-native-genie
 
-# 2. Configure your Databricks workspace
-# Edit ignition/scripts/genie_proxy.py lines 16-17:
-#   WORKSPACE_URL = "https://your-workspace.cloud.databricks.com"
-#   SPACE_ID = "your_genie_space_id"
-
-# 3. Install Databricks CLI and authenticate
+# 2. Install Databricks CLI on gateway host
 pip install databricks-cli
+
+# 3. Configure Databricks authentication
 databricks configure --host https://your-workspace.cloud.databricks.com
 
-# 4. Start proxy server
-cd ignition/scripts
-python3 genie_proxy.py
-# Should see: "Genie Proxy Server running on http://localhost:8185"
-
-# 5. Deploy chat UI to Ignition webserver
-# Copy ui/mining_genie_chat.html to:
-#   Linux: /usr/local/bin/ignition/webserver/webapps/main/
-#   Windows: C:\Program Files\Inductive Automation\Ignition\webserver\webapps\main\
-
-# 6. Test direct access
-# Open browser: http://your-gateway:8088/mining_genie_chat.html
-
-# 7. Create Perspective view (see next section)
+# 4. Test CLI authentication
+databricks auth token --host https://your-workspace.cloud.databricks.com
 ```
+
+**Then in Ignition Designer:**
+
+1. Open your Ignition project
+2. Add gateway script module (see [Implementation Guide](#implementation-guide))
+3. Create Perspective view with custom methods
+4. Configure workspace URL and Space ID
+5. Test from Designer
+
+**No external processes to start!**
 
 ---
 
-## Perspective Integration
+## Implementation Guide
 
-### Step 1: Deploy Chat UI to Ignition Webserver
+See **[docs/PERSPECTIVE_NATIVE_IMPLEMENTATION.md](docs/PERSPECTIVE_NATIVE_IMPLEMENTATION.md)** for complete step-by-step instructions:
 
-The chat interface must be accessible from Ignition's webserver.
+1. **Add Gateway Script Module**
+   - Copy `ignition/scripts/genie_gateway_script.py`
+   - Add to Project → Scripts → genie_api module
+   - Update workspace URL and Space ID
 
-**Option A: Docker**
-```bash
-docker cp ui/mining_genie_chat.html your-container:/usr/local/bin/ignition/webserver/webapps/main/
-```
+2. **Create Perspective View**
+   - Add custom properties (messages, inputValue, conversationId, etc.)
+   - Add UI components (message container, input, buttons)
+   - Configure bindings
 
-**Option B: Linux**
-```bash
-sudo cp ui/mining_genie_chat.html /usr/local/bin/ignition/webserver/webapps/main/
-```
+3. **Add View Scripts**
+   - `sendMessage()` - Calls gateway script asynchronously
+   - `clearChat()` - Resets conversation
+   - Message rendering with markdown support
 
-**Option C: Windows**
-```powershell
-Copy-Item ui\mining_genie_chat.html "C:\Program Files\Inductive Automation\Ignition\webserver\webapps\main\"
-```
+4. **Add to Page Configuration**
+   - Create route (e.g., `/genie-native`)
+   - Assign view
+   - Test in session
 
-**Verify deployment:**
-Open browser to `http://your-gateway:8088/mining_genie_chat.html`
+### Code Example
 
-### Step 2: Create Perspective View
-
-1. **Open Ignition Designer**
-
-2. **Create New View**
-   - Right-click on Views folder
-   - New → View
-   - Name: `genie_chat` (or any name you prefer)
-
-3. **Add Inline Frame Component**
-   - Open Component Palette (left panel)
-   - Search for "Inline Frame" or find under Embedded category
-   - Drag Inline Frame component onto your view
-   - Set properties:
-     - **URL:** `/mining_genie_chat.html` (relative path)
-     - **Width:** `100%`
-     - **Height:** `100%`
-
-4. **Configure Root Container**
-   - Select root container
-   - Set position properties:
-     - **Position:** `relative`
-     - **Width:** `100%`
-     - **Height:** `100%`
-
-5. **Save View**
-
-### Step 3: Add View to Page Configuration
-
-1. **Open Page Configuration**
-   - Designer → Project → Perspective → Page Configuration
-
-2. **Add New Page**
-   - Click "+" to add page
-   - Name: `genie` (or any route you prefer)
-   - Title: `AI Assistant`
-
-3. **Configure Route**
-   - Route: `/genie`
-   - Default View: `genie_chat` (the view you created)
-
-4. **Save Configuration**
-
-5. **Test in Session**
-   - Launch Perspective session
-   - Navigate to: `http://your-gateway:8088/data/perspective/client/your-project/genie`
-
-### Step 4: Add to Navigation Menu (Optional)
-
-To make Genie chat accessible from your main HMI:
-
-**Option A: Menu Item**
-```json
-{
-  "label": "AI Assistant",
-  "icon": "material/smart_toy",
-  "route": "/genie"
-}
-```
-
-**Option B: Button Navigation**
+**Gateway Script Call (in Perspective view):**
 ```python
-# Button onActionPerformed script
-system.perspective.navigate(page="/genie")
+def sendMessage(self):
+    """Send message to Genie via gateway script"""
+    question = self.custom.inputValue
+
+    # Call gateway script asynchronously
+    def queryAsync():
+        return shared.genie_api.queryGenie(question, self.custom.conversationId)
+
+    def callback(result):
+        # Add AI response to messages
+        self.custom.messages = self.custom.messages + [{
+            'type': 'ai',
+            'text': result['response'],
+            'chartData': result.get('chartData')
+        }]
+        self.custom.conversationId = result['conversationId']
+
+    system.util.invokeAsynchronous(queryAsync, [], callback)
 ```
 
-**Option C: Popup**
+**Gateway Script (Project Scripts → genie_api):**
 ```python
-# Open chat in popup window
-system.perspective.openPopup(
-    id="genie-chat",
-    view="genie_chat",
-    params={},
-    title="AI Assistant",
-    position={"width": 800, "height": 600},
-    modal=False
-)
+def queryGenie(question, conversationId=None):
+    """Query Databricks Genie API"""
+    # Get token (cached)
+    token = _get_databricks_token()
+
+    # Call Genie API
+    response = system.net.httpPost(url=..., headers=...)
+
+    # Poll for completion
+    # ... polling logic ...
+
+    return {
+        'response': text,
+        'conversationId': id,
+        'chartData': data
+    }
 ```
 
 ---
 
 ## Configuration
 
-### Configure Your Genie Space
+### Update Workspace and Space ID
 
-Edit `ignition/scripts/genie_proxy.py` (lines 16-17):
+Edit gateway script module (Project → Scripts → genie_api), lines 15-16:
 
 ```python
 # Databricks Configuration
 WORKSPACE_URL = "https://your-workspace.cloud.databricks.com"  # Your workspace
-SPACE_ID = "01f10a2ce1831ea28203c2a6ce271590"  # Your Genie Space ID
+SPACE_ID = "your_genie_space_id"  # Your Genie Space ID
 ```
 
 **How to find your Genie Space ID:**
 1. Open your Genie Space in Databricks
-2. Look at the URL: `https://workspace.cloud.databricks.com/genie/rooms/{SPACE_ID}`
-3. Copy the Space ID (long hexadecimal string)
+2. Look at URL: `https://workspace.cloud.databricks.com/genie/rooms/{SPACE_ID}`
+3. Copy the Space ID (hexadecimal string)
 
-### Change Proxy Port (Optional)
+### Customize Suggested Questions
 
-If port 8185 is already in use:
+In Perspective view custom properties, set default `suggestedQuestions`:
 
-**In `genie_proxy.py` (line 370):**
-```python
-if __name__ == '__main__':
-    port = int(os.environ.get('PROXY_PORT', 9000))  # Changed from 8185
-    run_proxy(port)
-```
-
-**In `ui/mining_genie_chat.html` (line 768):**
-```javascript
-const GENIE_PROXY_URL = 'http://localhost:9000/api/genie/query';  // Updated port
-```
-
-### Remote Proxy Server (Optional)
-
-If proxy runs on a different host than Ignition:
-
-**In `ui/mining_genie_chat.html` (line 768):**
-```javascript
-// Change from localhost to proxy server hostname
-const GENIE_PROXY_URL = 'http://proxy-server.local:8185/api/genie/query';
-```
-
-### Customize Suggested Questions (Optional)
-
-Edit `ui/mining_genie_chat.html` (lines 759-765):
-
-```javascript
-const SAMPLE_QUESTIONS = [
+```json
+[
     "What is the current status of equipment?",
     "Show me recent alerts",
     "What were the KPIs last hour?",
-    "Show production trends",
-    "Which systems have anomalies?"
-];
+    "Show production trends"
+]
 ```
-
----
-
-## Deployment
-
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for comprehensive deployment instructions:
-
-- Docker development environment
-- Linux production (systemd service)
-- Windows production (NSSM or Task Scheduler)
-- Firewall configuration
-- High availability setup
-- Backup and recovery
-
-### Production Checklist
-
-- [ ] Configure correct Workspace URL and Space ID
-- [ ] Deploy chat UI to Ignition webserver
-- [ ] Install Python 3.7+ on gateway host
-- [ ] Install and configure Databricks CLI
-- [ ] Start proxy server as system service
-- [ ] Configure firewall rules (port 8185)
-- [ ] Create Perspective view with Inline Frame
-- [ ] Add page to Page Configuration
-- [ ] Test end-to-end with sample queries
-- [ ] Monitor proxy logs for errors
 
 ---
 
 ## Performance
 
 ### Optimization Results
+
+Identical performance to external proxy approach:
 
 | Metric | Before | After | Improvement |
 |--------|-------:|------:|------------:|
@@ -353,162 +276,124 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for comprehensive deployment instru
 
 ### Optimizations Included
 
-- **Response Caching** - 5-minute TTL for repeated queries
+- **Response Caching** - 5-minute TTL, module-level cache
 - **OAuth Token Caching** - 50-minute TTL, saves 200ms per query
 - **Fast Polling** - 500ms intervals with immediate first poll
-- **Thread-Safe** - Concurrent request handling
+- **Thread-Safe** - Concurrent request handling with locks
 - **Auto Cache Eviction** - 100-entry limit with LRU
 
 ### Monitoring Performance
 
-**Browser Console:**
+**Gateway Logs:**
 ```
-Query completed in 0.03s
-✓ Excellent response time: 0.03s
-```
-
-**Proxy Logs:**
-```bash
-# Linux
-tail -f /var/log/genie-proxy.log | grep "Cache hit"
-
-# See cache hits
-✓ Cache hit for query
-⏳ Polling for response (message_id: abc123)...
-✓ Processed query: What is the current status...
+Config → Logging → Add logger: "genie_api"
+Level: DEBUG or INFO
 ```
 
-See [docs/PERFORMANCE_IMPROVEMENTS.md](docs/PERFORMANCE_IMPROVEMENTS.md) for detailed benchmarks.
+**Script Console Testing:**
+```python
+import shared.genie_api as genie
 
----
-
-## Example: Mining Demo
-
-This repository includes a complete mining operations demo showing:
-
-- **Ignition Gateway** with 107 simulated equipment tags (5 haul trucks, 3 crushers, 2 conveyors)
-- **Physics Simulation** with realistic operational behavior and sensor correlations
-- **Databricks DLT Pipeline** ingesting real-time data via Zerobus
-- **Genie Space** trained on mining equipment data
-- **Fault Injection** system for demonstrating predictive analytics
-
-### Demo Architecture
-
+# Test query
+result = genie.queryGenie("What is the current status?")
+print "Response:", result['response'][:100]
+print "Conversation ID:", result['conversationId']
 ```
-Ignition Gateway (Docker)
-  ├── 107 Memory Tags (1 Hz updates)
-  ├── Physics Simulation (haul truck cycles, crusher vibration)
-  └── Fault Injection (CR_002 bearing degradation)
-         ↓ Zerobus (150 tags/sec)
-Databricks Lakehouse
-  ├── Bronze (Raw sensor data, <1s latency)
-  ├── Silver (Normalized, <500ms latency)
-  └── Gold (Analytics, 1-min aggregations)
-         ↓ SQL Queries
-Genie Space
-  └── Answers questions like:
-      • "Show vibration trends for CR_002"
-      • "What is the status of all haul trucks?"
-      • "Which equipment has anomalies?"
-```
-
-### Running the Mining Demo
-
-```bash
-# 1. Start Ignition with simulated equipment
-cd docker
-docker-compose up -d ignition
-
-# 2. Deploy Databricks DLT pipeline
-python3 databricks/deploy_dlt_pipeline.py
-
-# 3. Start Genie proxy
-python3 ignition/scripts/genie_proxy.py
-
-# 4. Open Perspective session
-# Navigate to: http://localhost:8088/data/perspective/client/samplequickstart/genie
-
-# 5. Try sample queries:
-#    - "Show vibration trends for CR_002 over time"
-#    - "What is the current status of all haul trucks?"
-#    - "Which equipment has anomalies?"
-```
-
-### Mining Demo Files
-
-- `ignition/udts/` - Haul Truck, Crusher, Conveyor UDT definitions
-- `ignition/scripts/mining_physics_simulation_fixed.py` - Equipment behavior simulation
-- `databricks/mining_realtime_dlt.py` - Delta Live Tables pipeline
-- `demo/` - Demo scripts, checklists, and presentation materials
-
-**Note:** The mining demo is just one example. The core Genie chat interface works with any Databricks Genie Space and any data domain (manufacturing, energy, logistics, retail, etc.).
 
 ---
 
 ## Documentation
 
-### Getting Started
-- [Quick Start](#quick-start) - 5-minute setup guide
-- [Perspective Integration](#perspective-integration) - Step-by-step embedding instructions
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Production deployment guide
+### Complete Guides
+- **[docs/PERSPECTIVE_NATIVE_IMPLEMENTATION.md](docs/PERSPECTIVE_NATIVE_IMPLEMENTATION.md)** - Full implementation steps
+- **[docs/IMPLEMENTATION_COMPARISON.md](docs/IMPLEMENTATION_COMPARISON.md)** - Compare with external proxy approach
+- **[docs/PERFORMANCE_IMPROVEMENTS.md](docs/PERFORMANCE_IMPROVEMENTS.md)** - Performance details
 
-### Technical Details
-- [docs/PERFORMANCE_IMPROVEMENTS.md](docs/PERFORMANCE_IMPROVEMENTS.md) - Optimization details and benchmarks
-- [docs/PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md) - Complete project overview
-- [docs/STATUS.md](docs/STATUS.md) - Development status and roadmap
+### Key Scripts
+- **`ignition/scripts/genie_gateway_script.py`** - Gateway script module (copy to Designer)
 
 ### Demo Materials
-- `demo/demo_script.md` - 15-minute customer demo walkthrough
-- `demo/pre_demo_checklist.md` - Setup verification checklist
-- `demo/qna_preparation.md` - Common questions and answers
+- `demo/` - Demo scripts, checklists (same as main branch)
 
 ### Troubleshooting
 
-**Issue: Chat shows "Using mock data"**
-- Proxy server not running or not reachable
-- Check proxy: `curl http://localhost:8185/api/genie/query -X POST -H "Content-Type: application/json" -d '{"question":"test"}'`
+**Issue: "Module 'shared.genie_api' not found"**
+- Gateway script not deployed or named incorrectly
+- Check Project Browser → Scripts → genie_api exists
+- Try gateway restart
 
-**Issue: "Failed to get authentication token"**
-- Databricks CLI not configured
+**Issue: "Failed to get Databricks token"**
+- Databricks CLI not configured on gateway host
+- SSH/RDP to gateway server
 - Run: `databricks configure --host https://your-workspace.cloud.databricks.com`
 
-**Issue: CORS errors in browser console**
-- Proxy URL mismatch in chat UI
-- Check `mining_genie_chat.html` line 768 matches proxy host/port
+**Issue: Async callback not firing**
+- Check gateway logs for exceptions
+- Verify Python syntax (Jython 2.7 compatible)
+- Test in Script Console first
 
-**Issue: Slow responses (>15 seconds)**
-- SQL warehouse cold start
+**Issue: Slow responses**
+- Same as external proxy - warehouse cold start
 - Use Serverless SQL warehouse for instant startup
 
-See [docs/DEPLOYMENT.md#troubleshooting](docs/DEPLOYMENT.md#troubleshooting) for more issues.
+---
+
+## Migration
+
+### From External Proxy → This Branch
+
+1. ✅ Add gateway script module to project
+2. ✅ Create Perspective view with native components
+3. ✅ Test new implementation
+4. ✅ Switch Page Configuration to new view
+5. ✅ Stop external proxy process
+6. ✅ Remove systemd/NSSM service
+7. ✅ Close firewall port 8185
+
+**Both can run simultaneously during migration.**
+
+### From This Branch → External Proxy
+
+Switch to `main` branch and follow its README.
 
 ---
 
 ## Technology Stack
 
 ### Ignition Components
-- **Perspective Module** - HMI framework (8.1+ compatible)
-- **Inline Frame Component** - Embeds chat UI
-- **Memory Tags** - Real-time equipment data (demo only)
+- **Perspective Module** - HMI framework (8.1+)
+- **Gateway Scripts** - Jython 2.7 modules
+- **Project Library** - Shared script modules
 
 ### Databricks Components
-- **Genie Conversation API** - Natural language query engine
-- **Genie Spaces** - Domain-specific AI assistants
-- **Unity Catalog** - Data governance and access control
-- **Delta Live Tables** - Real-time data pipelines (demo only)
-- **Lakehouse** - Unified analytics platform (demo only)
-
-### Chat Interface
-- **React 18** - UI framework (via CDN)
-- **Chart.js 4.4** - Visualization library
-- **Marked.js** - Markdown rendering
-- **Babel Standalone** - JSX transpilation
-
-### Proxy Server
-- **Python 3.7+** - Runtime
-- **http.server** - Built-in HTTP server
-- **urllib** - HTTP client
+- **Genie Conversation API** - Natural language engine
+- **Unity Catalog** - Data governance
 - **Databricks CLI** - OAuth token management
+
+### Programming
+- **Jython 2.7** - Python for Ignition Gateway
+- **Perspective Scripting** - View custom methods
+- **system.util.invokeAsynchronous** - Non-blocking calls
+- **system.net.httpGet/Post** - HTTP client
+
+---
+
+## Deployment Checklist
+
+- [ ] Install Python 3.7+ on gateway host (for databricks CLI)
+- [ ] Install databricks-cli: `pip install databricks-cli`
+- [ ] Configure databricks CLI with OAuth
+- [ ] Add `genie_api` gateway script module to project
+- [ ] Update workspace URL and Space ID in script
+- [ ] Create Perspective view with custom components and methods
+- [ ] Add view scripts (sendMessage, clearChat)
+- [ ] Add custom properties (messages, conversationId, etc.)
+- [ ] Add page to Page Configuration
+- [ ] Test in Designer Script Console
+- [ ] Test in Perspective session
+- [ ] Deploy project to gateway
+
+**No external proxy deployment needed!**
 
 ---
 
@@ -517,33 +402,24 @@ See [docs/DEPLOYMENT.md#troubleshooting](docs/DEPLOYMENT.md#troubleshooting) for
 | Component | Version | Notes |
 |-----------|---------|-------|
 | Ignition Gateway | 8.1+ | Perspective module required |
-| Python | 3.7+ | For proxy server |
+| Python (CLI only) | 3.7+ | Only for databricks CLI |
+| Jython (Gateway) | 2.7 | Built into Ignition |
 | Databricks Runtime | 13.3+ | Genie support |
 | Databricks CLI | 0.18+ | OAuth authentication |
-| Browsers | Modern (Chrome, Firefox, Edge) | ES6+ support |
-
----
-
-## License
-
-MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
 ## Support
 
 - **GitHub Issues:** [https://github.com/pravinva/genie-at-the-edge/issues](https://github.com/pravinva/genie-at-the-edge/issues)
-- **Documentation:** See `docs/` folder
-- **Databricks Genie Docs:** [https://docs.databricks.com/genie/](https://docs.databricks.com/genie/)
-- **Ignition Docs:** [https://docs.inductiveautomation.com/](https://docs.inductiveautomation.com/)
+- **Implementation Guide:** [docs/PERSPECTIVE_NATIVE_IMPLEMENTATION.md](docs/PERSPECTIVE_NATIVE_IMPLEMENTATION.md)
+- **Comparison:** [docs/IMPLEMENTATION_COMPARISON.md](docs/IMPLEMENTATION_COMPARISON.md)
 
 ---
 
-## Acknowledgments
+## License
 
-- **Databricks** - Genie AI and lakehouse platform
-- **Inductive Automation** - Ignition SCADA platform
-- **Open Source Libraries** - React, Chart.js, Marked.js
+MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
