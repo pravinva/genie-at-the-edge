@@ -775,6 +775,7 @@
             const [showSuggestions, setShowSuggestions] = useState(true);
             const [conversationId, setConversationId] = useState(null);
             const [suggestedQuestions, setSuggestedQuestions] = useState(SAMPLE_QUESTIONS);
+            const [queryStartTime, setQueryStartTime] = useState(null);
             const messagesEndRef = useRef(null);
 
             // Scroll to bottom when messages change
@@ -784,6 +785,7 @@
 
             // Call Genie API via proxy
             const queryGenie = async (question) => {
+                const startTime = performance.now();
                 try {
                     const response = await fetch(GENIE_PROXY_URL, {
                         method: 'POST',
@@ -801,6 +803,18 @@
                     }
 
                     const data = await response.json();
+                    const endTime = performance.now();
+                    const duration = ((endTime - startTime) / 1000).toFixed(2);
+                    console.log(`Query completed in ${duration}s ${data.success && data.response.includes('Cache') ? '(cached)' : ''}`);
+
+                    // Add timing info to console for performance tracking
+                    if (duration < 1) {
+                        console.log(`✓ Excellent response time: ${duration}s`);
+                    } else if (duration < 3) {
+                        console.log(`✓ Good response time: ${duration}s`);
+                    } else {
+                        console.log(`⚠ Slow response: ${duration}s - check warehouse status`);
+                    }
 
                     // Save conversation ID for follow-ups
                     if (data.conversationId) {

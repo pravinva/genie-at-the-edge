@@ -12,25 +12,67 @@ import subprocess
 import sys
 import os
 import time
+import hashlib
+from threading import Lock
 
 # Databricks Configuration
 WORKSPACE_URL = "https://e2-demo-field-eng.cloud.databricks.com"
 SPACE_ID = "01f10a2ce1831ea28203c2a6ce271590"
 
+# Performance optimizations
+TOKEN_CACHE = {"token": None, "expires_at": 0}
+TOKEN_LOCK = Lock()
+RESPONSE_CACHE = {}
+CACHE_TTL = 300  # 5 minutes
+CACHE_LOCK = Lock()
+
 def get_databricks_token():
-    """Get fresh OAuth token from databricks CLI"""
-    try:
-        result = subprocess.run(
-            ["databricks", "auth", "token", "--host", WORKSPACE_URL],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        token_data = json.loads(result.stdout)
-        return token_data["access_token"]
-    except Exception as e:
-        print(f"Error getting token: {e}", file=sys.stderr)
-        return None
+    """Get fresh OAuth token from databricks CLI (with caching)"""
+    with TOKEN_LOCK:
+        # Return cached token if still valid (tokens last 1 hour, we refresh after 50 min)
+        if TOKEN_CACHE["token"] and time.time() < TOKEN_CACHE["expires_at"]:
+            return TOKEN_CACHE["token"]
+
+        try:
+            result = subprocess.run(
+                ["databricks", "auth", "token", "--host", WORKSPACE_URL],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            token_data = json.loads(result.stdout)
+            TOKEN_CACHE["token"] = token_data["access_token"]
+            TOKEN_CACHE["expires_at"] = time.time() + 3000  # 50 minutes
+            return TOKEN_CACHE["token"]
+        except Exception as e:
+            print(f"Error getting token: {e}", file=sys.stderr)
+            return None
+
+def get_cache_key(question, conversation_id):
+    """Generate cache key from question and conversation"""
+    key = f"{question}:{conversation_id or 'new'}"
+    return hashlib.md5(key.encode()).hexdigest()
+
+def get_cached_response(cache_key):
+    """Get cached response if available and not expired"""
+    with CACHE_LOCK:
+        if cache_key in RESPONSE_CACHE:
+            cached_response, timestamp = RESPONSE_CACHE[cache_key]
+            if time.time() - timestamp < CACHE_TTL:
+                print(f"✓ Cache hit for query", file=sys.stderr)
+                return cached_response
+            else:
+                del RESPONSE_CACHE[cache_key]
+    return None
+
+def set_cached_response(cache_key, response):
+    """Cache a response"""
+    with CACHE_LOCK:
+        RESPONSE_CACHE[cache_key] = (response, time.time())
+        # Limit cache size to 100 entries
+        if len(RESPONSE_CACHE) > 100:
+            oldest_key = min(RESPONSE_CACHE.keys(), key=lambda k: RESPONSE_CACHE[k][1])
+            del RESPONSE_CACHE[oldest_key]
 
 class GenieProxyHandler(BaseHTTPRequestHandler):
 
@@ -58,6 +100,18 @@ class GenieProxyHandler(BaseHTTPRequestHandler):
                 if not question:
                     self.send_error(400, "Missing 'question' in request")
                     return
+
+                # Check cache first (only for non-conversational queries)
+                if not conversation_id:
+                    cache_key = get_cache_key(question, conversation_id)
+                    cached = get_cached_response(cache_key)
+                    if cached:
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(json.dumps(cached).encode('utf-8'))
+                        return
 
                 # Get fresh token
                 token = get_databricks_token()
@@ -98,10 +152,13 @@ class GenieProxyHandler(BaseHTTPRequestHandler):
                 # Poll for the actual response (Genie processes asynchronously)
                 print(f"⏳ Polling for response (message_id: {message_id})...", file=sys.stderr)
                 response_text = None
-                max_attempts = 30  # 30 seconds max
+                max_attempts = 60  # 30 seconds max (60 * 0.5s)
+                poll_interval = 0.5  # Poll every 500ms for faster response
 
                 for attempt in range(max_attempts):
-                    time.sleep(1)  # Wait 1 second between polls
+                    # Poll immediately on first attempt, then wait
+                    if attempt > 0:
+                        time.sleep(poll_interval)
 
                     # Get message status
                     poll_url = f"{WORKSPACE_URL}/api/2.0/genie/spaces/{SPACE_ID}/conversations/{new_conversation_id}/messages/{message_id}"
@@ -229,12 +286,7 @@ class GenieProxyHandler(BaseHTTPRequestHandler):
                 if response_text is None:
                     response_text = "Query timed out after 30 seconds. Please try again."
 
-                # Send response back to client
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-
+                # Build response
                 response_data = {
                     'success': True,
                     'response': response_text,
@@ -242,6 +294,17 @@ class GenieProxyHandler(BaseHTTPRequestHandler):
                     'suggestedQuestions': suggested_questions,
                     'chartData': chart_data
                 }
+
+                # Cache response for non-conversational queries
+                if not conversation_id:
+                    cache_key = get_cache_key(question, conversation_id)
+                    set_cached_response(cache_key, response_data)
+
+                # Send response back to client
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
                 self.wfile.write(json.dumps(response_data).encode('utf-8'))
 
                 print(f"✓ Processed query: {question[:50]}...", file=sys.stderr)
