@@ -29,6 +29,14 @@ A production-ready solution for integrating Databricks Genie conversational AI d
 
 This project provides a **data-agnostic** solution to embed Databricks Genie conversational AI into Ignition Perspective views. Operators can ask natural language questions about their data directly from the HMI without leaving Ignition.
 
+> **💡 Alternative Implementation Available**
+>
+> This branch uses an external Python proxy (recommended for Python 3 features and independent updates).
+>
+> For a **Perspective-native implementation** with no external proxy (everything inside Ignition Gateway), see the [`feature/perspective-native-genie`](https://github.com/pravinva/genie-at-the-edge/tree/feature/perspective-native-genie) branch.
+>
+> **Comparison:** See [docs/IMPLEMENTATION_COMPARISON.md](https://github.com/pravinva/genie-at-the-edge/blob/feature/perspective-native-genie/docs/IMPLEMENTATION_COMPARISON.md) to choose the right approach for your needs.
+
 ### What You Get
 
 - **Conversational AI Chat UI** - React-based interface with markdown rendering and chart visualization
