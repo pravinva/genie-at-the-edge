@@ -3,8 +3,8 @@ services:
     image: "inductiveautomation/ignition:${IGNITION_TAG:-8.1.51}"
     container_name: genie-at-edge-ignition
     ports:
-      - "8181:8088"    # HTTP Gateway
-      - "8143:8043"    # HTTPS Gateway
+      - "8183:8088"    # HTTP Gateway
+      - "8144:8043"    # HTTPS Gateway
     environment:
       ACCEPT_IGNITION_EULA: "Y"
       GATEWAY_ADMIN_USERNAME: "admin"

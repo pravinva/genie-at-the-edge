@@ -1,0 +1,124 @@
+{
+  "name": "HaulTruck",
+  "tagType": "UdtType",
+  "tags": [
+    {
+      "valueSource": "memory",
+      "dataType": "Float8",
+      "name": "Location_Lat",
+      "value": -31.9505,
+      "tooltip": "GPS Latitude",
+      "engUnit": "degrees"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float8",
+      "name": "Location_Lon",
+      "value": 115.8605,
+      "tooltip": "GPS Longitude",
+      "engUnit": "degrees"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Speed_KPH",
+      "value": 0.0,
+      "tooltip": "Current speed",
+      "engUnit": "km/h"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Load_Tonnes",
+      "value": 0.0,
+      "tooltip": "Current payload",
+      "engUnit": "tonnes"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Fuel_Level_Pct",
+      "value": 100.0,
+      "tooltip": "Fuel tank level",
+      "engUnit": "%"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Engine_Temp_C",
+      "value": 85.0,
+      "tooltip": "Engine temperature",
+      "engUnit": "C"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Tire_Pressure_FL_PSI",
+      "value": 100.0,
+      "tooltip": "Front Left tire pressure",
+      "engUnit": "PSI"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Tire_Pressure_FR_PSI",
+      "value": 100.0,
+      "tooltip": "Front Right tire pressure",
+      "engUnit": "PSI"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Tire_Pressure_RL_PSI",
+      "value": 100.0,
+      "tooltip": "Rear Left tire pressure",
+      "engUnit": "PSI"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Tire_Pressure_RR_PSI",
+      "value": 100.0,
+      "tooltip": "Rear Right tire pressure",
+      "engUnit": "PSI"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Vibration_MM_S",
+      "value": 3.0,
+      "tooltip": "Chassis vibration",
+      "engUnit": "mm/s"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "String",
+      "name": "Operator_ID",
+      "value": "OP_101",
+      "tooltip": "Operator badge ID"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "String",
+      "name": "Cycle_State",
+      "value": "stopped",
+      "tooltip": "Current cycle state"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Int4",
+      "name": "Cycle_Time_Sec",
+      "value": 0,
+      "tooltip": "Cycle time in seconds",
+      "engUnit": "seconds"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Hours_Operated",
+      "value": 0.0,
+      "tooltip": "Operating hours",
+      "engUnit": "hours"
+    }
+  ]
+}

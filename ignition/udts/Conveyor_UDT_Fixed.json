@@ -1,0 +1,46 @@
+{
+  "name": "Conveyor",
+  "tagType": "UdtType",
+  "tags": [
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Speed_M_S",
+      "value": 3.5,
+      "tooltip": "Belt speed",
+      "engUnit": "m/s"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Load_Pct",
+      "value": 70.0,
+      "tooltip": "Belt load",
+      "engUnit": "%"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Belt_Alignment_MM",
+      "value": 0.0,
+      "tooltip": "Belt tracking offset",
+      "engUnit": "mm"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Motor_Temp_C",
+      "value": 60.0,
+      "tooltip": "Motor temperature",
+      "engUnit": "C"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Hours_Operated",
+      "value": 0.0,
+      "tooltip": "Operating hours",
+      "engUnit": "hours"
+    }
+  ]
+}

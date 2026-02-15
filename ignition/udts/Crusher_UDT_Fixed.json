@@ -1,0 +1,76 @@
+{
+  "name": "Crusher",
+  "tagType": "UdtType",
+  "tags": [
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Throughput_TPH",
+      "value": 2000.0,
+      "tooltip": "Throughput rate",
+      "engUnit": "TPH"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Vibration_MM_S",
+      "value": 12.0,
+      "tooltip": "Bearing vibration",
+      "engUnit": "mm/s"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Motor_Current_A",
+      "value": 180.0,
+      "tooltip": "Motor current",
+      "engUnit": "A"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Motor_Temp_C",
+      "value": 65.0,
+      "tooltip": "Motor temperature",
+      "engUnit": "C"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Bearing_Temp_C",
+      "value": 55.0,
+      "tooltip": "Bearing temperature",
+      "engUnit": "C"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Feed_Level_Pct",
+      "value": 60.0,
+      "tooltip": "Feed hopper level",
+      "engUnit": "%"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Float4",
+      "name": "Hours_Operated",
+      "value": 0.0,
+      "tooltip": "Operating hours",
+      "engUnit": "hours"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "String",
+      "name": "Status",
+      "value": "running",
+      "tooltip": "Operational status"
+    },
+    {
+      "valueSource": "memory",
+      "dataType": "Boolean",
+      "name": "Alarm_Active",
+      "value": false,
+      "tooltip": "Alarm status"
+    }
+  ]
+}
