@@ -1,0 +1,16 @@
+{
+  "name": "MiningOperations",
+  "tagType": "Folder",
+  "tags": [
+    {"name": "HT_001", "tagType": "UdtInstance", "typeId": "HaulTruck"},
+    {"name": "HT_002", "tagType": "UdtInstance", "typeId": "HaulTruck"},
+    {"name": "HT_003", "tagType": "UdtInstance", "typeId": "HaulTruck"},
+    {"name": "HT_004", "tagType": "UdtInstance", "typeId": "HaulTruck"},
+    {"name": "HT_005", "tagType": "UdtInstance", "typeId": "HaulTruck"},
+    {"name": "CR_001", "tagType": "UdtInstance", "typeId": "Crusher"},
+    {"name": "CR_002", "tagType": "UdtInstance", "typeId": "Crusher"},
+    {"name": "CR_003", "tagType": "UdtInstance", "typeId": "Crusher"},
+    {"name": "CV_001", "tagType": "UdtInstance", "typeId": "Conveyor"},
+    {"name": "CV_002", "tagType": "UdtInstance", "typeId": "Conveyor"}
+  ]
+}

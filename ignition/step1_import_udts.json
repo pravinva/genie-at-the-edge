@@ -1,0 +1,54 @@
+{
+  "tags": [
+    {
+      "name": "HaulTruck",
+      "tagType": "UdtType",
+      "typeId": "HaulTruck",
+      "tags": [
+        {"name": "Location_Lat", "valueSource": "memory", "dataType": "Float8", "value": -31.9505, "engUnit": "degrees"},
+        {"name": "Location_Lon", "valueSource": "memory", "dataType": "Float8", "value": 115.8605, "engUnit": "degrees"},
+        {"name": "Speed_KPH", "valueSource": "memory", "dataType": "Float4", "value": 0.0, "engUnit": "km/h"},
+        {"name": "Load_Tonnes", "valueSource": "memory", "dataType": "Float4", "value": 0.0, "engUnit": "tonnes"},
+        {"name": "Fuel_Level_Pct", "valueSource": "memory", "dataType": "Float4", "value": 100.0, "engUnit": "%"},
+        {"name": "Engine_Temp_C", "valueSource": "memory", "dataType": "Float4", "value": 85.0, "engUnit": "°C"},
+        {"name": "Tire_Pressure_FL_PSI", "valueSource": "memory", "dataType": "Float4", "value": 100.0, "engUnit": "PSI"},
+        {"name": "Tire_Pressure_FR_PSI", "valueSource": "memory", "dataType": "Float4", "value": 100.0, "engUnit": "PSI"},
+        {"name": "Tire_Pressure_RL_PSI", "valueSource": "memory", "dataType": "Float4", "value": 100.0, "engUnit": "PSI"},
+        {"name": "Tire_Pressure_RR_PSI", "valueSource": "memory", "dataType": "Float4", "value": 100.0, "engUnit": "PSI"},
+        {"name": "Vibration_MM_S", "valueSource": "memory", "dataType": "Float4", "value": 3.0, "engUnit": "mm/s"},
+        {"name": "Operator_ID", "valueSource": "memory", "dataType": "String", "value": "OP_101"},
+        {"name": "Cycle_State", "valueSource": "memory", "dataType": "String", "value": "stopped"},
+        {"name": "Cycle_Time_Sec", "valueSource": "memory", "dataType": "Int4", "value": 0, "engUnit": "seconds"},
+        {"name": "Hours_Operated", "valueSource": "memory", "dataType": "Float4", "value": 0.0, "engUnit": "hours"}
+      ]
+    },
+    {
+      "name": "Crusher",
+      "tagType": "UdtType",
+      "typeId": "Crusher",
+      "tags": [
+        {"name": "Throughput_TPH", "valueSource": "memory", "dataType": "Float4", "value": 2000.0, "engUnit": "tonnes/hour"},
+        {"name": "Vibration_MM_S", "valueSource": "memory", "dataType": "Float4", "value": 12.0, "engUnit": "mm/s"},
+        {"name": "Motor_Current_A", "valueSource": "memory", "dataType": "Float4", "value": 180.0, "engUnit": "A"},
+        {"name": "Motor_Temp_C", "valueSource": "memory", "dataType": "Float4", "value": 65.0, "engUnit": "°C"},
+        {"name": "Bearing_Temp_C", "valueSource": "memory", "dataType": "Float4", "value": 55.0, "engUnit": "°C"},
+        {"name": "Feed_Level_Pct", "valueSource": "memory", "dataType": "Float4", "value": 60.0, "engUnit": "%"},
+        {"name": "Hours_Operated", "valueSource": "memory", "dataType": "Float4", "value": 0.0, "engUnit": "hours"},
+        {"name": "Status", "valueSource": "memory", "dataType": "String", "value": "running"},
+        {"name": "Alarm_Active", "valueSource": "memory", "dataType": "Boolean", "value": false}
+      ]
+    },
+    {
+      "name": "Conveyor",
+      "tagType": "UdtType",
+      "typeId": "Conveyor",
+      "tags": [
+        {"name": "Speed_M_S", "valueSource": "memory", "dataType": "Float4", "value": 3.5, "engUnit": "m/s"},
+        {"name": "Load_Pct", "valueSource": "memory", "dataType": "Float4", "value": 70.0, "engUnit": "%"},
+        {"name": "Belt_Alignment_MM", "valueSource": "memory", "dataType": "Float4", "value": 0.0, "engUnit": "mm"},
+        {"name": "Motor_Temp_C", "valueSource": "memory", "dataType": "Float4", "value": 60.0, "engUnit": "°C"},
+        {"name": "Hours_Operated", "valueSource": "memory", "dataType": "Float4", "value": 0.0, "engUnit": "hours"}
+      ]
+    }
+  ]
+}
