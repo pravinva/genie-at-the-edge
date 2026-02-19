@@ -1,0 +1,8 @@
+databricks-sdk==0.35.0
+databricks-sql-connector==3.5.0
+requests==2.31.0
+pyyaml==6.0.1
+typer==0.12.5
+rich==13.7.1
+pytest==7.4.3
+python-dotenv==1.0.1
