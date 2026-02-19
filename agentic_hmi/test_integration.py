@@ -26,7 +26,7 @@ class IntegrationTest:
 
         # Connect to database
         server_hostname = os.getenv("DATABRICKS_SERVER_HOSTNAME", self.w.config.host)
-        http_path = os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/agentic_hmi")
+        http_path = os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/4b9b953939869799")
         access_token = os.getenv("DATABRICKS_TOKEN", self.w.config.token)
 
         self.conn = sql.connect(

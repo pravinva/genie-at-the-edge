@@ -18,7 +18,8 @@ def setup_lakebase():
 
     # Get connection details
     server_hostname = os.getenv("DATABRICKS_SERVER_HOSTNAME", w.config.host)
-    http_path = os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/agentic_hmi")
+    # Using the provided warehouse
+    http_path = os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/4b9b953939869799")
     access_token = os.getenv("DATABRICKS_TOKEN", w.config.token)
 
     # Connect to Databricks SQL

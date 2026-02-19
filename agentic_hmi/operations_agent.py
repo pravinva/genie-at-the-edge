@@ -38,7 +38,7 @@ class OperationsAgent:
 
         # Get connection details
         self.server_hostname = os.getenv("DATABRICKS_SERVER_HOSTNAME", self.w.config.host)
-        self.http_path = os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/agentic_hmi")
+        self.http_path = os.getenv("DATABRICKS_HTTP_PATH", "/sql/1.0/warehouses/4b9b953939869799")
         self.access_token = os.getenv("DATABRICKS_TOKEN", self.w.config.token)
 
         # Initialize connection
