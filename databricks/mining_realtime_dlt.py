@@ -22,7 +22,6 @@ Date: 2026-02-15
 import dlt
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
-from pyspark.sql.window import Window
 
 # ============================================
 # BRONZE LAYER: Raw from Zerobus
@@ -66,8 +65,8 @@ def bronze_raw():
         "delta.autoOptimize.autoCompact": "true"
     }
 )
-@dlt.expect_or_drop("valid_timestamp", "event_time IS NOT NULL")
-@dlt.expect_or_drop("valid_tag_path", "tag_path IS NOT NULL")
+@dlt.expect_or_drop("valid_timestamp", "event_timestamp IS NOT NULL")
+@dlt.expect_or_drop("valid_equipment", "equipment_id IS NOT NULL")
 @dlt.expect("good_quality", "quality = 'GOOD'")
 def silver_normalized():
     """
@@ -81,17 +80,16 @@ def silver_normalized():
 
     return (
         bronze
-        # Filter to numeric sensors only (most critical metrics)
+        # Keep only rows that have an equipment path and numeric value for metrics.
         .filter(col("numeric_value").isNotNull())
+        .filter(col("tag_path").contains("/Equipment/"))
 
         # Parse tag path: [default]Mining/Equipment/HT_001/Speed_KPH
         # Extract: equipment_id (HT_001), sensor_name (Speed_KPH)
         .withColumn("equipment_id",
             regexp_extract(col("tag_path"), r"Equipment/([A-Z_0-9]+)/", 1)
         )
-        .withColumn("sensor_name",
-            regexp_extract(col("tag_path"), r"/([A-Za-z_]+)$", 1)
-        )
+        .withColumn("sensor_name", regexp_extract(col("tag_path"), r"/([^/]+)$", 1))
 
         # Classify equipment type from ID prefix
         .withColumn("equipment_type",
@@ -199,7 +197,7 @@ def gold_equipment_1min():
         .select(
             col("time_window.start").alias("window_start"),
             col("time_window.end").alias("window_end"),
-            date(col("time_window.start")).alias("date"),
+            to_date(col("time_window.start")).alias("date"),
             "equipment_id",
             "equipment_type",
             "sensor_name",
@@ -234,23 +232,31 @@ def gold_current_status():
     """
     silver = dlt.read_stream("equipment_sensors_normalized")
 
-    # Get latest reading per equipment + sensor combination
-    window_spec = Window.partitionBy("equipment_id", "sensor_name").orderBy(desc("event_timestamp"))
-
-    return (
+    # Streaming-safe "latest row per key" using max(struct(timestamp, ...)).
+    latest = (
         silver
-        .withColumn("row_num", row_number().over(window_spec))
-        .filter(col("row_num") == 1)
-        .select(
-            "equipment_id",
-            "equipment_type",
-            "sensor_name",
-            "sensor_value",
-            col("event_timestamp").alias("last_updated"),
-            "location",
-            "criticality",
-            "quality"
+        .withWatermark("event_timestamp", "30 minutes")
+        .groupBy("equipment_id", "equipment_type", "sensor_name", "location", "criticality")
+        .agg(
+            max(
+                struct(
+                    col("event_timestamp").alias("last_updated"),
+                    col("sensor_value").alias("sensor_value"),
+                    col("quality").alias("quality")
+                )
+            ).alias("latest")
         )
+    )
+
+    return latest.select(
+        "equipment_id",
+        "equipment_type",
+        "sensor_name",
+        col("latest.sensor_value").alias("sensor_value"),
+        col("latest.last_updated").alias("last_updated"),
+        "location",
+        "criticality",
+        col("latest.quality").alias("quality")
     )
 
 # ============================================
@@ -270,29 +276,39 @@ def gold_haul_truck_cycles():
     Track haul truck states and cycle progress
     Enables queries like "Which trucks are currently hauling?"
     """
-    silver = dlt.read_stream("equipment_sensors_normalized")
+    bronze = dlt.read_stream("tag_events_bronze")
 
-    # Filter to haul trucks, get Cycle_State sensor
-    truck_states = (
-        silver
-        .filter(col("equipment_type") == "Haul Truck")
-        .filter(col("sensor_name") == "Cycle_State")
+    # Cycle state is string-based in Ignition; derive directly from bronze events.
+    cycle_events = (
+        bronze
+        .filter(col("tag_path").rlike(r"/Equipment/HT_[0-9]+/Cycle_State$"))
+        .withColumn("equipment_id", regexp_extract(col("tag_path"), r"/Equipment/(HT_[0-9]+)/", 1))
+        .withColumn("location", lit("Pit"))
+        .withColumn("event_timestamp", col("event_time").cast(TimestampType()))
+        .withColumn("state_value", col("string_value"))
+        .filter(col("state_value").isNotNull())
     )
 
-    # Get latest state per truck
-    window_spec = Window.partitionBy("equipment_id").orderBy(desc("event_timestamp"))
-
-    return (
-        truck_states
-        .withColumn("row_num", row_number().over(window_spec))
-        .filter(col("row_num") == 1)
-        .select(
-            "equipment_id",
-            col("sensor_value").alias("current_state"),
-            col("event_timestamp").alias("state_since"),
-            "location",
-            current_timestamp().alias("updated_at")
+    latest = (
+        cycle_events
+        .withWatermark("event_timestamp", "30 minutes")
+        .groupBy("equipment_id", "location")
+        .agg(
+            max(
+                struct(
+                    col("event_timestamp").alias("state_since"),
+                    col("state_value").alias("current_state")
+                )
+            ).alias("latest")
         )
+    )
+
+    return latest.select(
+        "equipment_id",
+        col("latest.current_state").alias("current_state"),
+        col("latest.state_since").alias("state_since"),
+        "location",
+        current_timestamp().alias("updated_at")
     )
 
 # ============================================
@@ -316,71 +332,57 @@ def gold_anomalies():
     """
     perf = dlt.read_stream("equipment_performance_1min")
 
-    # Calculate rolling baseline (last 60 minutes = 60 windows)
-    window_60min = Window.partitionBy("equipment_id", "sensor_name").orderBy("window_start").rowsBetween(-60, -1)
-
-    return (
+    # Streaming-safe threshold-based anomaly logic.
+    enriched = (
         perf
-        # Calculate historical baseline
-        .withColumn("baseline_avg", avg("avg_value").over(window_60min))
-        .withColumn("baseline_stddev", stddev("avg_value").over(window_60min))
-
-        # Compute deviation score
-        .withColumn("deviation_score",
-            abs(col("avg_value") - col("baseline_avg")) / (col("baseline_stddev") + lit(0.01))  # Avoid div by zero
+        .withColumn(
+            "threshold",
+            when(lower(col("sensor_name")).contains("vibration"), lit(12.0))
+            .when(lower(col("sensor_name")).contains("temp"), lit(95.0))
+            .when(lower(col("sensor_name")).contains("bearing"), lit(90.0))
+            .when(lower(col("sensor_name")).contains("motor"), lit(88.0))
+            .otherwise(lit(1.0e9))
         )
-
-        # Filter to anomalies only (>2 std deviations)
-        .filter(col("deviation_score") > 2.0)
-
-        # Classify anomaly type
-        .withColumn("anomaly_type",
-            when(col("sensor_name").contains("Vibration"), "excessive_vibration")
-            .when(col("sensor_name").contains("Temp"), "temperature_anomaly")
-            .when(col("sensor_name").contains("Bearing"), "bearing_issue")
-            .when(col("sensor_name").contains("Motor"), "motor_stress")
+        .withColumn("deviation_score", col("avg_value") / col("threshold"))
+        .filter(col("avg_value") > col("threshold"))
+        .withColumn(
+            "anomaly_type",
+            when(lower(col("sensor_name")).contains("vibration"), "excessive_vibration")
+            .when(lower(col("sensor_name")).contains("temp"), "temperature_anomaly")
+            .when(lower(col("sensor_name")).contains("bearing"), "bearing_issue")
+            .when(lower(col("sensor_name")).contains("motor"), "motor_stress")
             .otherwise("sensor_anomaly")
         )
-
-        # Generate recommendation
-        .withColumn("recommendation",
-            when(col("anomaly_type") == "excessive_vibration",
-                "ALERT: Inspect mechanical components. Check belt alignment and bearing condition.")
-            .when(col("anomaly_type") == "temperature_anomaly",
-                "ALERT: Check cooling system. Verify fan operation and coolant levels.")
-            .when(col("anomaly_type") == "bearing_issue",
-                "ALERT: Bearing degradation detected. Schedule maintenance inspection.")
-            .when(col("anomaly_type") == "motor_stress",
-                "ALERT: Motor operating outside normal range. Check load and electrical supply.")
-            .otherwise("ALERT: Unusual sensor reading detected. Investigate equipment condition.")
+        .withColumn(
+            "recommendation",
+            when(col("anomaly_type") == "excessive_vibration", "Inspect mechanical components and bearing condition.")
+            .when(col("anomaly_type") == "temperature_anomaly", "Check cooling system and airflow immediately.")
+            .when(col("anomaly_type") == "bearing_issue", "Schedule bearing inspection and lubrication check.")
+            .when(col("anomaly_type") == "motor_stress", "Validate motor load and electrical supply stability.")
+            .otherwise("Investigate equipment condition and sensor calibration.")
         )
-
-        # Severity (based on deviation magnitude)
-        .withColumn("severity",
-            when(col("deviation_score") > 4.0, "CRITICAL")
-            .when(col("deviation_score") > 3.0, "HIGH")
+        .withColumn(
+            "severity",
+            when(col("deviation_score") > 1.5, "CRITICAL")
+            .when(col("deviation_score") > 1.2, "HIGH")
             .otherwise("MEDIUM")
         )
+        .withColumn("confidence_score", least(lit(0.99), col("deviation_score") / 2.0))
+    )
 
-        # Confidence score
-        .withColumn("confidence_score",
-            least(lit(0.99), col("deviation_score") / 5.0)
-        )
-
-        .select(
-            "window_start",
-            "equipment_id",
-            "equipment_type",
-            "sensor_name",
-            "anomaly_type",
-            "severity",
-            "avg_value",
-            "baseline_avg",
-            "deviation_score",
-            "confidence_score",
-            "recommendation",
-            current_timestamp().alias("detected_at")
-        )
+    return enriched.select(
+        "window_start",
+        "equipment_id",
+        "equipment_type",
+        "sensor_name",
+        "anomaly_type",
+        "severity",
+        "avg_value",
+        col("threshold").alias("baseline_avg"),
+        "deviation_score",
+        "confidence_score",
+        "recommendation",
+        current_timestamp().alias("detected_at")
     )
 
 # ============================================
