@@ -1,0 +1,77 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# AWS credentials
+.aws/
+*.pem
+credentials
+config
+
+# Databricks
+.databrickscfg
+*.dbc
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+
+# Ignition
+*.gwbk
+*.proj
+*.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Checkpoints
+/tmp/checkpoints/
+checkpoint/
+
+# Data
+*.parquet
+*.csv
+*.json
+!**/perspective*.json
+!**/webhook*.json
+
+# Secrets
+secrets/
+*.key
+*.crt
+*.pfx
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Docker
+*.pid
+.dockerignore
+
+# Temporary
+tmp/
+temp/
+*.tmp

@@ -1,0 +1,425 @@
+{
+  "name": "MLRecommendationDashboard",
+  "type": "view",
+  "version": "8.1.33",
+  "description": "Real-time ML recommendation dashboard with webhook updates",
+  "params": {
+    "equipment_filter": {
+      "type": "string",
+      "default": "ALL"
+    }
+  },
+  "custom": {
+    "recommendations": [],
+    "pendingCount": 0,
+    "criticalAlerts": [],
+    "lastUpdate": null
+  },
+  "root": {
+    "type": "flex",
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "#F5F5F5",
+        "height": "100vh",
+        "padding": "10px"
+      }
+    },
+    "children": [
+      {
+        "type": "flex",
+        "meta": {
+          "name": "Header"
+        },
+        "props": {
+          "direction": "row",
+          "justify": "space-between",
+          "alignItems": "center",
+          "style": {
+            "backgroundColor": "#1B3139",
+            "padding": "15px",
+            "borderRadius": "8px",
+            "marginBottom": "10px"
+          }
+        },
+        "children": [
+          {
+            "type": "label",
+            "props": {
+              "text": "AI-Powered Equipment Monitoring",
+              "style": {
+                "fontSize": "24px",
+                "fontWeight": "bold",
+                "color": "#FFFFFF"
+              }
+            }
+          },
+          {
+            "type": "flex",
+            "props": {
+              "direction": "row",
+              "gap": "20px",
+              "alignItems": "center"
+            },
+            "children": [
+              {
+                "type": "label",
+                "meta": {
+                  "name": "LastUpdateLabel"
+                },
+                "props": {
+                  "text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "'Last Update: ' + if(isNull({view.custom.lastUpdate}), 'Never', dateFormat({view.custom.lastUpdate}, 'HH:mm:ss'))"
+                      }
+                    }
+                  },
+                  "style": {
+                    "color": "#00A8E1",
+                    "fontSize": "14px"
+                  }
+                }
+              },
+              {
+                "type": "badge",
+                "meta": {
+                  "name": "PendingBadge"
+                },
+                "props": {
+                  "count": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "{view.custom.pendingCount}"
+                      }
+                    }
+                  },
+                  "color": "#FF3621",
+                  "max": 99
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "flex",
+        "meta": {
+          "name": "MetricsRow"
+        },
+        "props": {
+          "direction": "row",
+          "gap": "10px",
+          "style": {
+            "marginBottom": "10px"
+          }
+        },
+        "children": [
+          {
+            "type": "flex",
+            "props": {
+              "basis": "25%",
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "padding": "15px",
+                "borderRadius": "8px",
+                "border": "1px solid #E0E0E0"
+              }
+            },
+            "children": [
+              {
+                "type": "label",
+                "props": {
+                  "text": "Active Recommendations",
+                  "style": {
+                    "fontSize": "12px",
+                    "color": "#666"
+                  }
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "len({view.custom.recommendations})"
+                      }
+                    }
+                  },
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "bold",
+                    "color": "#1B3139"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "flex",
+            "props": {
+              "basis": "25%",
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "padding": "15px",
+                "borderRadius": "8px",
+                "border": "1px solid #E0E0E0"
+              }
+            },
+            "children": [
+              {
+                "type": "label",
+                "props": {
+                  "text": "Critical Alerts",
+                  "style": {
+                    "fontSize": "12px",
+                    "color": "#666"
+                  }
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "len([rec for rec in {view.custom.recommendations} if rec.urgency >= 4])"
+                      }
+                    }
+                  },
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "bold",
+                    "color": "#FF3621"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "flex",
+            "props": {
+              "basis": "25%",
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "padding": "15px",
+                "borderRadius": "8px",
+                "border": "1px solid #E0E0E0"
+              }
+            },
+            "children": [
+              {
+                "type": "label",
+                "props": {
+                  "text": "Avg Confidence",
+                  "style": {
+                    "fontSize": "12px",
+                    "color": "#666"
+                  }
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "if(len({view.custom.recommendations}) > 0, toStr(round(sum([rec.confidence for rec in {view.custom.recommendations}]) / len({view.custom.recommendations}) * 100, 1)) + '%', 'N/A')"
+                      }
+                    }
+                  },
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "bold",
+                    "color": "#00A8E1"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "flex",
+            "props": {
+              "basis": "25%",
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "padding": "15px",
+                "borderRadius": "8px",
+                "border": "1px solid #E0E0E0"
+              }
+            },
+            "children": [
+              {
+                "type": "label",
+                "props": {
+                  "text": "Response Time",
+                  "style": {
+                    "fontSize": "12px",
+                    "color": "#666"
+                  }
+                }
+              },
+              {
+                "type": "label",
+                "props": {
+                  "text": "< 30s",
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "bold",
+                    "color": "#4CAF50"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "meta": {
+          "name": "RecommendationsTable"
+        },
+        "props": {
+          "data": {
+            "binding": {
+              "type": "expr",
+              "config": {
+                "expression": "{view.custom.recommendations}"
+              }
+            }
+          },
+          "columns": [
+            {
+              "field": "equipment_id",
+              "header": "Equipment",
+              "width": 150,
+              "render": "value",
+              "style": {
+                "fontWeight": "bold"
+              }
+            },
+            {
+              "field": "action_code",
+              "header": "Recommended Action",
+              "width": 200,
+              "render": "value"
+            },
+            {
+              "field": "confidence",
+              "header": "Confidence",
+              "width": 100,
+              "render": "progress",
+              "progressStyle": {
+                "bar": {
+                  "color": "#00A8E1"
+                }
+              },
+              "numberFormat": "0.0%"
+            },
+            {
+              "field": "urgency",
+              "header": "Urgency",
+              "width": 100,
+              "render": "value",
+              "style": {
+                "backgroundColor": {
+                  "binding": {
+                    "type": "expr",
+                    "config": {
+                      "expression": "if({value} >= 4, '#FFE5E5', if({value} >= 3, '#FFF5E5', '#E5F5E5'))"
+                    }
+                  }
+                },
+                "color": {
+                  "binding": {
+                    "type": "expr",
+                    "config": {
+                      "expression": "if({value} >= 4, '#FF3621', if({value} >= 3, '#FFA500', '#4CAF50'))"
+                    }
+                  }
+                },
+                "textAlign": "center",
+                "fontWeight": "bold"
+              }
+            },
+            {
+              "field": "time_to_failure",
+              "header": "TTF (Hours)",
+              "width": 100,
+              "render": "value",
+              "numberFormat": "0.0"
+            },
+            {
+              "field": "severity",
+              "header": "Severity",
+              "width": 100,
+              "render": "value",
+              "style": {
+                "textTransform": "uppercase",
+                "fontWeight": "bold"
+              }
+            },
+            {
+              "field": "timestamp",
+              "header": "Time",
+              "width": 150,
+              "render": "date",
+              "dateFormat": "HH:mm:ss"
+            },
+            {
+              "field": "actions",
+              "header": "Actions",
+              "width": 250,
+              "render": "view",
+              "viewPath": "Components/RecommendationActions",
+              "viewParams": {
+                "recommendationId": "{recommendation_id}",
+                "equipmentId": "{equipment_id}"
+              }
+            }
+          ],
+          "selection": {
+            "mode": "single"
+          },
+          "pager": {
+            "enabled": true,
+            "pageSize": 10
+          },
+          "filter": {
+            "enabled": true
+          },
+          "sort": {
+            "enabled": true,
+            "defaultOrder": [
+              {
+                "column": "urgency",
+                "direction": "desc"
+              }
+            ]
+          },
+          "style": {
+            "classes": "recommendation-table"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "onStartup": "# Initialize the view when it loads\ndef onStartup(self):\n    # Subscribe to webhook messages\n    self.session.custom.messageHandler = 'MLRecommendation'\n    \n    # Load initial data from tags\n    self.refreshRecommendations()\n    \n    # Start refresh timer\n    self.startRefreshTimer()",
+    "onMessageReceived": "# Handle webhook notifications from gateway\ndef onMessageReceived(self, payload):\n    if payload.messageType == 'MLRecommendation':\n        recommendation = payload.recommendation\n        \n        # Add to recommendations list\n        recommendations = self.view.custom.recommendations or []\n        \n        # Check if already exists\n        existing_ids = [r['recommendation_id'] for r in recommendations]\n        if recommendation['recommendation_id'] not in existing_ids:\n            recommendations.insert(0, recommendation)\n            \n            # Keep only last 50\n            self.view.custom.recommendations = recommendations[:50]\n            \n            # Update counts\n            self.view.custom.pendingCount = len([r for r in recommendations if r.get('status') == 'pending'])\n            \n            # Update last update time\n            self.view.custom.lastUpdate = system.date.now()\n            \n            # Flash row for new recommendation\n            self.flashNewRecommendation(recommendation['recommendation_id'])\n            \n            # Show popup for critical\n            if recommendation.get('urgency', 0) >= 4:\n                self.showCriticalPopup(recommendation)",
+    "refreshRecommendations": "# Refresh recommendations from tags\ndef refreshRecommendations(self):\n    import system\n    \n    # Read from dataset tag\n    dataset_tag = '[default]MLRecommendations/Dataset'\n    dataset = system.tag.readBlocking([dataset_tag])[0].value\n    \n    if dataset:\n        # Convert dataset to list of dicts\n        headers = list(dataset.getColumnNames())\n        recommendations = []\n        \n        for row in range(dataset.getRowCount()):\n            rec = {}\n            for col, header in enumerate(headers):\n                rec[header.lower().replace(' ', '_')] = dataset.getValueAt(row, col)\n            recommendations.append(rec)\n        \n        self.view.custom.recommendations = recommendations\n        self.view.custom.pendingCount = len([r for r in recommendations if r.get('status') == 'pending'])\n        self.view.custom.lastUpdate = system.date.now()",
+    "flashNewRecommendation": "# Visual feedback for new recommendations\ndef flashNewRecommendation(self, recommendation_id):\n    # Add flash animation to the new row\n    table = self.getChild('RecommendationsTable')\n    if table:\n        # This would trigger a CSS animation\n        table.props.flashRow = recommendation_id\n        \n        # Remove flash after 3 seconds\n        system.util.invokeLater(lambda: setattr(table.props, 'flashRow', None), 3000)",
+    "showCriticalPopup": "# Show popup for critical recommendations\ndef showCriticalPopup(self, recommendation):\n    system.perspective.openPopup(\n        id='CriticalRecommendation',\n        view='Popups/CriticalRecommendation',\n        params={\n            'recommendation': recommendation\n        },\n        title='Critical Recommendation',\n        position={'x': 100, 'y': 100},\n        showCloseIcon=True,\n        draggable=True,\n        resizable=False,\n        modal=False\n    )",
+    "startRefreshTimer": "# Start periodic refresh as backup\ndef startRefreshTimer(self):\n    # Refresh every 30 seconds as backup to webhooks\n    self.refreshTimer = system.util.Timer(30000, self.refreshRecommendations)\n    self.refreshTimer.start()"
+  }
+}

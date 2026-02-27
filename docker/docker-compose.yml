@@ -13,6 +13,7 @@ services:
     volumes:
       - ignition-data:/usr/local/bin/ignition/data
       - ./ignition-init:/restore
+      - ./data/webserver:/usr/local/bin/ignition/data/webserver
     command:
       - "--"
       - "-Dignition.allowunsignedmodules=true"

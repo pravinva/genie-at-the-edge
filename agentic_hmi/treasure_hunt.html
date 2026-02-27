@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Pipeline Dreams - ANZ DSA Adventure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0F0A1E;--surface:#1A1230;--card:#211840;--border:#3D2F6B;--orange:#FF3621;--gold:#F5A623;--green:#2ECC71;--text:#F0EAD6;--muted:#9B8EC4;--panel:#16102B}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+pre{font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-word}
+button{cursor:pointer;border:none;font-family:inherit;font-weight:600;transition:opacity .15s,transform .1s}
+button:hover{opacity:.88;transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+.stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite var(--delay)}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(245,166,35,.4)}50%{box-shadow:0 0 32px rgba(245,166,35,.8)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1.3)}100%{opacity:0;transform:translateY(-40px) scale(1)}}
+@keyframes unlockSpin{0%{transform:rotate(-20deg) scale(.5);opacity:0}60%{transform:rotate(10deg) scale(1.2)}100%{transform:rotate(0) scale(1);opacity:1}}
+@keyframes answerDrop{0%{opacity:0;transform:scale(.92) translateY(12px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes fadeSlide{0%{opacity:0;transform:translateY(-8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes confFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:.3}}
+@keyframes lockWobble{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+
+/* SCREENS */
+#intro,#setup,#victory{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 24px}
+#intro{background:radial-gradient(ellipse at 50% 0%,#2a1a50 0%,var(--bg) 60%)}
+#game{display:none;min-height:100vh;flex-direction:column}
+#setup{display:none}
+#victory{display:none;position:relative}
+
+/* INTRO */
+.intro-content{position:relative;z-index:1}
+.game-title{font-family:'Cinzel',serif;font-size:clamp(36px,7vw,72px);font-weight:900;color:var(--gold);text-shadow:0 0 40px rgba(245,166,35,.5);line-height:1.1;margin-bottom:32px}
+.intro-emblem{font-size:80px;margin-bottom:16px;animation:float 4s ease-in-out infinite}
+.start-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border:none;border-radius:12px;padding:18px 48px;font-size:18px;font-weight:800;font-family:'Cinzel',serif;cursor:pointer;letter-spacing:1px;box-shadow:0 0 40px rgba(255,54,33,.5);transition:.2s;margin-top:32px}
+.start-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 0 60px rgba(255,54,33,.7)}
+.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.ibadge{background:#1A123088;border:1px solid var(--border);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--muted)}
+
+/* SETUP */
+.setup-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:100%;max-width:520px;box-shadow:0 0 60px rgba(255,54,33,.1)}
+.setup-box h2{font-size:18px;font-weight:700;color:var(--gold);margin-bottom:24px}
+.team-row{display:flex;gap:10px;margin-bottom:12px;align-items:center}
+.team-row input{flex:1;background:#0F0A1E;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border .2s}
+.team-row input:focus{border-color:var(--orange)}
+.team-row input::placeholder{color:var(--muted)}
+.remove-btn{background:none;border:1px solid #5a2a2a;border-radius:6px;color:#f08080;width:32px;height:32px;font-size:16px;cursor:pointer;transition:.2s}
+.remove-btn:hover{background:#5a2a2a}
+.add-team-btn{background:none;border:1px dashed var(--border);border-radius:8px;padding:10px;width:100%;color:var(--muted);font-size:14px;cursor:pointer;transition:.2s;margin-top:4px}
+.add-team-btn:hover{border-color:var(--orange);color:var(--orange)}
+.launch-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border:none;border-radius:10px;padding:15px 36px;font-size:16px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(255,54,33,.4);margin-top:20px;width:100%;transition:.2s}
+.launch-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(255,54,33,.5)}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.hdr-logo{display:flex;align-items:center;gap:8px}
+.hdr-logobox{width:28px;height:28px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff}
+.hdr-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);font-weight:700}
+.hdr-badge{font-size:11px;background:#FF362122;color:var(--orange);border:1px solid #FF362155;border-radius:20px;padding:3px 10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+/* GAME BODY */
+.game-body{display:flex;flex:1;gap:0}
+.sidebar{width:200px;min-width:200px;background:var(--panel);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+.sidebar-title{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;position:relative;overflow:hidden}
+.team-card.top-team{border-color:var(--gold);box-shadow:0 0 12px rgba(245,166,35,.2)}
+.team-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team-score{font-family:'Cinzel',serif;font-size:28px;font-weight:900;color:var(--gold);line-height:1;margin-bottom:8px}
+.pts-btns{display:flex;gap:4px}
+.pts-btn{flex:1;background:#FF362122;border:1px solid #FF362155;border-radius:5px;color:var(--orange);font-size:11px;font-weight:700;padding:4px 2px;cursor:pointer;transition:.15s}
+.pts-btn:hover{background:var(--orange);color:#fff;transform:scale(1.05)}
+.pts-btn.minus{background:#1a0a0a;border-color:#5a2020;color:#f08080}
+.pts-btn.minus:hover{background:#5a2020;color:#fff}
+.float-pts{position:absolute;top:10px;right:10px;font-weight:900;font-size:18px;pointer-events:none;animation:floatUp .9s ease-out forwards;opacity:0}
+
+/* CENTER */
+.center-scroll{flex:1;overflow-y:auto;height:calc(100vh - 54px)}
+.center-col{max-width:800px;margin:0 auto;width:100%;padding:28px 32px 60px}
+
+/* QUEST MAP */
+.quest-map{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:36px;padding:20px 16px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow-x:auto}
+.q-node{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;min-width:52px}
+.q-orb{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid var(--border);background:var(--surface);transition:.3s}
+.q-orb.done{background:var(--orange);border-color:var(--orange);box-shadow:0 0 16px rgba(255,54,33,.5)}
+.q-orb.active{background:var(--card);border-color:var(--gold);animation:pulse 1.8s ease-in-out infinite}
+.q-orb.locked{opacity:.35}
+.q-label{font-size:8px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.5px;max-width:52px}
+.q-label.active{color:var(--gold)}
+.q-label.done{color:var(--orange)}
+.q-line{flex:1;min-width:12px;height:3px;background:var(--border);margin-bottom:22px;transition:.3s}
+.q-line.done{background:var(--orange);box-shadow:0 0 6px rgba(255,54,33,.4)}
+
+/* CASE CARD */
+.case-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.case-header{padding:20px 24px 0}
+.case-tag{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px}
+.case-title{font-family:'Cinzel',serif;font-size:22px;font-weight:900;color:var(--gold);margin-bottom:6px;line-height:1.3}
+.case-flavour{font-size:14px;color:var(--muted);line-height:1.65;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.lock-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;gap:16px;text-align:center}
+.lock-icon{font-size:64px;animation:lockWobble 3s ease-in-out infinite}
+.lock-text{font-size:15px;color:var(--muted)}
+
+/* ARTIFACTS */
+.artifact-wrap{padding:20px 24px}
+.art-doc{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.art-logbody{background:#080512;padding:16px 20px;font-family:'Courier New',monospace;font-size:13px;color:#c8c8ff;line-height:1.85}
+.art-email-hdr{background:#1A1230;padding:12px 18px;border-bottom:1px solid var(--border)}
+.art-email-subj{font-weight:700;font-size:14px;color:var(--gold);margin-bottom:4px}
+.art-email-meta{font-size:12px;color:var(--muted)}
+.art-email-body{background:#080512;padding:14px 18px;font-size:13px;color:#d0d0ff;line-height:1.85}
+.art-slidehdr{background:var(--orange);padding:9px 16px}
+.art-slidetitle{font-size:13px;font-weight:700;color:#fff}
+.preso-slide{padding:10px 18px;border-bottom:1px solid #1f1640;background:#0a0718}
+.preso-slide:last-child{border-bottom:none}
+.preso-slide strong{font-size:13px;color:var(--text)}
+.preso-val{color:var(--orange);font-size:13px;padding-left:18px;display:block;margin-top:3px}
+.art-riddle{background:linear-gradient(135deg,#1a0a2e,#0a0718);padding:30px 34px;text-align:center;font-family:Georgia,serif;font-size:16px;color:#D4B8F0;line-height:2.3}
+
+/* EXTRAS */
+.extras{padding:0 24px 20px;display:flex;flex-direction:column;gap:12px}
+.question-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;font-size:16px;font-weight:700;color:var(--gold);line-height:1.55}
+.hint-box{background:#1a1500;border:1px solid #554400;border-radius:8px;padding:14px 18px;animation:fadeSlide .4s ease}
+.hint-title{font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.hint-text{font-size:14px;color:#E8D44D;line-height:1.6}
+.answer-wrap{animation:answerDrop .5s cubic-bezier(.175,.885,.32,1.275)}
+.answer-top{background:linear-gradient(135deg,#0a2010,#0e3018);padding:16px 20px;border:1px solid #1a6035;border-bottom:none;border-radius:10px 10px 0 0}
+.answer-label{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.answer-text{font-size:15px;color:var(--text);line-height:1.75}
+.punchline-box{background:#1a0808;border:1px solid #5a1a1a;border-top:none;padding:12px 18px;border-radius:0 0 10px 10px;font-size:14px;color:#f08080;line-height:1.6}
+
+/* GM PANEL */
+.gm-panel{padding:20px 24px;background:#0a0718;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
+.gm-label{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase}
+.gm-btns{display:flex;gap:10px;flex-wrap:wrap}
+.gmbtn{border-radius:8px;padding:11px 22px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:.15s;letter-spacing:.3px}
+.gmbtn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.gmbtn-unlock{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;box-shadow:0 4px 20px rgba(255,54,33,.4)}
+.gmbtn-hint{background:#2a2040;border:1px solid var(--border);color:var(--gold)}
+.gmbtn-answer{background:linear-gradient(135deg,#1a5a35,#2ECC71);color:#fff}
+.gmbtn-next{background:linear-gradient(135deg,#3a2a70,#6a4aaa);color:#fff}
+
+/* UNLOCK OVERLAY */
+.unlock-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.unlock-overlay.active{display:flex}
+.unlock-big{font-size:100px;animation:unlockSpin .7s ease-out forwards}
+.unlock-text{font-family:'Cinzel',serif;font-size:32px;color:var(--gold);text-shadow:0 0 30px rgba(245,166,35,.8);animation:fadeIn .5s .4s both}
+
+/* VICTORY */
+.confetti-container{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:10}
+.conf{position:absolute;width:10px;height:10px;animation:confFall var(--d) var(--delay) linear forwards;opacity:0}
+.victory-title{font-family:'Cinzel',serif;font-size:clamp(32px,6vw,56px);font-weight:900;color:var(--gold);text-shadow:0 0 50px rgba(245,166,35,.7);margin-bottom:12px}
+.final-scores{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:32px 0}
+.final-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:20px 28px;min-width:140px}
+.final-card.winner{border-color:var(--gold);box-shadow:0 0 30px rgba(245,166,35,.3)}
+.final-rank{font-size:28px;margin-bottom:4px}
+.final-tname{font-size:14px;font-weight:700;color:var(--text)}
+.final-tscore{font-family:'Cinzel',serif;font-size:32px;font-weight:900;color:var(--gold)}
+.final-pts{font-size:11px;color:var(--muted)}
+.replay-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:13px 32px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;margin-top:16px;transition:.2s}
+.replay-btn:hover{border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-content">
+    <div class="intro-emblem">&#x1F5FA;</div>
+    <div style="font-size:12px;color:var(--orange);font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px">An ANZ DSA Adventure</div>
+    <h1 class="game-title">Pipeline Dreams</h1>
+    <p style="font-size:15px;color:var(--muted);max-width:520px;line-height:1.7;margin:0 auto 10px">A rogue engineer locked the workspace and fled to a Snowflake startup.<br>Solve <strong style="color:var(--orange)">8 real-world DSA cases</strong> to recover the admin password.</p>
+    <div class="badge-row">
+      <div class="ibadge">&#x1F91D; Stakeholder Mgmt</div>
+      <div class="ibadge">&#x1F9D1;&#x200D;&#x1F3EB; Enablement</div>
+      <div class="ibadge">&#x1F4CA; Program Mgmt</div>
+      <div class="ibadge">&#x1F525; Technical</div>
+      <div class="ibadge">&#x1F916; AI &amp; Genie</div>
+      <div class="ibadge">&#x1F4B8; Cost Governance</div>
+    </div>
+    <button class="start-btn" onclick="showSetup()">&#x2694; Begin the Quest</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup">
+  <div style="position:relative;z-index:1;width:100%;max-width:520px">
+    <div style="margin-bottom:24px">
+      <div class="game-title" style="font-size:32px;margin-bottom:4px">Assemble Your Teams</div>
+      <p style="font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase">Game Meister controls all hints &amp; points</p>
+    </div>
+    <div class="setup-box">
+      <h2>&#x1F3F4; Enter Team Names</h2>
+      <div id="team-inputs"></div>
+      <button class="add-team-btn" onclick="addTeam()">+ Add another team</button>
+      <button class="launch-btn" onclick="startGame()">&#x26A1; Launch Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <header class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-logobox">D</div>
+      <div class="hdr-title">Pipeline Dreams</div>
+    </div>
+    <div class="hdr-badge">&#x2699; Game Meister Mode</div>
+  </header>
+  <div class="game-body">
+    <div class="sidebar">
+      <div class="sidebar-title">&#x1F3C6; Scoreboard</div>
+      <div id="scoreboard"></div>
+    </div>
+    <div class="center-scroll">
+      <div class="center-col">
+        <div class="quest-map" id="quest-map"></div>
+        <div class="case-card" id="case-card"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VICTORY -->
+<div id="victory">
+  <div class="confetti-container" id="confetti"></div>
+  <div style="position:relative;z-index:1;text-align:center">
+    <div style="font-size:80px;margin-bottom:16px;animation:float 3s ease-in-out infinite">&#x1F3C6;</div>
+    <div class="victory-title">Workspace Restored!</div>
+    <p style="font-size:16px;color:var(--muted);max-width:480px;margin:0 auto 8px;line-height:1.6">The rogue engineer was last seen writing a LinkedIn post titled <em style="color:var(--text)">"10 Reasons Medallion Architecture is Overrated"</em> — 0 comments.</p>
+    <div style="background:var(--card);border:2px solid var(--orange);border-radius:14px;padding:22px 40px;margin:24px auto;display:inline-block">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Admin password recovered:</div>
+      <div style="font-family:'Courier New',monospace;font-size:32px;font-weight:900;color:var(--orange);letter-spacing:6px">ANZ_DSA_PRO</div>
+    </div>
+    <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px">Final Scores</div>
+    <div class="final-scores" id="final-scores"></div>
+    <button class="replay-btn" onclick="location.reload()">&#x21A9; Play Again</button>
+  </div>
+</div>
+
+<!-- UNLOCK OVERLAY -->
+<div class="unlock-overlay" id="unlock-overlay">
+  <div class="unlock-big">&#x1F513;</div>
+  <div class="unlock-text">CASE UNLOCKED</div>
+</div>
+
+<script>
+var CASES = [
+  {
+    label: "Case 1 — Stakeholder Management",
+    emoji: "E1",
+    title: "The Executive Escalation",
+    icon: "&#x1F4E7;",
+    flavour: "8:47am Monday. You're on your second coffee. Slack pings: your Delivery Lead has forwarded this — 'heads up, this went to our RVP too.'",
+    artifact: {
+      type: "email",
+      subject: "RE: RE: Databricks Delivery — Serious Concerns",
+      from: "Craig Whitfield, CTO <c.whitfield@bigbank.com.au>",
+      to: "Delivery Lead (fwd to you)",
+      body: "Following up again as I haven't received a response to my last two emails.\n\nWe are now in Week 11 of a 10-week engagement. Our team has attended\n14 workshops but our data engineers still cannot build a pipeline\nindependently. We were told this platform would be production-ready\nby end of Q3.\n\nSpecific issues:\n  Scope added:   Unity Catalog migration (not in original SOW)\n  No runbook:    Engineers don't know how to operate what we've built\n  Status reports sent monthly — I need weekly at minimum\n  Our team lead resigned last week — no knowledge transfer was done\n\nI will be raising this at our Board review on Thursday.\n\nCraig Whitfield\nCTO, BigBank Australia"
+    },
+    question: "24 hours before Thursday's Board review. What are your top 3 immediate actions — and what would you NOT do?",
+    hint: "Think stakeholder trust first, project health second. What does Craig actually need right now vs. what he's literally asking for?",
+    answer: "1. Call Craig directly today — don't email. Rebuild trust in person.\n2. Get a concise 1-pager ready: what's done, what's not, revised timeline with owner names.\n3. Mobilise whoever can do emergency knowledge transfer before Thursday.\n\nDo NOT send a defensive email listing why scope changed.\nDo NOT promise new dates you can't keep.\nDo NOT let it escalate without Delivery Lead and AE in the loop.",
+    punchline: "The Unity Catalog scope creep probably happened in Week 3 when someone said 'while we're here...'. Classic."
+  },
+  {
+    label: "Case 2 — Enablement and Training",
+    emoji: "E2",
+    title: "The Enablement Disaster",
+    icon: "&#x1F9D1;&#x200D;&#x1F3EB;",
+    flavour: "You're reviewing the post-engagement survey for a 3-day Databricks enablement you ran for a major energy retailer in Brisbane.",
+    artifact: {
+      type: "slides",
+      title: "Post-Training Feedback — EnergyRetail AU",
+      slides: [
+        { n: "Q: How useful was the training?", v: "Avg: 2.1 / 5" },
+        { n: "Q: Can you build a pipeline independently now?", v: "No — everything was done by the instructor" },
+        { n: "Q: What was the best part?", v: "The coffee on Day 2" },
+        { n: "Q: What was missing?", v: "Hands-on time. We watched demos for 8 hours." },
+        { n: "Q: Would you recommend this?", v: "Only if you enjoy watching someone else cook while you're hungry" },
+        { n: "Attendance — Day 3", v: "6 of 14 registered (57%)" },
+        { n: "Environment access given", v: "Day 2 afternoon (of a 3-day course)" }
+      ]
+    },
+    question: "What went wrong structurally — and how would you redesign this engagement to actually build customer capability?",
+    hint: "When did they get environment access? What's the talk-time to hands-on ratio?",
+    answer: "Core failures:\n1. No sandbox access until Day 2 afternoon — 1.5 days with no ability to follow along\n2. Pure demo format = zero muscle memory built\n3. No pre-work or skill baseline = content pitched at wrong level\n4. Day 3 dropout = people voted with their feet\n\nRedesign: Pre-engagement survey. Environments provisioned 48hrs before Day 1. 40/60 theory-to-lab ratio minimum. Structured labs with real customer data patterns. 4 weeks post-training office hours. Measure 30-day adoption, not just day-of satisfaction.",
+    punchline: "'We watched demos for 8 hours' is the training equivalent of teaching someone to swim by describing water."
+  },
+  {
+    label: "Case 3 — Program Management",
+    emoji: "E3",
+    title: "The Status Report Nobody Can Read",
+    icon: "&#x1F4CA;",
+    flavour: "A Delivery SA forwards the weekly status report going to the steering committee. 'Does this look OK to send?' they ask.",
+    artifact: {
+      type: "email",
+      subject: "Week 8 Status — DataPlatform Modernisation",
+      from: "Delivery SA <d.sa@databricks.com>",
+      to: "Steering Committee",
+      body: "Hi all, here is the Week 8 update.\n\nTASKS COMPLETED:\n  - Completed the DLT pipeline refactoring work that was started in\n    Week 5 and required rework due to schema evolution issues that\n    arose during the medallion architecture review on Tuesday the 14th\n    when we discovered that the upstream source system (JDE E1) has\n    inconsistent column typing across environments which required us\n    to use schema_of_json inference instead of explicit schema.\n  - Unity Catalog migration (see Week 6 notes)\n\nSTATUS: yellow (was red last week)\n\nRISKS:\n  - Things might be delayed if there are more surprises\n\nNEXT STEPS:\n  - Continue with remaining tasks\n  - TBD\n\nHours used: 312 of 400 (78%). Timeline: on track (probably).\n\nThanks,\nDan"
+    },
+    question: "This is going to a steering committee on Thursday. What's wrong — and rewrite the key sections out loud.",
+    hint: "Who reads this? What decisions do they need to make? What's missing for them to do that?",
+    answer: "Problems:\n1. Wall of text — steering committee needs status in 15 seconds\n2. Yellow status with no explanation of what changed from red or what's being done\n3. Risks are vague — no owner, no mitigation\n4. 78% hours used is a quiet alarm — 'probably on track' is not a status\n5. Next steps have no owners or due dates\n\nRewrite: One-line exec summary up top. RAG status with reason. Budget burn called out explicitly (78% hours, ~57% time elapsed = overrun risk). Risks: owner + mitigation. Next steps: who does what by when.",
+    punchline: "'Probably on track' at 78% budget is how you accidentally deliver a surprise. Steering committees hate surprises."
+  },
+  {
+    label: "Case 4 — Technical: Spark",
+    emoji: "E4",
+    title: "6pm Friday. NZ Telco. Goes Live Monday.",
+    icon: "&#x1F525;",
+    flavour: "It's 6:03pm AEST Friday. The on-call pings you. A major NZ telco's nightly load job just failed. They go live Monday.",
+    artifact: {
+      type: "log",
+      body: "[18:01 NZST] Job FAILED: prod_nightly_load_v3  (runtime: 2h 14m, OOM)\n\nSparkContext: Driver OOM -- Java heap space\n  at org.apache.spark.sql.execution.collect (CollectExec.scala:89)\n\nQuery (simplified):\n  df = spark.read.table('silver.customer_events')   # 4.1B rows\n  summary = df.groupBy('customer_id','event_type') \\\n               .agg(collect_list('payload'))          # line 47 PROBLEM\n  summary.toPandas().to_csv('/tmp/output.csv')        # line 48 PROBLEM\n\nCluster config:\n  Driver:  r5.xlarge  (30 GB RAM)\n  Workers: 4 x m5.large\n  Mode:    Single-node legacy cluster (created 2022)\n\nLast successful run: Thursday  (600M rows)\nData note: Full NZ customer base onboarded at 5pm today (+3.5B new rows)"
+    },
+    question: "Why did this fail tonight specifically — and what's the fastest safe path to get it working before Monday?",
+    hint: "Two things on lines 47 and 48 should not exist in any 4-billion row job. What are they?",
+    answer: "Root cause:\n1. collect_list('payload') accumulates ALL payloads per customer into driver memory — fine at 600M rows, fatal OOM at 4.1B\n2. toPandas() pulls the entire result to the driver — always wrong at this scale\n3. Cluster was sized for 600M rows, never scaled after NZ onboarding\n\nFastest path to Monday:\n- Replace collect_list with count() or first() depending on business need\n- Replace toPandas().to_csv() with .write.csv() to distributed storage\n- Upsize cluster or switch to a job cluster with more workers\n- Smoke-test with 10M rows before full run",
+    punchline: "3.5 billion rows arrived at 5pm Friday. The job was written for a world where that couldn't happen. Classic."
+  },
+  {
+    label: "Case 5 — AI and Genie",
+    emoji: "E5",
+    title: "Genie Told the CFO What?",
+    icon: "&#x1F916;",
+    flavour: "A superannuation fund went live with Databricks AI/BI Genie last month. The CFO used it to prep a board presentation. Unsupervised. You get this Slack message at 9am.",
+    artifact: {
+      type: "email",
+      subject: "URGENT - Genie numbers completely wrong in board pack",
+      from: "Sarah Nguyen, Head of Data <s.nguyen@aussuper.com.au>",
+      to: "You",
+      body: "We have a serious problem.\n\nOur CFO used Genie this morning to pull FUM (Funds Under Management)\nfigures for the board pack — without checking with my team first.\n\nWhat Genie returned:\n  'Total FUM as at 30 Sep 2024: $47.3 billion'\n\nActual FUM from our verified source: $31.8 billion\n\nThe CFO has already sent the board pack to 12 directors.\nThe board meeting is in 3 hours.\n\nWhen I asked Genie the same question just now, it said:\n  'Based on the available data, FUM is approximately $47 billion,\n   though figures may vary depending on valuation methodology.'\n\nOur gold layer has the correct figures. I don't know why\nGenie is returning $47B. It sounds very confident.\n\nIs this a Databricks bug? Do we need to take Genie offline?\nThis is a potential APRA compliance issue.\n\nSarah"
+    },
+    question: "Why did Genie return $47.3B with full confidence? What's your immediate response — and what's your longer-term fix for governed AI/BI?",
+    hint: "Genie didn't make the number up from nothing. Where could $47.3B actually come from in their data environment?",
+    answer: "Why it happened:\n1. Genie queried the wrong table — possibly a silver/staging layer, pre-merger combined entity, or old snapshot not yet deprecated\n2. No semantic layer configured — Genie had no guardrails on which tables are authoritative for FUM\n3. No certified metrics or curated Genie Spaces — it was let loose on the raw catalog\n\nImmediate response:\n- Call Sarah now. Not Slack. This is serious.\n- Help draft a one-liner correction to the board pack before the meeting\n- Do NOT say 'Databricks bug' — this is a governance configuration issue\n\nLonger-term fix:\n- Define certified gold tables in Unity Catalog with clear descriptions and ownership\n- Configure Genie Spaces with approved data sources only — not the whole catalog\n- Set up certified metrics in AI/BI so Genie has a semantic anchor\n- Establish a verified-by-data-team workflow before any AI output goes to executives",
+    punchline: "Genie is only as smart as your semantic layer. If you haven't told it what's authoritative, it'll answer confidently anyway. That's the dangerous part."
+  },
+  {
+    label: "Case 6 — Delivery and Compatibility",
+    emoji: "E6",
+    title: "You Broke Our Pipelines",
+    icon: "&#x1F621;",
+    flavour: "A large Australian retailer upgraded to Databricks Runtime 15.x as part of a planned migration. Two days later, this lands — CC'd to their CTO and your Delivery Lead.",
+    artifact: {
+      type: "email",
+      subject: "Databricks upgrade has broken production — demanding explanation",
+      from: "James Otoole, Platform Eng Lead <j.otoole@retailco.com.au>",
+      to: "You; Delivery Lead; CTO",
+      body: "This is unacceptable.\n\nWe upgraded to DBR 15.x on Wednesday as recommended by your team.\nAs of Thursday morning, 14 of our 22 production pipelines have failed.\n\nRoot errors we are seeing:\n  1. pandas UDF signature changes — existing UDFs now throw TypeError\n  2. spark.sql.ansi.enabled now defaults to TRUE — integer overflow\n     errors on columns that were silently truncating before\n  3. MLflow autologging behaviour changed — model registry webhooks\n     are firing twice and corrupting experiment metadata\n  4. scikit-learn 1.3 pinned in requirements.txt is now incompatible\n     with the pre-installed version in DBR 15.x\n\nWe were not warned about any of these breaking changes.\nYour team said this was a 'straightforward upgrade.'\n\nWe are reverting to DBR 14.x tonight. We expect Databricks to:\n  a) Explain why we weren't warned\n  b) Provide a compatibility assessment BEFORE any future upgrades\n  c) Compensate us for 2 days of engineering time lost\n\nJames O'Toole\nPlatform Engineering Lead, RetailCo AU"
+    },
+    question: "How do you respond — and how do you rebuild trust and fix the process so this never happens again?",
+    hint: "Before you defend the upgrade, ask: was there a proper pre-upgrade compatibility assessment? Who owned that step?",
+    answer: "Own it first:\n- Call James and the CTO before replying by email — don't be defensive in writing when they're this angry\n- Acknowledge the impact directly. 'Straightforward upgrade' was clearly wrong framing.\n- Don't immediately debate compensation — that comes after trust is rebuilt\n\nAll four errors are real documented breaking changes in DBR 15.x that a proper pre-upgrade assessment would have caught:\n1. pandas UDF API change — caught in pre-upgrade testing\n2. ANSI mode defaulting to true — known 14 to 15 breaking change, a scan flags integer columns\n3. MLflow autologging changes — in the release notes\n4. Pre-installed library conflicts — exactly what a DBR compatibility matrix check is for\n\nFix the process — formalise a DBR upgrade runbook:\nRelease notes review > compatibility matrix check > staging upgrade > regression test suite > comms plan > prod upgrade with rollback window. This should be a standard DSA delivery artefact for any runtime upgrade engagement.",
+    punchline: "'Straightforward upgrade' are the two most dangerous words in platform delivery. Always run the compatibility matrix first."
+  },
+  {
+    label: "Case 7 — Cost Governance",
+    emoji: "E7",
+    title: "The $340K Surprise",
+    icon: "&#x1F4B8;",
+    flavour: "Last business day of the quarter. The customer's cloud finance team just ran their monthly reconciliation. Your AE forwards this with three question marks and nothing else.",
+    artifact: {
+      type: "email",
+      subject: "Databricks spend — Q3 actuals vs budget SEVERE variance",
+      from: "Linda Park, Cloud FinOps Lead <l.park@conglomerate.com.au>",
+      to: "AE (fwd to you)",
+      body: "Hi,\n\nWe have a significant problem with our Q3 Databricks spend.\n\n  Budget (Q3):     $180,000 AUD\n  Actual (Q3):     $341,700 AUD\n  Variance:        +$161,700  (+90%)\n\nTop cost drivers from our AWS Cost Explorer:\n  1. compute-databricks-all-purpose   $198,400   (58%)\n  2. compute-databricks-jobs           $87,200   (26%)\n  3. databricks-sql-warehouse          $44,100   (13%)\n\nWhat we know:\n  - No new workloads were approved in Q3\n  - 4 active workspaces — costs are not tagged by team or project\n  - Photon is enabled on all warehouses (we were told it was 'included')\n  - Our data science team 'runs experiments' on all-purpose clusters\n  - Auto-termination policy: exists in policy but not enforced\n  - Committed Use commitment for $120K/quarter —\n    we blew through it in Week 6\n\nWe need a full explanation and a remediation plan by end of week.\nThe CFO is involved.\n\nLinda Park\nFinOps, Conglomerate AU"
+    },
+    question: "Diagnose the top 3 root causes from the data — and build Linda a credible remediation plan she can take to the CFO by Friday.",
+    hint: "Look at the split: 58% all-purpose compute. And the data science team 'runs experiments'. What does that tell you about cluster lifecycle?",
+    answer: "Root causes:\n1. All-purpose clusters used for everything — $198K (58%) on always-on shared compute. Data science experiments running with no auto-termination enforcement means clusters run overnight and through weekends. Job clusters for scheduled workloads would cost a fraction.\n2. Zero cost attribution — no tagging by team or project means nobody feels the bill. You can't govern what you can't see.\n3. CUD blown in Week 6 of 13 — $120K Committed Use exhausted halfway through the quarter, then everything ran at on-demand rates for 7 weeks. No spend alerts, no guardrails, no mid-quarter correction.\n\nRemediation plan:\nImmediate: Audit all running clusters now. Terminate anything idle. Enforce auto-termination at 30 mins max via cluster policy.\nShort term: Tag all clusters and warehouses by team/project. Enable account-level cost monitoring. Set budget alerts at 50%, 75%, 90% of quarterly budget.\nStructural: Move scheduled jobs to job clusters (60-70% cheaper). Cluster policies to prevent unapproved large all-purpose clusters. Right-size SQL warehouses.\nBonus: Show Linda system.billing.usage in Unity Catalog system tables — per-cluster, per-user spend visibility. Most customers don't know this exists.",
+    punchline: "'Photon is included' means included in DBU pricing — not free. Someone always finds this out the hard way."
+  },
+  {
+    label: "Case 8 — The Final Riddle",
+    emoji: "E8",
+    title: "The Vault",
+    icon: "&#x1F9E9;",
+    flavour: "One lock remains. Solve this riddle and the workspace admin password is yours.",
+    artifact: {
+      type: "riddle",
+      body: "I'm on every slide deck but live in no data centre.\nI'm promised in Week 1 and defined in Week 8.\nCustomers ask if I'm done. I'm never done.\nI have owners, but they're always in a meeting.\n\nI'm not a sprint. I'm not a ticket.\nI'm not a runbook — though I should be.\nI contain the answers to everything,\nbut no-one reads me after sign-off.\n\nSuccess teams love me.\nDelivery teams fear me.\nPresales promised me.\nI sit in Confluence, unread and unmerged.\n\nWhat am I?"
+    },
+    question: "What am I?",
+    hint: "You've written at least three of these this quarter.",
+    answer: "The Statement of Work — or more broadly, the project success plan or project charter.\n\nSOW, Success Plan, and Project Charter are all accepted.",
+    punchline: "Somewhere right now a customer is asking 'but isn't that in scope?' and someone is quietly opening a PDF they haven't read since signing."
+  }
+];
+
+var teams = [];
+var caseIdx = 0;
+var casePhase = "locked";
+
+// Stars
+(function() {
+  var c = document.getElementById("stars");
+  for (var i = 0; i < 80; i++) {
+    var s = document.createElement("div");
+    s.className = "star";
+    var sz = Math.random() * 2.5 + 0.5;
+    s.style.width = sz + "px";
+    s.style.height = sz + "px";
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = Math.random() * 100 + "%";
+    s.style.setProperty("--d", (Math.random() * 4 + 2).toFixed(1) + "s");
+    s.style.setProperty("--delay", "-" + (Math.random() * 5).toFixed(1) + "s");
+    c.appendChild(s);
+  }
+})();
+
+function showSetup() {
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("setup").style.display = "flex";
+  addTeam(); addTeam(); addTeam();
+}
+
+function addTeam() {
+  var c = document.getElementById("team-inputs");
+  if (c.children.length >= 6) return;
+  var d = document.createElement("div");
+  d.className = "team-row";
+  d.innerHTML = '<input type="text" placeholder="Team name..." maxlength="20"/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
+  c.appendChild(d);
+}
+
+function startGame() {
+  var inputs = document.querySelectorAll("#team-inputs input");
+  teams = [];
+  for (var i = 0; i < inputs.length; i++) {
+    teams.push({ name: inputs[i].value.trim() || ("Team " + (i + 1)), score: 0 });
+  }
+  if (!teams.length) teams = [{ name: "Team 1", score: 0 }];
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("game").style.display = "flex";
+  caseIdx = 0;
+  casePhase = "locked";
+  renderScoreboard();
+  renderMap();
+  renderCase();
+}
+
+function renderScoreboard() {
+  var max = 0;
+  for (var i = 0; i < teams.length; i++) { if (teams[i].score > max) max = teams[i].score; }
+  var html = "";
+  for (var i = 0; i < teams.length; i++) {
+    var top = teams[i].score === max && max > 0;
+    html += '<div class="team-card' + (top ? " top-team" : "") + '" id="tc-' + i + '">';
+    html += '<div class="team-name">' + esc(teams[i].name) + '</div>';
+    html += '<div class="team-score" id="ts-' + i + '">' + teams[i].score + '</div>';
+    html += '<div class="pts-btns">';
+    html += '<button class="pts-btn" onclick="awardPts(' + i + ',1)">+1</button>';
+    html += '<button class="pts-btn" onclick="awardPts(' + i + ',2)">+2</button>';
+    html += '<button class="pts-btn" onclick="awardPts(' + i + ',3)">+3</button>';
+    html += '<button class="pts-btn minus" onclick="awardPts(' + i + ',-1)">-1</button>';
+    html += '</div></div>';
+  }
+  document.getElementById("scoreboard").innerHTML = html;
+}
+
+function awardPts(i, n) {
+  teams[i].score = Math.max(0, teams[i].score + n);
+  var ts = document.getElementById("ts-" + i);
+  if (ts) ts.textContent = teams[i].score;
+  var tc = document.getElementById("tc-" + i);
+  if (tc) {
+    var f = document.createElement("div");
+    f.className = "float-pts";
+    f.textContent = (n > 0 ? "+" : "") + n;
+    f.style.color = n > 0 ? "var(--gold)" : "#f08080";
+    tc.appendChild(f);
+    setTimeout(function() { if (f.parentNode) f.parentNode.removeChild(f); }, 1000);
+  }
+  var max = 0;
+  for (var j = 0; j < teams.length; j++) { if (teams[j].score > max) max = teams[j].score; }
+  for (var j = 0; j < teams.length; j++) {
+    var el = document.getElementById("tc-" + j);
+    if (el) {
+      if (teams[j].score === max && max > 0) { el.classList.add("top-team"); }
+      else { el.classList.remove("top-team"); }
+    }
+  }
+}
+
+function renderMap() {
+  var html = "";
+  for (var i = 0; i < CASES.length; i++) {
+    var done = i < caseIdx, active = i === caseIdx;
+    var cls = done ? "done" : (active ? "active" : "locked");
+    var lbl = done ? "done" : (active ? "active" : "");
+    html += '<div class="q-node">';
+    html += '<div class="q-orb ' + cls + '">' + (done ? "&#x2713;" : (i + 1)) + '</div>';
+    html += '<div class="q-label ' + lbl + '">' + esc(CASES[i].label.split("—")[0].trim()) + '</div>';
+    html += '</div>';
+    if (i < CASES.length - 1) {
+      html += '<div class="q-line' + (done ? " done" : "") + '"></div>';
+    }
+  }
+  html += '<div class="q-line' + (caseIdx >= CASES.length ? " done" : "") + '"></div>';
+  html += '<div class="q-node"><div class="q-orb ' + (caseIdx >= CASES.length ? "done" : "locked") + '">&#x1F3C1;</div><div class="q-label ' + (caseIdx >= CASES.length ? "done" : "") + '">Finish</div></div>';
+  document.getElementById("quest-map").innerHTML = html;
+}
+
+function buildArtifact(a) {
+  if (!a) return "";
+  if (a.type === "log") {
+    return '<div class="art-doc"><pre class="art-logbody">' + esc(a.body) + '</pre></div>';
+  }
+  if (a.type === "email") {
+    return '<div class="art-doc">'
+      + '<div class="art-email-hdr"><div class="art-email-subj">' + esc(a.subject) + '</div>'
+      + '<div class="art-email-meta">From: ' + esc(a.from) + ' &nbsp;&#183;&nbsp; To: ' + esc(a.to) + '</div></div>'
+      + '<pre class="art-email-body">' + esc(a.body) + '</pre></div>';
+  }
+  if (a.type === "slides") {
+    var rows = "";
+    for (var i = 0; i < a.slides.length; i++) {
+      rows += '<div class="preso-slide"><strong>' + esc(a.slides[i].n) + '</strong><span class="preso-val">' + esc(a.slides[i].v) + '</span></div>';
+    }
+    return '<div class="art-doc"><div class="art-slidehdr"><div class="art-slidetitle">&#x1F4CB; ' + esc(a.title) + '</div></div>' + rows + '</div>';
+  }
+  if (a.type === "riddle") {
+    return '<div class="art-doc"><pre class="art-riddle">' + esc(a.body) + '</pre></div>';
+  }
+  return "";
+}
+
+function renderCase() {
+  if (caseIdx >= CASES.length) { showVictory(); return; }
+  var c = CASES[caseIdx];
+  var ph = casePhase;
+  var gmBtns = "";
+  if (ph === "locked") {
+    gmBtns = '<button class="gmbtn gmbtn-unlock" onclick="unlockCase()">&#x1F513; Unlock Case</button>';
+  } else if (ph === "unlocked") {
+    gmBtns = '<button class="gmbtn gmbtn-hint" onclick="showHint()">&#x1F4A1; Give Hint</button>'
+            + '<button class="gmbtn gmbtn-answer" onclick="revealAnswer()">&#x2705; Reveal Answer</button>';
+  } else if (ph === "hinted") {
+    gmBtns = '<button class="gmbtn gmbtn-answer" onclick="revealAnswer()">&#x2705; Reveal Answer</button>';
+  } else {
+    var isLast = caseIdx === CASES.length - 1;
+    gmBtns = '<button class="gmbtn gmbtn-next" onclick="nextCase()">' + (isLast ? "&#x1F3C6; Finish Quest" : "&#x2694; Next Case") + '</button>';
+  }
+
+  var inner = "";
+  if (ph === "locked") {
+    inner = '<div class="lock-state"><div class="lock-icon">&#x1F512;</div><div class="lock-text">Awaiting Game Meister unlock...</div></div>';
+  } else {
+    var hintHtml = "";
+    if (ph === "hinted" || ph === "answered") {
+      hintHtml = '<div class="hint-box"><div class="hint-title">&#x1F4A1; Hint</div><div class="hint-text">' + esc(c.hint) + '</div></div>';
+    }
+    var answerHtml = "";
+    if (ph === "answered") {
+      answerHtml = '<div class="answer-wrap">'
+        + '<div class="answer-top"><div class="answer-label">&#x2705; Answer</div>'
+        + '<div class="answer-text">' + esc(c.answer).replace(/\n/g, "<br>") + '</div></div>'
+        + '<div class="punchline-box">&#x1F605; ' + esc(c.punchline) + '</div></div>';
+    }
+    inner = '<div class="artifact-wrap">' + buildArtifact(c.artifact) + '</div>'
+          + '<div class="extras">'
+          + '<div class="question-box">&#x2753; ' + esc(c.question) + '</div>'
+          + hintHtml + answerHtml
+          + '</div>';
+  }
+
+  document.getElementById("case-card").innerHTML =
+    '<div class="case-header">'
+    + '<div class="case-tag">' + esc(c.label) + '</div>'
+    + '<div class="case-title">' + c.icon + ' ' + esc(c.title) + '</div>'
+    + '<div class="case-flavour">' + esc(c.flavour) + '</div>'
+    + '</div>'
+    + inner
+    + '<div class="gm-panel"><div class="gm-label">&#x2699; Game Meister Controls</div><div class="gm-btns">' + gmBtns + '</div></div>';
+}
+
+function unlockCase() {
+  var overlay = document.getElementById("unlock-overlay");
+  overlay.classList.add("active");
+  setTimeout(function() {
+    overlay.classList.remove("active");
+    casePhase = "unlocked";
+    renderCase();
+  }, 1600);
+}
+
+function showHint() { casePhase = "hinted"; renderCase(); }
+function revealAnswer() { casePhase = "answered"; renderCase(); }
+
+function nextCase() {
+  caseIdx++;
+  casePhase = "locked";
+  renderMap();
+  renderCase();
+  var cs = document.querySelector(".center-scroll");
+  if (cs) cs.scrollTop = 0;
+}
+
+function showVictory() {
+  document.getElementById("game").style.display = "none";
+  var v = document.getElementById("victory");
+  v.style.display = "flex";
+  var conf = document.getElementById("confetti");
+  var colors = ["#FF3621","#F5A623","#2ECC71","#9B59B6","#3498DB","#fff"];
+  for (var i = 0; i < 120; i++) {
+    var el = document.createElement("div");
+    el.className = "conf";
+    var isCircle = Math.random() > 0.5;
+    var sz = 6 + Math.random() * 8;
+    el.style.left = Math.random() * 100 + "%";
+    el.style.background = colors[i % colors.length];
+    el.style.borderRadius = isCircle ? "50%" : "2px";
+    el.style.width = sz + "px";
+    el.style.height = sz + "px";
+    el.style.setProperty("--d", (2 + Math.random() * 4).toFixed(1) + "s");
+    el.style.setProperty("--delay", (Math.random() * 3).toFixed(1) + "s");
+    conf.appendChild(el);
+  }
+  var sorted = teams.slice().sort(function(a, b) { return b.score - a.score; });
+  var medals = ["&#x1F947;","&#x1F948;","&#x1F949;","&#x1F3C5;","&#x1F3C5;","&#x1F3C5;"];
+  var html = "";
+  for (var i = 0; i < sorted.length; i++) {
+    html += '<div class="final-card ' + (i === 0 ? "winner" : "") + '">'
+          + '<div class="final-rank">' + medals[i] + '</div>'
+          + '<div class="final-tname">' + esc(sorted[i].name) + '</div>'
+          + '<div class="final-tscore">' + sorted[i].score + '</div>'
+          + '<div class="final-pts">points</div></div>';
+  }
+  document.getElementById("final-scores").innerHTML = html;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>

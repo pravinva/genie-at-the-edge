@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic HMI - Genie at the Edge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(to right, #00ff88, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #00ff88;
+        }
+
+        .feature-card p {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .demo-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .demo-link {
+            display: block;
+            padding: 20px;
+            background: linear-gradient(135deg, #00a8ff, #0080ff);
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .demo-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 168, 255, 0.4);
+        }
+
+        .special-link {
+            background: linear-gradient(135deg, #ff3366, #ff6633);
+        }
+
+        .special-link:hover {
+            box-shadow: 0 10px 30px rgba(255, 51, 102, 0.4);
+        }
+
+        .tech-stack {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tech-stack h3 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00ff88;
+        }
+
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 255, 136, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agentic HMI System</h1>
+        <p class="subtitle">Real-time Intelligent Operations with Databricks & Ignition</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>PostgreSQL NOTIFY</h3>
+                <p>Real-time webhooks with <100ms latency for instant notifications when anomalies are detected or operator decisions are made.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Ask AI Why</h3>
+                <p>Integrated Genie AI explanations for every recommendation, providing operators with instant context and reasoning.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Direct JDBC</h3>
+                <p>High-performance write-back with <200ms latency for operator decisions, bypassing traditional named queries.</p>
+            </div>
+        </div>
+
+        <div class="demo-links">
+            <a href="Ignition + Databricks _ Intelligent Operations Platform.html" class="demo-link">
+                <span class="status-indicator"></span>
+                View Main Dashboard
+            </a>
+
+            <a href="treasure_hunt.html" class="demo-link special-link">
+                Pipeline Dreams - ANZ DSA Adventure
+            </a>
+
+            <a href="https://github.com/pravinva/genie-edge-demo" class="demo-link" target="_blank">
+                View Source Code
+            </a>
+        </div>
+
+        <div class="tech-stack">
+            <h3>Technology Stack</h3>
+            <div class="tech-badges">
+                <span class="badge">Databricks Lakehouse</span>
+                <span class="badge">Ignition SCADA</span>
+                <span class="badge">PostgreSQL</span>
+                <span class="badge">Perspective UI</span>
+                <span class="badge">MLflow</span>
+                <span class="badge">Genie AI</span>
+                <span class="badge">Docker</span>
+                <span class="badge">Apache Spark</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,2465 @@
+# AGENTIC IGNITION HMI - COMPLETE WORKSTREAM PROMPTS
+# Save each section below as separate .md files in your prompts/ directory
+
+---
+FILE: prompts/workstream_01_lakebase_setup.md
+---
+
+# Workstream 1.1: Lakebase Database Setup
+
+Connect to Databricks FE workspace using default CLI creds.
+Create Lakebase database called "agentic_hmi".
+Create 5 tables: agent_recommendations, work_orders, equipment_setpoints, agent_commands, operator_sessions.
+Use Postgres-compatible SQL.
+Give me the CREATE TABLE statements.
+
+Expected output:
+- SQL file with all CREATE TABLE statements
+- Test that database and tables exist
+- Insert 3 sample rows in agent_recommendations for testing
+
+---
+FILE: prompts/workstream_01_ignition_connection.md
+---
+
+# Workstream 1.2: Ignition Database Connection
+
+I have an Ignition gateway at https://e2-demo-field-eng.cloud.databricks.com:8043
+Username: admin
+
+I need a Python script that:
+1. Connects to Ignition Gateway WebDev API
+2. Creates a new database connection called "Lakebase_Connection"
+3. Connection details:
+   - Driver: PostgreSQL
+   - URL: jdbc:postgresql://<workspace>/lakebase/agentic_hmi
+   - Username: token
+   - Password: <from databricks cli>
+
+Run it and tell me if it worked.
+Test the connection from Ignition.
+
+Expected output:
+- Python script: create_db_connection.py
+- Verification that connection shows as "Valid" in Ignition Gateway
+
+---
+FILE: prompts/workstream_01_named_queries.md
+---
+
+# Workstream 1.3: Named Queries Creation
+
+Create named queries in Ignition:
+1. getPendingRecommendations - SELECT from agent_recommendations WHERE status='pending' ORDER BY priority DESC
+2. approveRecommendation - UPDATE agent_recommendations SET status='approved', operator_id=:operator_id, approved_timestamp=CURRENT_TIMESTAMP WHERE recommendation_id=:rec_id
+3. getWorkOrders - SELECT from work_orders WHERE status IN ('created', 'assigned', 'in_progress')
+4. getAgentCommands - SELECT from agent_commands WHERE status='pending'
+5. insertAgentCommand - INSERT INTO agent_commands (command_id, tag_path, new_value, created_by)
+
+Write Python script using Ignition WebDev API to create these.
+Test each one returns data (or executes for UPDATE/INSERT).
+
+Expected output:
+- Script: create_named_queries.py  
+- Verification that all 5 queries exist in Ignition
+
+---
+FILE: prompts/workstream_02_view_json.md
+---
+
+# Workstream 2.1: Generate Perspective View JSON
+
+I need Python code that creates an Ignition Perspective view.
+
+The view should be JSON with:
+- Name: "AgentRecommendations"
+- Root container: Flex column, direction=column
+- Background: #1e1e1e
+- Contains: 
+  * Header label "Agent Recommendations" (24px, bold, white)
+  * Recommendations container (will hold cards)
+
+Save as view JSON file: agent_recommendations_view.json
+Don't create it in Ignition yet, just generate the JSON.
+
+Expected output:
+- JSON file with valid Perspective view structure
+- Formatted and readable
+
+---
+FILE: prompts/workstream_02_add_bindings.md
+---
+
+# Workstream 2.2: Add Database Bindings
+
+Take the agent_recommendations_view.json file.
+
+Add a database query binding that:
+- Connects to "Lakebase_Connection"
+- Runs query: "SELECT * FROM agent_recommendations WHERE status='pending' ORDER BY priority DESC, created_timestamp DESC"  
+- Polls every 2 seconds
+- Binds result to recommendations container's "data" property
+
+Update the JSON with this binding.
+Save as agent_recommendations_view_v2.json
+
+Expected output:
+- Updated JSON with query binding configured
+- Show me the binding configuration section
+
+---
+FILE: prompts/workstream_02_upload_views.md
+---
+
+# Workstream 2.3: Upload Views to Ignition
+
+I'll give you Ignition WebDev API documentation.
+
+Write Python script that:
+1. Loads agent_recommendations_view_v2.json
+2. Uses Ignition WebDev API to create the view in project "AgenticHMI"
+3. Places it in views/agent/ folder
+4. Verifies it was created
+
+If WebDev API doesn't support this, use file system approach:
+- Find Ignition project directory on gateway
+- Write JSON file to correct location
+- Trigger project scan/reload
+
+Run it and confirm view appears in Designer.
+
+Expected output:
+- Script: upload_view_to_ignition.py
+- Screenshot or confirmation view exists
+
+---
+FILE: prompts/workstream_03_component_card.md
+---
+
+# Workstream 3.1: Recommendation Card Component
+
+Generate Perspective component JSON for a "RecommendationCard".
+
+Component structure:
+- Root: Flex container (column), border-radius 8px
+- Border: 3px solid, color based on severity (critical=#ef4444, high=#f97316, medium=#eab308, low=#3b82f6)
+- Padding: 16px
+- Background: #2d2d2d
+
+Contents (top to bottom):
+1. Header row (flex row):
+   - Severity badge (colored pill with text)
+   - Timestamp (relative: "2 min ago")
+2. Equipment ID (bold, 16px)
+3. Issue description (14px, gray)
+4. Recommended action (14px, white, background: #374151, padding: 12px)
+5. Confidence meter (progress bar, 0-100%)
+6. Button row:
+   - Approve button (green, #10b981)
+   - Defer button (yellow, #eab308)
+   - Reject button (red, #ef4444)
+
+Component should accept params:
+- recommendation_id
+- equipment_id
+- severity
+- timestamp
+- issue_description
+- recommended_action
+- confidence_score
+- operator_id (from session)
+
+Give me complete JSON I can use.
+
+Expected output:
+- recommendation_card.json with complete component definition
+
+---
+FILE: prompts/workstream_03_button_scripts.md
+---
+
+# Workstream 3.2: Add Button Scripts
+
+Take recommendation_card.json.
+
+Add onClick script to Approve button:
+
+```python
+def runAction(self, event):
+    # Get data from component params
+    rec_id = self.parent.parent.custom.recommendationId
+    operator_id = self.session.custom.operatorId
+    equipment_id = self.parent.parent.custom.equipmentId
+    
+    # Confirm with operator
+    result = system.perspective.openDialog(
+        'ConfirmApproval',
+        params={'equipment': equipment_id},
+        modal=True,
+        position={'width': 400, 'height': 200}
+    )
+    
+    if result and result.get('confirmed'):
+        try:
+            # Execute named query
+            system.db.runNamedQuery(
+                'approveRecommendation',
+                parameters={'rec_id': rec_id, 'operator_id': operator_id, 'notes': ''},
+                database='Lakebase_Connection'
+            )
+            
+            # Success notification
+            system.perspective.sendMessage(
+                'toast',
+                {'message': 'Approved! Agent will execute shortly.', 'type': 'success'}
+            )
+            
+            # Refresh parent view
+            self.view.refreshBinding('props.data')
+            
+        except Exception as e:
+            # Error notification
+            system.perspective.sendMessage(
+                'toast',
+                {'message': f'Approval failed: {str(e)}', 'type': 'error'}
+            )
+```
+
+Add similar scripts for Defer and Reject buttons.
+
+Inject scripts into JSON at correct locations.
+Save as recommendation_card_interactive.json
+
+Expected output:
+- Updated JSON with all three button scripts
+- Show me the script configuration for one button
+
+---
+FILE: prompts/workstream_03_assemble_view.md
+---
+
+# Workstream 3.3: Assemble Complete View
+
+I want to add RecommendationCard components to AgentRecommendations view automatically.
+
+Using the database query binding data (array of recommendations):
+
+1. Load agent_recommendations_view_v2.json
+2. Find the recommendations container
+3. Add a Repeater component that:
+   - Iterates over query results (props.data)
+   - For each row: instantiates RecommendationCard
+   - Passes row data as params to each card instance
+4. Save as agent_recommendations_complete.json
+
+Then upload this complete view to Ignition.
+
+Expected output:
+- Complete view JSON with repeater
+- Uploaded to Ignition project
+- Test in Perspective session (should show cards from Lakebase data)
+
+---
+FILE: prompts/workstream_04_simple_agent.md
+---
+
+# Workstream 4.1: Simple Operations Agent
+
+Create file: simple_operations_agent.py
+
+The agent should:
+1. Import: databricks.sql, time, uuid, json
+2. Connect to Lakebase using databricks.sql.connect() with default CLI creds
+3. Main loop (while True):
+   a. Query Delta Lake table "sensor_data" for last 10 seconds
+   b. Check if any temperature > 85°C
+   c. If anomaly: INSERT into agent_recommendations table with:
+      - recommendation_id (uuid)
+      - equipment_id (from sensor)
+      - issue_type: "high_temperature"
+      - severity: "medium"
+      - recommended_action: "Reduce throughput by 10%"
+      - status: "pending"
+   d. Query agent_recommendations WHERE status='approved' AND executed_timestamp IS NULL
+   e. For each approved: INSERT into agent_commands with command details
+   f. Sleep 10 seconds
+4. Print everything it does with timestamps
+
+Make it simple and robust.
+Run it in terminal and show me 2 minutes of output.
+
+Expected output:
+- simple_operations_agent.py
+- Console output showing it detecting, recommending, seeing approvals
+
+---
+FILE: prompts/workstream_04_genie_integration.md
+---
+
+# Workstream 4.2: Add Genie to Agent
+
+Enhance simple_operations_agent.py with Genie integration.
+
+When creating a recommendation:
+1. Before INSERT, call Genie API
+2. Question 1: "Equipment {equipment_id} shows temperature {temp}°C (normal range: 70-80°C). Analyze why this might be happening based on typical causes in manufacturing."
+3. Store Genie's response as root_cause_analysis
+4. Question 2: "Given that root cause, what specific action should an operator take to resolve this?"
+5. Store response as recommended_action
+6. Calculate confidence based on Genie's certainty
+
+Use Databricks Agent Mosaic AI API for Genie calls.
+
+Print Genie's reasoning to console.
+
+Expected output:
+- Updated agent with Genie integration
+- Sample output showing Genie's analysis and recommendations
+
+---
+FILE: prompts/workstream_04_deploy_agent.md
+---
+
+# Workstream 4.3: Deploy Agent to Databricks
+
+Deploy simple_operations_agent.py as Databricks Job.
+
+Steps:
+1. Create requirements.txt: databricks-sql-connector, requests
+2. Upload simple_operations_agent.py to Databricks workspace
+3. Create Databricks Job using workspace CLI or API:
+   - Name: "AgenticHMI_OperationsAgent"
+   - Schedule: Continuous (or every 30 seconds)
+   - Cluster: Use existing FE demo cluster
+   - Task: Run simple_operations_agent.py
+4. Start the job
+5. Monitor logs for 5 minutes
+
+Expected output:
+- Job created and running
+- Logs showing agent activity
+- Link to Databricks job run
+
+---
+FILE: prompts/workstream_05_gateway_script.md
+---
+
+# Workstream 5.1: Ignition Write-Back Gateway Script
+
+Create Ignition Gateway timer script that runs every 2 seconds.
+
+Script should:
+```python
+# Get pending commands from Lakebase
+pending_commands = system.db.runQuery("""
+    SELECT command_id, tag_path, new_value, equipment_id
+    FROM agent_commands 
+    WHERE status = 'pending'
+    ORDER BY created_timestamp ASC
+    LIMIT 10
+""", database="Lakebase_Connection")
+
+for cmd in pending_commands:
+    try:
+        # Write to Ignition tag
+        success = system.tag.writeBlocking(
+            [cmd['tag_path']], 
+            [cmd['new_value']]
+        )
+        
+        if success[0].quality.isGood():
+            # Mark as executed in Lakebase
+            system.db.runUpdateQuery("""
+                UPDATE agent_commands 
+                SET status = 'executed',
+                    executed_timestamp = CURRENT_TIMESTAMP,
+                    execution_result = 'Success'
+                WHERE command_id = ?
+            """, [cmd['command_id']], database="Lakebase_Connection")
+            
+            logger.info(f"Executed command {cmd['command_id']}: {cmd['tag_path']} = {cmd['new_value']}")
+        else:
+            raise Exception("Tag write quality bad")
+            
+    except Exception as e:
+        # Mark as failed
+        system.db.runUpdateQuery("""
+            UPDATE agent_commands 
+            SET status = 'failed',
+                execution_result = ?
+            WHERE command_id = ?
+        """, [str(e), cmd['command_id']], database="Lakebase_Connection")
+        
+        logger.error(f"Failed to execute command {cmd['command_id']}: {str(e)}")
+```
+
+Deploy this as Gateway Timer Script in Ignition.
+Schedule: Fixed Rate, 2000ms
+Test: Insert a command manually, watch it execute.
+
+Expected output:
+- Gateway script deployed
+- Logs showing commands being executed
+- Tag values actually changing in Ignition
+
+---
+FILE: prompts/workstream_05_rest_endpoint.md
+---
+
+# Workstream 5.2: REST API Endpoint for Write-Back
+
+Create Ignition WebDev REST endpoint.
+
+Endpoint: /api/agent/execute
+Method: POST
+Input JSON: {"tagPath": "string", "value": number, "commandId": "string"}
+
+Script:
+```python
+def doPost(request, session):
+    import system.tag as tags
+    import system.util as util
+    
+    try:
+        # Parse request
+        data = util.jsonDecode(request['postData'])
+        tag_path = data['tagPath']
+        value = data['value']
+        command_id = data['commandId']
+        
+        # Write tag
+        result = tags.writeBlocking([tag_path], [value])
+        
+        if result[0].quality.isGood():
+            return {
+                'json': {
+                    'success': True,
+                    'commandId': command_id,
+                    'tagPath': tag_path,
+                    'value': value,
+                    'timestamp': str(system.date.now())
+                }
+            }
+        else:
+            raise Exception(f"Tag write quality: {result[0].quality}")
+            
+    except Exception as e:
+        return {
+            'json': {
+                'success': False,
+                'error': str(e)
+            },
+            'status': 500
+        }
+```
+
+Deploy to Ignition WebDev.
+Test with curl command.
+
+Expected output:
+- WebDev endpoint deployed
+- Curl test showing successful tag write
+
+---
+FILE: prompts/workstream_05_test_writeback.md
+---
+
+# Workstream 5.3: Test Agent Write-Back
+
+Update simple_operations_agent.py to call Ignition REST API:
+
+When executing approved command:
+```python
+def execute_command(self, command):
+    """Execute command via Ignition REST API"""
+    
+    import requests
+    
+    url = "https://e2-demo-field-eng.cloud.databricks.com:8043/api/agent/execute"
+    
+    payload = {
+        "tagPath": command['tag_path'],
+        "value": command['new_value'],
+        "commandId": command['command_id']
+    }
+    
+    response = requests.post(
+        url,
+        json=payload,
+        auth=(IGNITION_USER, IGNITION_PASSWORD),
+        verify=True
+    )
+    
+    if response.json()['success']:
+        # Update Lakebase
+        self.lakebase.execute("""
+            UPDATE agent_commands 
+            SET status='executed', execution_result=? 
+            WHERE command_id=?
+        """, [response.text, command['command_id']])
+    else:
+        # Mark failed
+        self.lakebase.execute("""
+            UPDATE agent_commands 
+            SET status='failed', execution_result=? 
+            WHERE command_id=?
+        """, [response.json()['error'], command['command_id']])
+```
+
+Test end-to-end:
+1. Agent creates recommendation
+2. Manually approve in Lakebase
+3. Agent creates command
+4. Agent calls Ignition API
+5. Verify tag value changed in Ignition
+
+Expected output:
+- Updated agent code
+- Successful end-to-end test results
+
+---
+FILE: prompts/workstream_06_execution_tracker.md
+---
+
+# Workstream 6.1: Execution Tracker View
+
+Generate Perspective view: "ExecutionTracker"
+
+Shows currently executing agent actions.
+
+Components:
+- Header: "Agent Actions"
+- Query binding: SELECT * FROM agent_commands WHERE status IN ('pending', 'executing') ORDER BY created_timestamp DESC
+- Display as list with:
+  * Command description
+  * Tag path being modified
+  * Old value → New value (with arrow)
+  * Progress indicator (animated)
+  * Time elapsed since created
+- Refresh every 1 second
+
+Make it look like a live activity feed.
+Generate complete view JSON.
+
+Expected output:
+- execution_tracker_view.json
+- Upload to Ignition
+- Test showing live commands
+
+---
+FILE: prompts/workstream_06_agent_health.md
+---
+
+# Workstream 6.2: Agent Health Dashboard
+
+Generate Perspective view: "AgentHealthDashboard"
+
+Display metrics:
+- Agent status (online/offline) - check if last_heartbeat < 30 seconds ago
+- Recommendations created today
+- Approval rate (approved / total created)
+- Success rate (successful / total executed)
+- Last 5 actions taken (mini table)
+
+Data sources:
+- Query agent_recommendations for metrics
+- Aggregate data in SQL
+- Use charts/gauges for visualization
+
+Layout:
+- 2x2 grid of metric cards
+- Bottom section: recent actions table
+
+Generate complete view with all queries and bindings.
+
+Expected output:
+- agent_health_dashboard.json
+- Upload and verify metrics display correctly
+
+---
+FILE: prompts/workstream_06_production_overview.md
+---
+
+# Workstream 6.3: Production Overview with Agent Integration
+
+Generate Perspective view: "ProductionOverview"
+
+Layout:
+- Left 70%: Traditional HMI (equipment temps, pressures, flows)
+- Right 30%: Agent panel (embedded AgentRecommendations view)
+
+Left panel components:
+- 6 value displays (bind to Ignition tags)
+- 3 trend charts (historical data)
+- Equipment status indicators
+
+Right panel:
+- Embedded view: AgentRecommendations
+- Sized to fit panel
+
+Generate complete view JSON showing how to embed one view in another.
+
+Expected output:
+- production_overview.json
+- Demonstrates embedded view pattern
+
+---
+FILE: prompts/workstream_07_demo_generator.md
+---
+
+# Workstream 7.1: Demo Data Generator
+
+Create demo_data_generator.py:
+
+Every 30 seconds, create a demo scenario:
+1. Generate fake equipment anomaly (INSERT into sensor_data)
+2. Agent detects it (should create recommendation)
+3. Wait 10 seconds
+4. Auto-approve recommendation (UPDATE status='approved')
+5. Agent sees approval (should create command)
+6. Wait 5 seconds
+7. Command executes (should update Ignition tag)
+8. Mark scenario complete
+
+This creates continuous demo activity.
+
+Run for 5 minutes and show me what happens.
+Stop gracefully with Ctrl+C.
+
+Expected output:
+- demo_data_generator.py
+- Console output showing full cycle every 30 sec
+
+---
+FILE: prompts/workstream_07_simulator_integration.md
+---
+
+# Workstream 7.2: OT Simulator Integration
+
+Connect to my OT simulator at https://ot-sim-test-1444828305810485.aws.databricksapps.com/
+
+The simulator exposes sensor data via API endpoint /api/sensors
+
+Create script:
+1. Poll simulator every 1 second
+2. Stream data to Delta Lake table "realtime_sensors"
+3. When temperature > 90°C on any sensor:
+   - Trigger agent to create recommendation
+   - Include sensor metadata (industry, PLC vendor)
+
+Make this run as background process for live demos.
+
+Expected output:
+- ot_simulator_streamer.py
+- Deployed as Databricks job
+- Logs showing data streaming
+
+---
+FILE: prompts/workstream_07_failure_scenarios.md
+---
+
+# Workstream 7.3: Realistic Failure Scenarios
+
+Create 3 realistic failure scenario scripts:
+
+Scenario 1: bearing_failure_scenario.py
+- Simulate bearing failure (vibration increases over 30 min)
+- Pattern: vibration starts at 2mm/s, increases by 0.1mm/s every minute
+- At 5mm/s: agent should detect and recommend "Schedule bearing replacement"
+
+Scenario 2: cooling_degradation_scenario.py  
+- Simulate cooling system degradation (temp rises slowly)
+- Pattern: temp rises 1°C every 5 minutes
+- At +15°C above setpoint: agent recommends "Switch to backup cooling"
+
+Scenario 3: pressure_spike_scenario.py
+- Simulate sudden pressure spike
+- Pattern: pressure jumps 20% in 30 seconds
+- Agent should immediately recommend "Emergency shutdown valve V-999"
+
+Each script:
+- Writes realistic sensor patterns to Delta Lake
+- Triggers agent at right moment
+- Shows agent recommendation
+- Simulates operator approval
+- Shows resolution
+
+Give me 3 separate Python scripts.
+
+Expected output:
+- 3 scenario scripts
+- Run each one and verify agent responds correctly
+
+---
+FILE: prompts/workstream_08_sdk_exploration.md
+---
+
+# Workstream 8.1: Explore Ignition SDK
+
+Clone https://github.com/inductiveautomation/ignition-sdk-examples
+
+Focus on:
+- perspective-component example
+- project-resource-api example (if it exists in 8.3)
+
+Study the code and answer:
+1. How do I programmatically create a Perspective view using SDK?
+2. What Java classes/APIs are used?
+3. Can I do this from Python or only Java?
+4. Show me minimal code example
+
+Summarize findings in plain English.
+
+Expected output:
+- Summary document: ignition_sdk_findings.md
+- Code snippet showing view creation
+
+---
+FILE: prompts/workstream_08_view_generator_module.md
+---
+
+# Workstream 8.2: SDK Module for View Generation
+
+Create Ignition SDK module: "PerspectiveViewGenerator"
+
+Module structure (using Gradle):
+```
+perspective-view-generator/
+├── build.gradle
+├── settings.gradle
+└── perspective-view-generator-gateway/
+    └── src/main/java/com/databricks/
+        └── ViewGeneratorGatewayHook.java
+```
+
+Module should:
+1. Add menu item in Designer: "Tools > Generate Agentic Views"
+2. When clicked:
+   - Read JSON templates from gateway/src/main/resources/views/
+   - Create each template as Perspective view in current project
+   - Show progress dialog
+3. Templates included:
+   - AgentRecommendations.json
+   - ExecutionTracker.json
+   - AgentHealthDashboard.json
+
+Build module structure.
+Don't implement yet, just scaffolding.
+
+Expected output:
+- Gradle project structure
+- Gateway hook skeleton
+- Menu registration code
+
+---
+FILE: prompts/workstream_08_implement_generation.md
+---
+
+# Workstream 8.3: Implement View Generation Logic
+
+Write Java code for ViewGeneratorAction class:
+
+```java
+public class ViewGeneratorAction extends AbstractDesignerAction {
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Get current project
+        ProjectResource project = context.getCurrentProject();
+        
+        // Load templates
+        String[] templates = {"AgentRecommendations.json", "ExecutionTracker.json"};
+        
+        for (String templateName : templates) {
+            // Load template from resources
+            String json = loadResourceAsString("/views/" + templateName);
+            
+            // Create project resource
+            ProjectResourceBuilder builder = ProjectResource.builder()
+                .setResourceType("perspective-view")
+                .setResourcePath("agent/" + templateName.replace(".json", ""));
+            
+            // Write JSON data
+            builder.putData("view.json", json.getBytes(StandardCharsets.UTF_8));
+            
+            // Save to project
+            project.addResource(builder.build());
+        }
+        
+        // Show success dialog
+        JOptionPane.showMessageDialog(null, "Generated 2 agentic views successfully!");
+    }
+}
+```
+
+Implement this in your SDK module.
+Build the .modl file.
+Test installation in Ignition.
+
+Expected output:
+- Working SDK module
+- .modl file
+- Menu item appears in Designer
+- Clicking it creates views
+
+---
+FILE: prompts/workstream_09_bulk_bindings.md
+---
+
+# Workstream 9.1: Bulk Component Binding Update
+
+I have 50 label components in view "ProductionDashboard" that need database bindings.
+
+Write Python script:
+1. Load ProductionDashboard.json from Ignition project
+2. Find all components where type = "ia.display.label"
+3. For each label:
+   - Extract component name (e.g., "temp_reactor_1")
+   - Parse to get tag path ([default]Reactors/R1/Temperature)
+   - Add tag binding to props.text property
+4. Save updated JSON
+5. Upload back to Ignition
+
+Process 50 components in under 10 seconds.
+
+Expected output:
+- bulk_add_bindings.py
+- Updated view with all 50 labels bound to tags
+- Verification in Ignition Designer
+
+---
+FILE: prompts/workstream_09_button_bulk_scripts.md
+---
+
+# Workstream 9.2: Bulk Button Script Addition
+
+I have 20 buttons in "ControlPanel" view that need onClick scripts.
+
+Each button should:
+```python
+def runAction(self, event):
+    # Get button name (e.g., "start_reactor_1")
+    button_name = self.meta.name
+    
+    # Parse to get equipment_id
+    equipment_id = button_name.replace("start_", "").upper()
+    
+    # Execute named query
+    system.db.runNamedQuery(
+        'startEquipment',
+        parameters={'equipment_id': equipment_id},
+        database='Lakebase_Connection'
+    )
+    
+    # Show toast
+    system.perspective.sendMessage('toast', 
+        {'message': f'Started {equipment_id}', 'type': 'success'})
+```
+
+Write script that:
+1. Loads ControlPanel.json
+2. Finds all button components
+3. Injects this script into each button's onClick event
+4. Saves updated view
+
+Run and verify all buttons work.
+
+Expected output:
+- bulk_add_button_scripts.py
+- 20 buttons with working scripts
+
+---
+FILE: prompts/workstream_09_convert_static_to_live.md
+---
+
+# Workstream 9.3: Convert Static to Live Data
+
+I have 30 components in "Dashboard" view showing static text.
+
+Convert them to live database-driven displays:
+
+For each component:
+1. Current: props.text = "Static value"
+2. New: props.text bound to query:
+   ```sql
+   SELECT value FROM equipment_realtime 
+   WHERE parameter_name = '{component_name}'
+   ORDER BY timestamp DESC LIMIT 1
+   ```
+3. Add 2-second polling
+4. Keep same visual formatting
+
+Write script that:
+- Identifies static components
+- Replaces with database bindings
+- Maintains styling
+- Tests each binding works
+
+Expected output:
+- convert_static_to_live.py
+- Updated Dashboard view with 30 live components
+
+---
+FILE: prompts/workstream_10_template_system.md
+---
+
+# Workstream 10.1: View Template System
+
+Create view template: equipment_monitor_template.json
+
+Template variables (will be replaced):
+- {{EQUIPMENT_ID}} - equipment identifier
+- {{TAG_PATH}} - base tag path
+- {{QUERY_NAME}} - named query to use
+- {{EQUIPMENT_TYPE}} - reactor/pump/valve
+- {{DISPLAY_NAME}} - friendly name
+
+Component structure:
+- Title: "{{DISPLAY_NAME}} Monitor"
+- 4 value displays:
+  * Temperature (bind to {{TAG_PATH}}/Temperature)
+  * Pressure (bind to {{TAG_PATH}}/Pressure)
+  * Flow Rate (bind to {{TAG_PATH}}/FlowRate)
+  * Status (bind to {{TAG_PATH}}/Status)
+- 2 buttons:
+  * Start (runs query startEquipment with {{EQUIPMENT_ID}})
+  * Stop (runs query stopEquipment with {{EQUIPMENT_ID}})
+- Color theme based on {{EQUIPMENT_TYPE}}
+
+Generate template JSON with {{VARIABLES}}.
+
+Expected output:
+- equipment_monitor_template.json
+- Template ready for variable substitution
+
+---
+FILE: prompts/workstream_10_bulk_generation.md
+---
+
+# Workstream 10.2: Bulk View Generation from CSV
+
+Create script: generate_equipment_views.py
+
+Input CSV: equipment_config.csv
+```csv
+equipment_id,tag_path,query_name,equipment_type,display_name
+REACTOR_01,[default]Reactors/R01,reactor_data,reactor,Main Reactor 1
+REACTOR_02,[default]Reactors/R02,reactor_data,reactor,Main Reactor 2
+PUMP_07,[default]Pumps/P07,pump_data,pump,Cooling Pump 7
+VALVE_123,[default]Valves/V123,valve_data,valve,Control Valve 123
+```
+
+For each row:
+1. Load equipment_monitor_template.json
+2. Replace all {{VARIABLES}} with CSV values
+3. Create view in Ignition: views/equipment/{equipment_id}
+4. Verify view created
+
+Generate 10 views from CSV.
+Time how long it takes.
+
+Expected output:
+- generate_equipment_views.py
+- 10 views created in Ignition
+- Report: "Generated 10 views in X seconds"
+
+---
+FILE: prompts/workstream_10_navigation_generation.md
+---
+
+# Workstream 10.3: Auto-Generate Navigation
+
+Create master view: "EquipmentMonitorGrid"
+
+The view should:
+1. Automatically discover all views in equipment/ folder using Ignition API
+2. For each discovered view:
+   - Create embedded view instance
+   - Add to flex grid container
+   - Layout in 4-column responsive grid
+   - Auto-size based on screen resolution
+3. Add search/filter input (filter by equipment_type)
+4. Add sorting dropdown (by name, by status)
+
+Generate this view programmatically - no manual Designer work.
+Save to Ignition.
+
+Test with 10+ equipment views - should display as grid.
+
+Expected output:
+- equipment_monitor_grid_generator.py
+- View that dynamically loads all equipment views
+- Working search and sort
+
+---
+FILE: prompts/workstream_11_complete_panel.md
+---
+
+# Workstream 11.1: Complete Agent Panel Build
+
+Build complete "AgentRecommendationPanel" Perspective view in one shot.
+
+Requirements:
+- Dark theme (#1e1e1e background)
+- Header: "Agent Recommendations" (24px, bold, white, with refresh button)
+- Poll Lakebase every 2 sec: SELECT * FROM agent_recommendations WHERE status='pending' ORDER BY priority DESC
+- Display as cards in scrollable flex container
+- Card design:
+  * Top bar: severity badge + timestamp
+  * Equipment ID (bold)
+  * Issue description (gray text)
+  * Recommended action (in box with darker background)
+  * Confidence score as horizontal progress bar
+  * 3 buttons: Approve (green), Defer (yellow), Reject (red)
+- Empty state: "No pending recommendations" with icon
+- Loading state: spinner while querying
+
+All interactions:
+- Approve: runs approveRecommendation query, shows toast, refreshes
+- Defer: UPDATE status='deferred', defer_until=NOW()+1hour
+- Reject: UPDATE status='rejected', requires rejection reason in dialog
+
+Generate COMPLETE view JSON with all scripts, bindings, styling.
+No placeholders - make it production ready.
+
+Expected output:
+- agent_recommendation_panel_complete.json (500+ lines)
+- Upload to Ignition
+- Test all 3 button interactions
+
+---
+FILE: prompts/workstream_11_add_interactivity.md
+---
+
+# Workstream 11.2: Add Advanced Interactivity
+
+Enhance AgentRecommendationPanel with:
+
+1. Click anywhere on card → expand to show full details:
+   - Root cause analysis (Genie's explanation)
+   - Similar historical incidents (table)
+   - Expected outcome details
+   - Confidence breakdown
+
+2. Hover on confidence score → tooltip explaining score components
+
+3. Right-click card → context menu:
+   - View equipment details
+   - See agent reasoning
+   - Escalate to supervisor
+   - Snooze for 1 hour
+
+4. Drag cards to reorder priority
+
+5. Badge counter in header: "5 pending" (updates live)
+
+Implement all these interactions.
+Update view JSON.
+
+Expected output:
+- Enhanced view with rich interactions
+- Test each interaction works
+
+---
+FILE: prompts/workstream_11_upload_final.md
+---
+
+# Workstream 11.3: Upload and Deploy Final View
+
+Take the complete AgentRecommendationPanel JSON.
+
+Deploy to Ignition:
+1. Validate JSON syntax
+2. Check all named queries exist
+3. Verify database connection works
+4. Upload to project AgenticHMI at path: views/agent/AgentRecommendations
+5. Set as default view for page /agent
+6. Configure page permissions (any authenticated user)
+
+Open Perspective session and test:
+- View loads without errors
+- Data populates from Lakebase
+- Buttons functional
+- Refresh works
+
+Take screenshots of working view.
+
+Expected output:
+- Deployed view accessible at /agent
+- Screenshots showing live data
+- No console errors
+
+---
+FILE: prompts/workstream_12_simple_agent_build.md
+---
+
+# Workstream 12.1: Simple Operations Agent (Complete)
+
+Create file: operations_agent.py
+
+Complete agent implementation:
+
+```python
+#!/usr/bin/env python3
+"""
+Simple Operations Agent for Agentic HMI
+Monitors equipment, creates recommendations, executes approved actions
+"""
+
+import os
+import uuid
+import time
+from datetime import datetime
+from databricks import sql
+from databricks.sdk import WorkspaceClient
+
+class OperationsAgent:
+    def __init__(self):
+        self.agent_id = "ops_agent_001"
+        self.w = WorkspaceClient()
+        
+        # Lakebase connection
+        self.conn = sql.connect(
+            server_hostname=os.getenv("DATABRICKS_SERVER_HOSTNAME"),
+            http_path=os.getenv("DATABRICKS_HTTP_PATH"),
+            access_token=os.getenv("DATABRICKS_TOKEN")
+        )
+        
+    def monitor_loop(self):
+        """Main monitoring loop"""
+        print(f"[{datetime.now()}] Agent {self.agent_id} starting...")
+        
+        while True:
+            try:
+                # Check for anomalies
+                self.detect_anomalies()
+                
+                # Process approvals
+                self.process_approvals()
+                
+                # Heartbeat
+                self.update_heartbeat()
+                
+                time.sleep(10)
+                
+            except Exception as e:
+                print(f"[ERROR] {str(e)}")
+                time.sleep(30)  # Back off on error
+    
+    def detect_anomalies(self):
+        """Query Delta Lake for equipment issues"""
+        # Your implementation here
+        pass
+    
+    def process_approvals(self):
+        """Check for approved recommendations and execute"""
+        # Your implementation here
+        pass
+    
+    def update_heartbeat(self):
+        """Update agent health status"""
+        # Your implementation here
+        pass
+
+if __name__ == "__main__":
+    agent = OperationsAgent()
+    agent.monitor_loop()
+```
+
+Fill in the pass statements with real implementation:
+- detect_anomalies: query sensor_data, create recommendations
+- process_approvals: query approved recommendations, create commands
+- update_heartbeat: UPDATE agent_health table
+
+Make it fully functional.
+Test run for 2 minutes.
+
+Expected output:
+- Complete operations_agent.py
+- Running successfully
+- Creating recommendations when anomalies present
+
+---
+FILE: prompts/workstream_12_genie_reasoning.md
+---
+
+# Workstream 12.2: Genie-Powered Reasoning
+
+Add sophisticated Genie integration to operations_agent.py:
+
+When creating recommendation, call Genie with structured prompt:
+
+```python
+def analyze_with_genie(self, equipment_id, current_data, historical_pattern):
+    """Use Genie to analyze issue and recommend action"""
+    
+    prompt = f"""
+    You are an industrial operations expert analyzing equipment anomaly.
+    
+    Equipment: {equipment_id}
+    Current readings: {current_data}
+    Normal operating range: {historical_pattern['normal_range']}
+    Recent trend: {historical_pattern['trend']}
+    
+    Similar past incidents: {historical_pattern['similar_incidents']}
+    
+    Questions:
+    1. What is the most likely root cause?
+    2. What specific action should the operator take?
+    3. What is the expected outcome if action is taken?
+    4. How confident are you (0-100%)?
+    5. What are the risks if no action is taken?
+    
+    Respond in JSON format:
+    {{
+        "root_cause": "...",
+        "recommended_action": "...",
+        "expected_outcome": "...",
+        "confidence": 85,
+        "risks_if_ignored": "...",
+        "urgency": "medium"
+    }}
+    """
+    
+    # Call Genie API
+    response = self.call_genie(prompt)
+    
+    # Parse JSON response
+    analysis = json.loads(response)
+    
+    return analysis
+```
+
+Implement Genie API call using Databricks Agents/Genie endpoint.
+Print Genie's complete reasoning.
+
+Expected output:
+- Enhanced agent with Genie reasoning
+- Sample output showing Genie's detailed analysis
+
+---
+FILE: prompts/workstream_12_deploy_production.md
+---
+
+# Workstream 12.3: Production Deployment
+
+Deploy operations_agent.py to run continuously in Databricks.
+
+Steps:
+1. Create requirements.txt
+2. Package agent as Python wheel or zip
+3. Create Databricks Job:
+   ```
+   Name: AgenticHMI_OperationsAgent_v1
+   Schedule: Continuous (restart on failure)
+   Cluster: Job cluster (small, always-on)
+   Libraries: databricks-sql-connector, requests
+   Secrets: ignition_credentials
+   Timeout: None (runs forever)
+   ```
+4. Configure monitoring:
+   - Email alert if agent stops
+   - Log to Delta table for analysis
+5. Start job
+6. Monitor for 30 minutes
+
+Verify:
+- Agent runs continuously
+- Creates recommendations when anomalies occur
+- Processes approvals
+- No crashes
+
+Expected output:
+- Running Databricks job
+- Job URL
+- Last 30 min of logs
+
+---
+FILE: prompts/workstream_13_e2e_test.md
+---
+
+# Workstream 13.1: End-to-End Integration Test
+
+Create automated end-to-end test:
+
+Test scenario:
+1. Setup: Insert test anomaly → sensor_data table
+   - Equipment: REACTOR_TEST_01
+   - Temperature: 95°C (above 85°C threshold)
+2. Wait 15 seconds for agent to detect
+3. Verify: Query agent_recommendations table
+   - Should have 1 new recommendation
+   - Status should be 'pending'
+4. Approve: UPDATE recommendation status='approved'
+5. Wait 15 seconds for agent to execute
+6. Verify: Query agent_commands table
+   - Should have 1 new command
+   - Status should transition: pending → executing → executed
+7. Verify: Check Ignition tag value changed
+8. Verify: Ignition Perspective view shows execution completed
+
+All steps automated with verification checks.
+Print PASS/FAIL for each step.
+Total test time: ~60 seconds
+
+Expected output:
+- test_e2e_integration.py
+- Test results showing full cycle works
+
+---
+FILE: prompts/workstream_13_test_suite.md
+---
+
+# Workstream 13.2: Comprehensive Test Suite
+
+Create test_suite.py with pytest:
+
+Tests:
+```python
+def test_agent_detects_anomaly():
+    """Verify agent creates recommendation when anomaly inserted"""
+    # Insert anomaly
+    # Wait for agent poll
+    # Query recommendations table
+    # Assert: new recommendation exists
+    
+def test_recommendation_appears_in_perspective():
+    """Verify Perspective view displays recommendation"""
+    # Create recommendation in Lakebase
+    # Open Perspective session (headless browser)
+    # Check DOM for recommendation card
+    # Assert: card visible with correct data
+    
+def test_operator_approval_flow():
+    """Verify approval updates database and triggers agent"""
+    # Create pending recommendation
+    # Simulate button click in Perspective
+    # Verify: status updated to 'approved'
+    # Verify: agent creates command
+    
+def test_agent_execution():
+    """Verify agent executes approved commands"""
+    # Create approved recommendation
+    # Wait for agent to process
+    # Verify: command created and executed
+    
+def test_ignition_writeback():
+    """Verify commands actually write to Ignition tags"""
+    # Create command with known tag/value
+    # Wait for execution
+    # Read tag value from Ignition
+    # Assert: value matches expected
+
+def test_error_handling():
+    """Verify graceful handling of failures"""
+    # Create command with invalid tag path
+    # Verify: marked as failed, not crashed
+    # Verify: error logged properly
+```
+
+Run all tests.
+Generate test report.
+
+Expected output:
+- test_suite.py with 6+ tests
+- Test report: X passed, Y failed
+- Code coverage report
+
+---
+FILE: prompts/workstream_13_demo_recording.md
+---
+
+# Workstream 13.3: Demo Recording Script
+
+Create script that orchestrates a perfect demo:
+
+demo_orchestrator.py should:
+
+```python
+# Demo timeline (2 minutes total)
+# 0:00 - Show Ignition HMI (normal operation)
+# 0:15 - Inject anomaly (temp spikes)
+# 0:20 - Agent detects, creates recommendation
+# 0:25 - Recommendation appears in Perspective UI
+# 0:30 - Operator (you) click Approve
+# 0:35 - Agent executes corrective action
+# 0:40 - Temperature normalizes
+# 0:45 - Show full audit trail in Lakebase
+
+Timing controls:
+- Pause between steps
+- Highlight what's happening
+- Narration prompts (print to console)
+
+Includes:
+- Screen recording start/stop
+- Cursor highlighting for video
+- Automatic camera transitions
+```
+
+Run demo_orchestrator.py while recording screen.
+Generate perfect 2-minute demo video.
+
+Expected output:
+- demo_orchestrator.py
+- agentic_hmi_demo.mp4 video file
+- Narration script for voiceover
+
+---
+FILE: prompts/workstream_14_scale_generation.md
+---
+
+# Workstream 14.1: Generate 100 Equipment Views
+
+Create script: generate_fleet_views.py
+
+Input: equipment_fleet.csv (100 rows)
+- equipment_id, type, location, tag_path_prefix, display_name
+
+For each row:
+1. Select appropriate template based on 'type':
+   - reactor → reactor_monitor_template.json
+   - pump → pump_monitor_template.json
+   - valve → valve_monitor_template.json
+2. Substitute variables
+3. Create view in Ignition: views/fleet/{location}/{equipment_id}
+4. Add to navigation menu structure
+
+Process all 100 in parallel (use ThreadPoolExecutor).
+Target: Complete in under 2 minutes.
+
+Report:
+- Total views created
+- Time taken
+- Any failures
+
+Expected output:
+- generate_fleet_views.py
+- 100 views in Ignition
+- Performance report
+
+---
+FILE: prompts/workstream_14_bulk_binding_update.md
+---
+
+# Workstream 14.2: Bulk Binding Updater Tool
+
+Create tool: bulk_binding_updater.py
+
+Input JSON: binding_updates.json
+```json
+{
+  "view": "ProductionDashboard",
+  "updates": [
+    {
+      "component": "temp_label_1",
+      "bind_to": "query",
+      "query_name": "getReactorTemps",
+      "column": "reactor_1_temp",
+      "format": "0.0",
+      "units": "°C"
+    },
+    {
+      "component": "pressure_gauge_2",
+      "bind_to": "tag",
+      "tag_path": "[default]Pumps/P07/Pressure",
+      "format": "0",
+      "units": "PSI"
+    }
+  ]
+}
+```
+
+Tool should:
+1. Load view JSON from Ignition
+2. For each update in mapping:
+   - Find component by name
+   - Clear existing binding (if any)
+   - Add new binding (query or tag)
+   - Set format and units
+3. Validate all components found
+4. Save updated view
+
+Process 1000 binding updates in under 1 minute.
+
+Dry-run mode: show what would change without actually changing.
+Execute mode: apply changes.
+
+Expected output:
+- bulk_binding_updater.py
+- Test with 10 updates (dry-run)
+- Execute 10 updates (real run)
+- Verify bindings work in Ignition
+
+---
+FILE: prompts/workstream_14_auto_navigation.md
+---
+
+# Workstream 14.3: Auto-Generate Navigation Menu
+
+Create script: generate_navigation.py
+
+Reads all views in Ignition project.
+Groups by folder structure:
+- agent/ → "Agent Operations" section
+- equipment/ → "Equipment Monitoring" section
+- production/ → "Production Control" section
+- reports/ → "Reports & Analytics" section
+
+For each section:
+- Create navigation tree
+- Add icons based on folder name
+- Link to appropriate views
+- Add badge counts (e.g., "5 pending" for agent views)
+
+Generate Page JSON with:
+- Left sidebar: navigation tree
+- Main content area: view display
+- Top bar: user info, notifications
+
+Build complete navigation JSON.
+Upload as main page for Perspective session.
+
+Expected output:
+- generate_navigation.py
+- Complete Page JSON with navigation
+- Test navigation works (click tree items → loads views)
+
+---
+FILE: prompts/workstream_15_multi_agent.md
+---
+
+# Workstream 15.1: Multi-Agent Coordinator
+
+Create multi_agent_system.py:
+
+Three specialized agents:
+
+```python
+class MonitoringAgent:
+    """Detects equipment anomalies"""
+    def run(self):
+        while True:
+            # Query sensors
+            # Detect issues
+            # INSERT into issues table
+            sleep(5)
+
+class PlanningAgent:
+    """Creates solution recommendations"""
+    def run(self):
+        while True:
+            # Query issues table WHERE status='new'
+            # Analyze with Genie
+            # INSERT into recommendations table
+            # UPDATE issue status='analyzing'
+            sleep(5)
+
+class ExecutionAgent:
+    """Executes approved actions"""
+    def run(self):
+        while True:
+            # Query recommendations WHERE status='approved'
+            # Create commands
+            # Execute via Ignition API
+            # UPDATE recommendation status='executed'
+            sleep(5)
+```
+
+They communicate through Lakebase tables:
+- issues (Monitoring → Planning)
+- recommendations (Planning → Execution)  
+- execution_results (Execution → Monitoring)
+
+Run all 3 agents in separate threads.
+Coordinate via database state (no direct communication).
+
+Expected output:
+- multi_agent_system.py
+- 3 agents running concurrently
+- Logs showing inter-agent coordination
+
+---
+FILE: prompts/workstream_15_learning_agent.md
+---
+
+# Workstream 15.2: Agent Learning System
+
+Add learning capability to operations_agent.py:
+
+After each execution:
+
+```python
+def learn_from_execution(self, recommendation_id):
+    """Compare expected vs actual outcome, update confidence"""
+    
+    # Get recommendation and actual result
+    rec = self.get_recommendation(recommendation_id)
+    
+    # Measure outcome
+    actual_outcome = self.measure_outcome(
+        rec['equipment_id'],
+        rec['expected_outcome']
+    )
+    
+    # Calculate success
+    success = self.compare_outcomes(
+        rec['expected_outcome'],
+        actual_outcome
+    )
+    
+    # Update learning table
+    self.lakebase.execute("""
+        INSERT INTO agent_learning 
+        (pattern_hash, success, execution_time, confidence_adjustment)
+        VALUES (?, ?, ?, ?)
+    """, [
+        self.hash_pattern(rec),
+        success,
+        actual_outcome['time_to_resolve'],
+        +0.05 if success else -0.10
+    ])
+    
+    # Adjust future confidence for similar patterns
+    # Use learning data in next recommendation
+```
+
+Store learning in: agent_learning table
+Schema: pattern_hash, success_count, failure_count, avg_confidence, last_updated
+
+Use learning to improve confidence scores over time.
+
+Expected output:
+- Enhanced agent with learning
+- agent_learning table schema
+- Test showing confidence adjustment after successes/failures
+
+---
+FILE: prompts/workstream_15_explainable_agent.md
+---
+
+# Workstream 15.3: Explainable Agent Reasoning
+
+Create agent that explains its reasoning process:
+
+When creating recommendation, store decision tree:
+
+```python
+def create_recommendation_with_reasoning(self, equipment_id, anomaly):
+    """Create recommendation with full reasoning trace"""
+    
+    reasoning = {
+        "observations": [
+            {"sensor": "temperature", "value": 95, "normal": "70-80", "deviation": "+15°C"},
+            {"sensor": "cooling_flow", "value": 45, "normal": "50-60", "deviation": "-10%"}
+        ],
+        "rules_applied": [
+            {"rule": "IF temp > 85 AND cooling_flow < 50 THEN cooling_issue", "matched": True},
+            {"rule": "IF temp > 90 THEN urgent", "matched": True}
+        ],
+        "alternatives_considered": [
+            {
+                "action": "Emergency shutdown",
+                "pros": "Prevents damage",
+                "cons": "Production loss $5K/hr",
+                "selected": False,
+                "reason": "Issue not critical enough"
+            },
+            {
+                "action": "Switch to backup cooling",
+                "pros": "Resolves issue, no downtime",
+                "cons": "Backup may have reduced capacity",
+                "selected": True,
+                "reason": "Best balance of risk/reward"
+            }
+        ],
+        "genie_analysis": "...",
+        "historical_precedent": [
+            {"incident_id": "INC-247", "resolution": "backup_cooling", "success": True}
+        ],
+        "confidence_breakdown": {
+            "pattern_match": 0.92,
+            "genie_certainty": 0.85,
+            "historical_success": 0.94,
+            "overall": 0.87
+        }
+    }
+    
+    # Store reasoning with recommendation
+    INSERT INTO agent_recommendations (..., reasoning_json=reasoning)
+```
+
+In Perspective:
+- Add "Explain" button to recommendation card
+- Clicks → opens dialog with reasoning tree visualization
+- Show observations, rules, alternatives, confidence breakdown
+
+Build this into agent and UI.
+
+Expected output:
+- Agent stores complete reasoning
+- Perspective dialog showing reasoning tree
+- Test with sample recommendation
+
+---
+FILE: prompts/workstream_16_error_handling.md
+---
+
+# Workstream 16.1: Production Error Handling
+
+Harden operations_agent.py for production:
+
+Add comprehensive error handling:
+
+```python
+class ProductionOperationsAgent(OperationsAgent):
+    
+    def monitor_loop(self):
+        """Production-grade monitoring loop with retry logic"""
+        
+        retry_count = 0
+        max_retries = 3
+        
+        while True:
+            try:
+                self.detect_anomalies()
+                self.process_approvals()
+                self.update_heartbeat()
+                
+                retry_count = 0  # Reset on success
+                time.sleep(10)
+                
+            except DatabaseConnectionError as e:
+                retry_count += 1
+                if retry_count <= max_retries:
+                    sleep_time = 2 ** retry_count  # Exponential backoff
+                    print(f"[RETRY {retry_count}/{max_retries}] DB error: {e}. Retrying in {sleep_time}s")
+                    time.sleep(sleep_time)
+                else:
+                    self.send_alert_email("Agent database connection failed after 3 retries")
+                    retry_count = 0  # Reset and keep trying
+                    time.sleep(60)
+                    
+            except GenieAPIError as e:
+                print(f"[FALLBACK] Genie unavailable: {e}. Using rule-based logic.")
+                # Use simple rule-based recommendations
+                self.create_rule_based_recommendation()
+                time.sleep(10)
+                
+            except Exception as e:
+                print(f"[ERROR] Unexpected error: {e}")
+                self.log_error(e)
+                time.sleep(30)
+    
+    def send_alert_email(self, message):
+        """Send alert via SMTP"""
+        # Implementation
+        pass
+    
+    def log_error(self, error):
+        """Log error to Delta Lake for analysis"""
+        # INSERT into agent_errors table
+        pass
+```
+
+Add error logging table.
+Test failure scenarios.
+Verify agent recovers gracefully.
+
+Expected output:
+- Hardened agent code
+- Error handling tested (DB down, Genie down, invalid data)
+- Agent stays running despite errors
+
+---
+FILE: prompts/workstream_16_monitoring.md
+---
+
+# Workstream 16.2: Agent Health Monitoring
+
+Create monitoring system for agent health.
+
+Prometheus-style metrics:
+
+```python
+class AgentMetrics:
+    """Track agent performance metrics"""
+    
+    def __init__(self):
+        self.metrics = {
+            'recommendations_created_total': 0,
+            'approvals_received_total': 0,
+            'executions_succeeded_total': 0,
+            'executions_failed_total': 0,
+            'execution_duration_seconds': []
+        }
+    
+    def increment(self, metric_name):
+        self.metrics[metric_name] += 1
+        self.write_to_lakebase()
+    
+    def record_duration(self, seconds):
+        self.metrics['execution_duration_seconds'].append(seconds)
+        self.write_to_lakebase()
+    
+    def write_to_lakebase(self):
+        """Write metrics to agent_metrics table"""
+        INSERT INTO agent_metrics (timestamp, metric_name, value)
+```
+
+Create Perspective view "AgentMetrics" showing:
+- Recommendations created (today, this week, all time)
+- Approval rate (gauge)
+- Success rate (gauge)
+- Avg execution time (trend chart)
+- Errors count (badge)
+
+All data from agent_metrics table.
+
+Expected output:
+- Agent with metrics tracking
+- Perspective metrics dashboard
+- Real metrics from 1 hour of agent running
+
+---
+FILE: prompts/workstream_16_authentication.md
+---
+
+# Workstream 16.3: Secure Authentication
+
+Add authentication to agent → Ignition communication.
+
+Requirements:
+1. Create service account in Ignition:
+   - Username: databricks_agent
+   - Role: AgentExecutor (can write tags, run queries)
+   - Password: stored in Databricks secrets
+
+2. Agent retrieves credentials:
+```python
+def get_ignition_credentials(self):
+    """Get credentials from Databricks secrets"""
+    from databricks.sdk import WorkspaceClient
+    
+    w = WorkspaceClient()
+    
+    username = w.secrets.get_secret(
+        scope="ignition",
+        key="agent_username"
+    ).value
+    
+    password = w.secrets.get_secret(
+        scope="ignition", 
+        key="agent_password"
+    ).value
+    
+    return username, password
+```
+
+3. All Ignition API calls use these credentials
+4. Test unauthorized calls fail (use wrong credentials)
+5. Test authorized agent can write tags
+
+Setup:
+- Create Databricks secret scope "ignition"
+- Store credentials
+- Update agent to use secrets
+
+Expected output:
+- Agent using secrets for auth
+- Ignition logs showing authenticated requests
+- Unauthorized test fails as expected
+
+---
+FILE: prompts/workstream_17_one_click_installer.md
+---
+
+# Workstream 17.1: One-Click Demo Installer
+
+Create one-click demo installer: install_agentic_hmi_demo.py
+
+When run with: python install_agentic_hmi_demo.py --workspace e2-demo-field-eng
+
+Should:
+1. Check prerequisites (Databricks CLI configured, Ignition accessible)
+2. Create Lakebase database and all tables
+3. Configure Ignition database connection (via API)
+4. Create all 5 named queries
+5. Upload all Perspective views (AgentRecommendations, ExecutionTracker, AgentHealth)
+6. Create Databricks job for agent
+7. Start agent job
+8. Load sample data (10 equipment, 3 pending recommendations)
+9. Open browser to Ignition Perspective session: /agent
+
+Add progress indicators:
+```
+[1/9] Creating Lakebase database... ✓
+[2/9] Configuring Ignition connection... ✓
+[3/9] Creating named queries... ✓
+...
+[9/9] Opening browser... ✓
+
+✅ Demo installation complete!
+🌐 Open: https://e2-demo-field-eng.cloud.databricks.com:8043/data/perspective/client/AgenticHMI
+```
+
+Should work on clean FE workspace with zero manual setup.
+
+Expected output:
+- install_agentic_hmi_demo.py
+- Test on fresh workspace
+- Full demo running in under 5 minutes
+
+---
+FILE: prompts/workstream_17_module_packaging.md
+---
+
+# Workstream 17.2: Package as Ignition Module
+
+Create Ignition SDK module: "AgenticHMI"
+
+Module includes:
+- All Perspective views (embedded as resources)
+- Named queries (auto-created on install)
+- Database connection template (user enters Databricks workspace URL)
+- Documentation (README with setup steps)
+- Sample data loader
+
+Module structure:
+```
+agentic-hmi-module/
+├── build.gradle
+├── settings.gradle  
+├── common/
+│   └── src/main/java/.../AgenticHMICommon.java
+├── gateway/
+│   ├── src/main/java/.../AgenticHMIGatewayHook.java
+│   └── src/main/resources/
+│       ├── views/ (JSON files)
+│       ├── queries/ (SQL files)
+│       └── docs/
+└── designer/
+    └── src/main/java/.../AgenticHMIDesignerHook.java
+```
+
+On module install:
+1. Prompt user for Databricks workspace URL
+2. Create database connection
+3. Load all views into current project
+4. Create named queries
+5. Show success message
+
+Build using Gradle.
+Generate .modl file.
+
+Expected output:
+- Complete module project
+- Built .modl file
+- Installation tested in clean Ignition
+
+---
+FILE: prompts/workstream_17_demo_reset.md
+---
+
+# Workstream 17.3: Demo Reset Script
+
+Create demo_reset.py:
+
+Resets demo to clean state for next demo run:
+
+```python
+def reset_demo():
+    """Reset all demo components to clean state"""
+    
+    print("Resetting Agentic HMI Demo...")
+    
+    # 1. Stop running agents
+    print("[1/7] Stopping agents...")
+    # Cancel Databricks job runs
+    
+    # 2. Truncate Lakebase tables
+    print("[2/7] Clearing Lakebase tables...")
+    TRUNCATE agent_recommendations;
+    TRUNCATE agent_commands;
+    TRUNCATE work_orders;
+    # Keep agent_learning (preserve learning across demos)
+    
+    # 3. Reset Ignition tags
+    print("[3/7] Resetting Ignition tags to defaults...")
+    # Write default values to all tags
+    
+    # 4. Load fresh sample data
+    print("[4/7] Loading sample data...")
+    # INSERT 3 pending recommendations
+    # INSERT 5 equipment states
+    
+    # 5. Clear Perspective session storage
+    print("[5/7] Clearing session data...")
+    
+    # 6. Restart agents
+    print("[6/7] Restarting agents...")
+    # Start Databricks job
+    
+    # 7. Verify reset successful
+    print("[7/7] Verifying...")
+    # Query counts, check agent online
+    
+    print("✅ Demo reset complete! Ready for next demo.")
+```
+
+Use between demo runs at conferences.
+Should complete in under 30 seconds.
+
+Expected output:
+- demo_reset.py
+- Test reset works
+- Demo can be run repeatedly
+
+---
+FILE: prompts/workstream_18_claude_as_developer.md
+---
+
+# Workstream 18.1: Claude Code as Ignition Developer
+
+I want Claude Code to act as my Ignition developer.
+
+When I give simple instruction: "Add temperature display to Reactor view"
+
+Claude Code should:
+1. Load views/equipment/Reactor.json from Ignition project
+2. Generate label component with:
+   - Name: temp_display_reactor_1
+   - Tag binding to: [default]Reactors/R1/Temperature
+   - Format: 0.0 °C
+   - Style: large font, color based on value (green<80, yellow 80-90, red>90)
+3. Insert into view JSON at appropriate location (in values_container)
+4. Upload updated view to Ignition via API
+5. Confirm it appears in Designer
+6. Test in Perspective session
+
+Implement this workflow automation.
+
+Then test with instruction: "Add pressure gauge for Pump P-07"
+
+Expected output:
+- Workflow automation script
+- Successfully added 2 components via natural language
+
+---
+FILE: prompts/workstream_18_complex_request.md
+---
+
+# Workstream 18.2: Handle Complex Requests
+
+I say: "Create complete alarm notification system for critical equipment failures"
+
+Claude Code should:
+1. Ask clarifying questions:
+   - Which equipment types?
+   - What constitutes "critical"?
+   - Who should be notified? (email, SMS, Perspective popup)
+   - Acknowledgment required?
+
+2. Based on answers, design system:
+   - Lakebase schema for alarm_history
+   - Gateway script for alarm detection
+   - Perspective view for alarm display
+   - Email/SMS notification logic
+   - Acknowledgment workflow
+
+3. Generate all components:
+   - SQL for tables
+   - Python for Gateway script
+   - JSON for Perspective views
+   - Named queries
+
+4. Deploy everything to Ignition + Databricks
+
+5. Create test plan and execute tests
+
+6. Show me working alarm system
+
+Execute this complete workflow from my simple instruction.
+
+Expected output:
+- Clarifying questions asked
+- Complete alarm system designed
+- All components generated and deployed
+- Working demo of alarm flow
+
+---
+FILE: prompts/workstream_18_production_scheduler.md
+---
+
+# Workstream 18.3: Build Production Scheduler
+
+I give Claude Code: "Build production scheduling interface for 5 production lines"
+
+It should:
+
+Phase 1 - Requirements Gathering:
+- Ask: What scheduling horizon? (day, week, month)
+- Ask: What constraints? (equipment availability, changeover times, priorities)
+- Ask: Data sources? (orders table, equipment_availability, material_inventory)
+
+Phase 2 - Design:
+- Data model for: production_schedule, schedule_constraints, schedule_changes
+- Multiple Perspective views:
+  * Calendar view (monthly grid)
+  * Gantt chart (detailed timeline)  
+  * List view (sortable table)
+  * Conflicts view (showing scheduling issues)
+- Backend agent for schedule optimization
+
+Phase 3 - Implementation:
+- Create all Lakebase tables
+- Generate Perspective views with drag-drop schedule modification
+- Build optimization agent using linear programming
+- Add conflict detection
+- Create approval workflow for schedule changes
+
+Phase 4 - Deployment:
+- Upload all views
+- Deploy agent
+- Load sample schedule data
+- Demo full scheduling workflow
+
+Phase 5 - Testing:
+- Test drag-drop modifications
+- Test constraint violations
+- Test optimization suggestions
+- Test approval flow
+
+Execute complete workflow.
+Show working production scheduler at end.
+
+Expected output:
+- Requirements doc
+- Complete scheduler system
+- Working demo
+- 5 production lines scheduled
+
+---
+FILE: prompts/workstream_19_template_library.md
+---
+
+# Workstream 19: View Template Library
+
+Create library of reusable Perspective view templates:
+
+Templates needed:
+1. equipment_monitor.json (generic equipment display)
+2. process_control.json (setpoint controls + current values)
+3. alarm_panel.json (active alarms list)
+4. trend_analysis.json (time-series charts)
+5. agent_interaction.json (recommendations + approvals)
+6. work_order_board.json (kanban-style work orders)
+7. production_kpi.json (KPI dashboard)
+8. batch_tracking.json (batch genealogy viewer)
+
+For each template:
+- Use {{VARIABLES}} for customization
+- Include sample data bindings
+- Add common interactions
+- Document parameters
+
+Create script: instantiate_template.py
+- Takes template name + variable JSON
+- Generates custom view
+- Uploads to Ignition
+
+Test: Generate 5 different equipment monitors from equipment_monitor.json
+
+Expected output:
+- 8 template JSON files
+- instantiate_template.py script
+- 5 test views generated
+
+---
+FILE: prompts/workstream_20_rapid_prototyping.md
+---
+
+# Workstream 20: Rapid Prototyping Mode
+
+Create rapid_prototype.py - Interactive tool for quick Perspective development:
+
+```bash
+$ python rapid_prototype.py
+
+Agentic HMI Rapid Prototyper
+============================
+
+What do you want to build?
+> alarm display for reactor overheating
+
+Analyzing request...
+✓ Detected: alarm display view
+✓ Context: reactor equipment
+✓ Condition: overheating
+
+Generating components:
+- Alarm list container (query: critical reactor alarms)
+- Temperature trend chart (last 24 hours)
+- Recommended actions panel
+- Acknowledge button
+
+Creating view... ✓
+Uploading to Ignition... ✓  
+Testing data binding... ✓
+
+View created: views/alarms/ReactorOverheating
+Open in Designer? [Y/n]
+```
+
+Tool should:
+1. Parse natural language request
+2. Identify components needed
+3. Generate view JSON
+4. Create necessary queries
+5. Upload to Ignition
+6. Test bindings
+7. Open in Designer for review
+
+Make it conversational and fast.
+
+Expected output:
+- rapid_prototype.py
+- Successfully built 3 different views from natural language
+
+---
+FILE: prompts/master_build_script.md
+---
+
+# Master Build Script
+
+Create master_build.py - Orchestrates all workstreams:
+
+```python
+#!/usr/bin/env python3
+"""
+Master build script for Agentic Ignition HMI
+Executes all workstreams in order
+"""
+
+WORKSTREAMS = [
+    # Phase 1: Infrastructure (10 min)
+    ("01.1", "Lakebase Setup", "workstream_01_lakebase_setup.py"),
+    ("01.2", "Ignition Connection", "workstream_01_ignition_connection.py"),
+    ("01.3", "Named Queries", "workstream_01_named_queries.py"),
+    
+    # Phase 2: Views (15 min)
+    ("02.1", "Generate View JSON", "workstream_02_view_json.py"),
+    ("02.2", "Add Bindings", "workstream_02_add_bindings.py"),
+    ("02.3", "Upload Views", "workstream_02_upload_views.py"),
+    
+    # Phase 3: Components (20 min)
+    ("03.1", "Recommendation Cards", "workstream_03_component_card.py"),
+    ("03.2", "Button Scripts", "workstream_03_button_scripts.py"),
+    ("03.3", "Assemble View", "workstream_03_assemble_view.py"),
+    
+    # Phase 4: Agent (20 min)
+    ("04.1", "Simple Agent", "workstream_04_simple_agent.py"),
+    ("04.2", "Genie Integration", "workstream_04_genie_integration.py"),
+    ("04.3", "Deploy Agent", "workstream_04_deploy_agent.py"),
+    
+    # Phase 5: Write-Back (15 min)
+    ("05.1", "Gateway Script", "workstream_05_gateway_script.py"),
+    ("05.2", "REST Endpoint", "workstream_05_rest_endpoint.py"),
+    ("05.3", "Test Write-Back", "workstream_05_test_writeback.py"),
+    
+    # Phase 6: UI Polish (15 min)
+    ("06.1", "Execution Tracker", "workstream_06_execution_tracker.py"),
+    ("06.2", "Agent Health", "workstream_06_agent_health.py"),
+    ("06.3", "Production Overview", "workstream_06_production_overview.py"),
+    
+    # Phase 7: Demo (10 min)
+    ("07.1", "Demo Generator", "workstream_07_demo_generator.py"),
+    ("07.2", "Simulator Integration", "workstream_07_simulator_integration.py"),
+    ("07.3", "Failure Scenarios", "workstream_07_failure_scenarios.py"),
+    
+    # Phase 8: Testing (20 min)
+    ("13.1", "E2E Test", "workstream_13_e2e_test.py"),
+    ("13.2", "Test Suite", "workstream_13_test_suite.py"),
+    ("13.3", "Demo Recording", "workstream_13_demo_recording.py"),
+]
+
+def run_workstream(id, name, script):
+    print(f"\n{'='*70}")
+    print(f"🚀 Workstream {id}: {name}")
+    print(f"{'='*70}\n")
+    
+    start = time.time()
+    result = subprocess.run(['python', script], capture_output=True, text=True)
+    duration = time.time() - start
+    
+    if result.returncode == 0:
+        print(f"✅ {name} completed in {duration:.1f}s")
+        return True, duration
+    else:
+        print(f"❌ {name} FAILED")
+        print(result.stderr)
+        return False, duration
+
+def main():
+    print("🏗️  AGENTIC IGNITION HMI - MASTER BUILD")
+    print("="*70)
+    print(f"Start time: {datetime.now()}")
+    print("="*70)
+    
+    results = []
+    total_start = time.time()
+    
+    for id, name, script in WORKSTREAMS:
+        success, duration = run_workstream(id, name, script)
+        results.append((id, name, success, duration))
+        
+        if not success:
+            print(f"\n⚠️  BUILD FAILED at Workstream {id}")
+            print(f"Fix {script} and re-run from this point")
+            return
+    
+    total_duration = time.time() - total_start
+    
+    # Summary
+    print("\n" + "="*70)
+    print("🎉 BUILD COMPLETE!")
+    print("="*70)
+    print(f"\nTotal time: {total_duration/60:.1f} minutes")
+    print(f"\nWorkstreams completed: {len([r for r in results if r[2]])}/{len(results)}")
+    
+    print("\n📊 Timing breakdown:")
+    for id, name, success, duration in results:
+        status = "✅" if success else "❌"
+        print(f"  {status} {id} {name}: {duration:.1f}s")
+    
+    print("\n🚀 Next steps:")
+    print("1. Open Ignition Designer")
+    print("2. Navigate to AgenticHMI project")
+    print("3. Open view: agent/AgentRecommendations")  
+    print("4. Launch Perspective session")
+    print("5. Watch agent create recommendations")
+    print("6. Approve one and see execution")
+    print("\n🎬 Demo ready!")
+
+if __name__ == "__main__":
+    main()
+```
+
+This runs ALL workstreams automatically.
+Use for full clean build.
+
+Expected output:
+- master_build.py
+- Successfully builds complete system
+- Timing report for each phase
+
+---
+FILE: prompts/README.md
+---
+
+# Agentic Ignition HMI - Workstream Prompts
+
+## How to Use These Prompts
+
+### 1. Save to Your Prompts Directory
+```bash
+mkdir -p ~/prompts/agentic-ignition
+cd ~/prompts/agentic-ignition
+
+# Save each FILE section above as separate .md file
+# Or use the bundle script to extract all at once
+```
+
+### 2. Use with Claude Code
+```bash
+cd ~/projects/agentic-ignition-hmi
+claude-code
+
+# Feed prompts one at a time
+cat ~/prompts/agentic-ignition/workstream_01_lakebase_setup.md | pbcopy
+# Paste into Claude Code chat
+# Wait for completion
+# Move to next prompt
+```
+
+### 3. Track Progress
+```bash
+# Create checklist
+cp prompts/workstream_checklist.md progress.md
+
+# Mark completed
+- [x] 01.1 Lakebase Setup
+- [x] 01.2 Ignition Connection  
+- [ ] 01.3 Named Queries
+```
+
+## Recommended Order
+
+**Day 1: Foundation**
+- Workstream 01 (all 3)
+- Workstream 02 (all 3)
+
+**Day 2: Components**  
+- Workstream 03 (all 3)
+- Workstream 11 (all 3)
+
+**Day 3: Agent**
+- Workstream 04 (all 3)
+- Workstream 12 (all 3)
+
+**Day 4: Integration**
+- Workstream 05 (all 3)
+- Workstream 13 (E2E test)
+
+**Day 5: Polish & Demo**
+- Workstream 06 (all 3)
+- Workstream 07 (all 3)
+- Workstream 17.1 (one-click installer)
+
+## Tips
+
+- Start each Claude Code session with master template prompt
+- Feed workstreams sequentially
+- Verify each before moving to next
+- Save all generated code to git repo
+- Test in FE workspace continuously
+
+## Dependencies
+
+Required tools:
+- Python 3.9+
+- Databricks CLI (configured with default profile)
+- Java 17 (for SDK modules)
+- Gradle 7+ (for module builds)
+- Git
+
+Required access:
+- Databricks FE workspace (e2-demo-field-eng)
+- Ignition Gateway (https://e2-demo-field-eng.cloud.databricks.com:8043)
+- Admin credentials for both
+
+## Success Criteria
+
+After completing all workstreams:
+- ✅ Agent runs continuously in Databricks
+- ✅ Monitors equipment via Delta Lake
+- ✅ Creates recommendations in Lakebase
+- ✅ Perspective displays recommendations
+- ✅ Operators can approve via UI
+- ✅ Agent executes approved actions
+- ✅ Commands write back to Ignition tags
+- ✅ Full audit trail in Unity Catalog
+- ✅ Demo can run repeatedly
+- ✅ One-click installer works on clean workspace
+
+## Estimated Time
+
+- Manual Designer work: 40-60 hours
+- With Claude Code automation: 4-6 hours
+- Productivity gain: **10x**
+
+---
+
+Total Prompts: 30+ workstreams
+Total Lines: ~2000 lines of detailed instructions
+Ready for: Claude Code execution in FE workspace
