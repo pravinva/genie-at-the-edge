@@ -33,9 +33,7 @@ except Exception as e:
 # Create mining_demo schema
 sql_commands = [
     "CREATE SCHEMA IF NOT EXISTS field_engineering.mining_demo COMMENT 'Mining demo data and analytics'",
-    "CREATE CATALOG IF NOT EXISTS lakebase COMMENT 'Lakebase PostgreSQL-compatible catalog'",
-    "CREATE SCHEMA IF NOT EXISTS lakebase.ignition_historian COMMENT 'Ignition Tag Historian data'",
-    "CREATE SCHEMA IF NOT EXISTS lakebase.agentic_hmi COMMENT 'Agentic HMI tables for operator actions'"
+    "CREATE SCHEMA IF NOT EXISTS field_engineering.lakebase COMMENT 'Operational serving tables for recommendations and feedback'"
 ]
 
 # Get SQL warehouse for execution
@@ -71,14 +69,10 @@ permission_grants = [
     "GRANT SELECT ON SCHEMA field_engineering.mining_demo TO `account users`",
     "GRANT MODIFY ON SCHEMA field_engineering.mining_demo TO `account users`",
 
-    # Lakebase catalog permissions
-    "GRANT USE CATALOG ON CATALOG lakebase TO `account users`",
-    "GRANT USE SCHEMA ON SCHEMA lakebase.ignition_historian TO `account users`",
-    "GRANT SELECT ON SCHEMA lakebase.ignition_historian TO `account users`",
-    "GRANT MODIFY ON SCHEMA lakebase.ignition_historian TO `account users`",
-    "GRANT USE SCHEMA ON SCHEMA lakebase.agentic_hmi TO `account users`",
-    "GRANT SELECT ON SCHEMA lakebase.agentic_hmi TO `account users`",
-    "GRANT MODIFY ON SCHEMA lakebase.agentic_hmi TO `account users`"
+    # Operational serving schema permissions
+    "GRANT USE SCHEMA ON SCHEMA field_engineering.lakebase TO `account users`",
+    "GRANT SELECT ON SCHEMA field_engineering.lakebase TO `account users`",
+    "GRANT MODIFY ON SCHEMA field_engineering.lakebase TO `account users`"
 ]
 
 for grant in permission_grants:
@@ -100,7 +94,7 @@ print("\n[3/7] Creating Lakebase Historian Tables...")
 
 historian_tables = [
     """
-    CREATE TABLE IF NOT EXISTS lakebase.ignition_historian.sqlth_te (
+    CREATE TABLE IF NOT EXISTS pravin_ignition_managed.public.sqlth_te (
         id INT,
         tagpath STRING,
         datatype INT,
@@ -109,7 +103,7 @@ historian_tables = [
     COMMENT 'Tag metadata - maps tag IDs to paths'
     """,
     """
-    CREATE TABLE IF NOT EXISTS lakebase.ignition_historian.sqlt_data_1_2024_02 (
+    CREATE TABLE IF NOT EXISTS pravin_ignition_managed.public.sqlt_data_1_2026_02 (
         tagid INT,
         t_stamp TIMESTAMP,
         floatvalue DOUBLE,
@@ -119,10 +113,10 @@ historian_tables = [
         dataintegrity INT
     ) USING DELTA
     PARTITIONED BY (DATE(t_stamp))
-    COMMENT 'Ignition Tag Historian data for February 2024'
+    COMMENT 'Ignition Tag Historian data (managed catalog mirror)'
     """,
     """
-    CREATE TABLE IF NOT EXISTS lakebase.ignition_historian.sqlth_partitions (
+    CREATE TABLE IF NOT EXISTS pravin_ignition_managed.public.sqlth_partitions (
         pname STRING,
         start_time TIMESTAMP,
         end_time TIMESTAMP
@@ -144,9 +138,9 @@ for table_sql in historian_tables:
 
 # Grant table permissions
 table_grants = [
-    "GRANT SELECT, MODIFY ON TABLE lakebase.ignition_historian.sqlth_te TO `account users`",
-    "GRANT SELECT, MODIFY ON TABLE lakebase.ignition_historian.sqlt_data_1_2024_02 TO `account users`",
-    "GRANT SELECT, MODIFY ON TABLE lakebase.ignition_historian.sqlth_partitions TO `account users`"
+    "GRANT SELECT ON TABLE pravin_ignition_managed.public.sqlth_te TO `account users`",
+    "GRANT SELECT ON TABLE pravin_ignition_managed.public.sqlt_data_1_2026_02 TO `account users`",
+    "GRANT SELECT ON TABLE pravin_ignition_managed.public.sqlth_partitions TO `account users`"
 ]
 
 for grant in table_grants:
@@ -266,7 +260,7 @@ print("\n[5/7] Creating Agentic HMI Tables...")
 
 agentic_tables = [
     """
-    CREATE TABLE IF NOT EXISTS lakebase.agentic_hmi.agent_recommendations (
+    CREATE TABLE IF NOT EXISTS field_engineering.lakebase.agent_recommendations (
         recommendation_id STRING,
         equipment_id STRING,
         issue_type STRING,
@@ -289,7 +283,7 @@ agentic_tables = [
     COMMENT 'ML recommendations for operator review'
     """,
     """
-    CREATE TABLE IF NOT EXISTS lakebase.agentic_hmi.agent_commands (
+    CREATE TABLE IF NOT EXISTS field_engineering.lakebase.agent_commands (
         command_id STRING,
         equipment_id STRING,
         command_type STRING,
@@ -316,8 +310,8 @@ for table_sql in agentic_tables:
 
 # Grant table permissions
 agentic_grants = [
-    "GRANT SELECT, MODIFY ON TABLE lakebase.agentic_hmi.agent_recommendations TO `account users`",
-    "GRANT SELECT, MODIFY ON TABLE lakebase.agentic_hmi.agent_commands TO `account users`"
+    "GRANT SELECT, MODIFY ON TABLE field_engineering.lakebase.agent_recommendations TO `account users`",
+    "GRANT SELECT, MODIFY ON TABLE field_engineering.lakebase.agent_commands TO `account users`"
 ]
 
 for grant in agentic_grants:
@@ -342,7 +336,7 @@ print("  → Creating minimal sample data for validation...")
 
 # Sample tag metadata (just a few tags for validation)
 sample_tags = """
-INSERT INTO lakebase.ignition_historian.sqlth_te VALUES
+INSERT INTO pravin_ignition_managed.public.sqlth_te VALUES
 (1, 'HAUL-001/temperature', 4, CURRENT_TIMESTAMP()),
 (2, 'HAUL-001/vibration', 4, CURRENT_TIMESTAMP()),
 (3, 'CRUSH-001/temperature', 4, CURRENT_TIMESTAMP()),
@@ -385,9 +379,9 @@ except Exception as e:
 print("\n[7/7] Validating Setup...")
 
 validation_queries = [
-    ("lakebase.ignition_historian.sqlth_te", "Tag Metadata"),
+    ("pravin_ignition_managed.public.sqlth_te", "Tag Metadata"),
     ("field_engineering.mining_demo.sap_equipment_master", "SAP Equipment"),
-    ("lakebase.agentic_hmi.agent_recommendations", "Recommendations")
+    ("field_engineering.lakebase.agent_recommendations", "Recommendations")
 ]
 
 for table, name in validation_queries:
@@ -406,14 +400,14 @@ print("SETUP COMPLETE!")
 print("="*80)
 
 print(f"""
-✅ Catalogs Created:
+✅ Catalogs Used:
    • field_engineering
-   • lakebase
+   • pravin_ignition_managed
 
-✅ Schemas Created:
+✅ Schemas Created/Used:
    • field_engineering.mining_demo
-   • lakebase.ignition_historian
-   • lakebase.agentic_hmi
+   • field_engineering.lakebase
+   • pravin_ignition_managed.public
 
 ✅ Permissions Granted:
    • All account users have USE, SELECT, MODIFY on all schemas
@@ -430,13 +424,13 @@ print(f"""
       Upload and execute: databricks/setup_field_eng_workspace.py
 
    2. Test unified query:
-      SELECT * FROM lakebase.ignition_historian.sqlth_te;
+      SELECT * FROM pravin_ignition_managed.public.sqlth_te;
 
    3. Deploy DLT pipeline:
       Upload: databricks/unified_data_architecture.py
 
 Connection for Ignition:
-   jdbc:postgresql://lakebase.databricks.com:5432/ignition_historian
+   jdbc:postgresql://instance-6fac5088-b888-45ea-8cdb-59ddb94b2a81.database.cloud.databricks.com:5432/historian
 """)
 
 print("\n✅ All setup tasks completed successfully!")

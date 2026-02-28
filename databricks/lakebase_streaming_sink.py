@@ -15,8 +15,8 @@ from typing import Dict, Any
 
 # Configuration
 LAKEBASE_CONFIG = {
-    "catalog": "lakebase",
-    "schema": "agentic_hmi",
+    "catalog": "field_engineering",
+    "schema": "lakebase",
     "jdbc_url": "jdbc:postgresql://workspace.cloud.databricks.com/lakebase",
     "warehouse_id": "4b9b953939869799",
     "checkpoint_location": "/tmp/lakebase_checkpoints"
@@ -186,7 +186,7 @@ def create_lakebase_streams():
     print("Starting recommendations stream...")
     recommendations_stream = (
         spark.readStream
-        .table("main.mining_operations.ai_recommendations_gold")
+        .table("field_engineering.mining_demo.ai_recommendations_gold")
         .writeStream
         .foreachBatch(writer.write_recommendations)
         .trigger(processingTime="10 seconds")
@@ -200,7 +200,7 @@ def create_lakebase_streams():
     print("Starting sensor anomaly stream...")
     sensor_stream = (
         spark.readStream
-        .table("main.mining_operations.anomaly_detection_silver")
+        .table("field_engineering.mining_demo.anomaly_detection_silver")
         .filter(F.col("is_anomaly") == True)
         .writeStream
         .foreachBatch(writer.write_sensor_updates)
@@ -231,7 +231,7 @@ def create_lakebase_streams():
         .trigger(processingTime="30 seconds")
         .option("checkpointLocation", f"{LAKEBASE_CONFIG['checkpoint_location']}/feedback")
         .outputMode("append")
-        .toTable("main.mining_operations.operator_feedback")
+        .toTable("field_engineering.mining_demo.operator_feedback")
     )
     streams["feedback"] = feedback_stream
 

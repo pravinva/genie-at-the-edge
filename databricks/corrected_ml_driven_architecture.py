@@ -12,6 +12,11 @@ import dlt
 from typing import Dict, Any
 import mlflow
 
+# Active demo namespaces
+CATALOG = "field_engineering"
+SCHEMA = "mining_demo"
+SERVING_SCHEMA = "lakebase"
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -36,7 +41,7 @@ def ml_recommendations_gold():
 
     # Load the trained ML recommendation model
     recommendation_model = mlflow.pyfunc.load_model(
-        "models:/equipment_recommendation_model/production"
+        "models:/field_engineering.ml_models.equipment_recommendation_engine@champion"
     )
 
     # Generate recommendations using ML model (NOT Genie)
@@ -129,7 +134,7 @@ class LakebaseEventPusher:
                 .mode("append") \
                 .jdbc(
                     url=self.lakebase_conn,
-                    table="agentic_hmi.ml_recommendations",
+                    table="lakebase.agent_recommendations",
                     properties={
                         "user": spark.conf.get("lakebase.user"),
                         "password": spark.conf.get("lakebase.password"),
@@ -167,7 +172,7 @@ pusher = LakebaseEventPusher()
 
 ml_recommendation_stream = (
     spark.readStream
-    .table("main.mining_operations.ml_recommendations_gold")
+    .table(f"{CATALOG}.{SCHEMA}.ml_recommendations_gold")
     .writeStream
     .foreachBatch(pusher.write_and_notify)
     .trigger(processingTime="5 seconds")  # Low latency
@@ -256,7 +261,7 @@ def onTimer():
 
     # Query only new recommendations
     query = """
-        SELECT * FROM lakebase.agentic_hmi.ml_recommendations
+        SELECT * FROM lakebase.agent_recommendations
         WHERE created_timestamp > ?
         AND status = 'pending'
         AND urgency >= 3

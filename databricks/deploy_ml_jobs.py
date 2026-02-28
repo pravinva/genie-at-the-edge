@@ -6,11 +6,16 @@ Creates all ML pipeline jobs with proper clusters and scheduling
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service import jobs
 import time
+import os
 
 w = WorkspaceClient(profile="DEFAULT")
 
-# Notebook paths in workspace (after repo sync)
-REPO_PATH = "/Repos/pravin.varma@databricks.com/genie-at-the-edge/databricks"
+# Notebook paths in workspace (after repo/workspace import)
+# Override with: export GENIE_DATABRICKS_NOTEBOOK_PATH="..."
+REPO_PATH = os.getenv(
+    "GENIE_DATABRICKS_NOTEBOOK_PATH",
+    "/Users/pravin.varma@databricks.com/genie-at-the-edge/databricks"
+)
 TRAIN_NOTEBOOK = f"{REPO_PATH}/train_anomaly_detection_model"
 SCORING_NOTEBOOK = f"{REPO_PATH}/realtime_scoring_pipeline"
 RETRAIN_NOTEBOOK = f"{REPO_PATH}/weekly_model_retraining"
@@ -31,6 +36,14 @@ CLUSTER_CONFIG = jobs.JobCluster(
 print("=" * 80)
 print("ML JOBS DEPLOYMENT")
 print("=" * 80)
+print(f"Notebook base path: {REPO_PATH}")
+
+for nb in [TRAIN_NOTEBOOK, SCORING_NOTEBOOK, RETRAIN_NOTEBOOK]:
+    try:
+        w.workspace.get_status(nb)
+        print(f"  ✓ Found notebook: {nb}")
+    except Exception:
+        print(f"  ⚠ Notebook not found: {nb}")
 
 def create_or_update_job(job_name, task_config, schedule=None, continuous=False):
     """Create or update a Databricks job"""

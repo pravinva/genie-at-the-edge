@@ -27,9 +27,10 @@ import joblib
 
 # COMMAND ----------
 
-CATALOG = "main"
-SCHEMA = "mining_operations"
-MODEL_NAME = "equipment_anomaly_detector"
+CATALOG = "field_engineering"
+SCHEMA = "mining_demo"
+MODEL_SCHEMA = "ml_models"
+MODEL_NAME = f"{CATALOG}.{MODEL_SCHEMA}.equipment_anomaly_detector"
 
 # COMMAND ----------
 
@@ -74,7 +75,14 @@ training_df = spark.sql(f"""
                     ORDER BY timestamp
                 )
             ) as seconds_since_last
-        FROM {CATALOG}.{SCHEMA}.sensor_data
+        FROM (
+            SELECT
+                equipment_id,
+                sensor_name AS sensor_type,
+                sensor_value,
+                timestamp
+            FROM {CATALOG}.{SCHEMA}.zerobus_sensor_stream
+        ) src
         WHERE timestamp > CURRENT_TIMESTAMP() - INTERVAL 30 DAYS
     ),
     labeled_data AS (

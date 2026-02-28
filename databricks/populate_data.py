@@ -50,7 +50,7 @@ batch_size = 25
 for i in range(0, len(tag_values), batch_size):
     batch = tag_values[i:i+batch_size]
     insert_sql = f"""
-        INSERT INTO lakebase.ignition_historian.sqlth_te (id, tagpath, datatype, created)
+        INSERT INTO pravin_ignition_managed.public.sqlth_te (id, tagpath, datatype, created)
         VALUES {', '.join(batch)}
     """
     try:
@@ -114,14 +114,14 @@ for hour in range(0, hours, 12):  # Process 12 hours at a time
                 if random.random() < 0.05:
                     value *= random.uniform(1.3, 1.5)
 
-                ts = timestamp.strftime('%Y-%m-%d %H:%M:%S')
-                batch_values.append(f"({tag_id}, '{ts}', {round(value, 2)}, NULL, NULL, NULL, 192)")
+                epoch_ms = int(timestamp.timestamp() * 1000)
+                batch_values.append(f"({tag_id}, {epoch_ms}, {round(value, 2)}, NULL, NULL, NULL, 192)")
                 tag_id += 1
 
     # Insert batch
     if batch_values:
         insert_sql = f"""
-            INSERT INTO lakebase.ignition_historian.sqlt_data_1_2024_02
+            INSERT INTO pravin_ignition_managed.public.sqlt_data_1_2026_02
             (tagid, t_stamp, floatvalue, intvalue, stringvalue, datevalue, dataintegrity)
             VALUES {', '.join(batch_values[:batch_size])}
         """
@@ -333,8 +333,8 @@ except Exception as e:
 print("\n[5/5] Validating Data Population...")
 
 validation_queries = [
-    ("lakebase.ignition_historian.sqlth_te", "Tag Metadata"),
-    ("lakebase.ignition_historian.sqlt_data_1_2024_02", "Historian Data"),
+    ("pravin_ignition_managed.public.sqlth_te", "Tag Metadata"),
+    ("pravin_ignition_managed.public.sqlt_data_1_2026_02", "Historian Data"),
     ("field_engineering.mining_demo.zerobus_sensor_stream", "Streaming Data"),
     ("field_engineering.mining_demo.sap_equipment_master", "SAP Equipment"),
     ("field_engineering.mining_demo.sap_maintenance_schedule", "SAP Maintenance"),

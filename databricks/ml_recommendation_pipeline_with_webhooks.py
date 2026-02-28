@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 CONFIG = {
+    "catalog": "field_engineering",
+    "schema": "mining_demo",
+    "serving_schema": "lakebase",
     "batch_interval": "10 seconds",  # Realistic for production
     "anomaly_threshold": 0.7,
     "webhook_url": "http://ignition-gateway:8088/system/webdev/databricks/webhooks/recommendations",
@@ -53,7 +56,7 @@ def detect_anomalies():
 
     # Load pre-trained anomaly detection model
     anomaly_model = mlflow.pyfunc.load_model(
-        "models:/equipment_anomaly_detector/production"
+        "models:/field_engineering.ml_models.equipment_anomaly_detector@champion"
     )
 
     # Read sensor stream with watermark for late data
@@ -151,7 +154,7 @@ def generate_ml_recommendations():
 
     # Load recommendation model
     recommendation_model = mlflow.pyfunc.load_model(
-        "models:/equipment_recommendation_engine/production"
+        "models:/field_engineering.ml_models.equipment_recommendation_engine@champion"
     )
 
     # Read anomalies
@@ -305,7 +308,7 @@ def write_recommendations_and_notify(df, epoch_id):
             .mode("append") \
             .jdbc(
                 url=CONFIG["lakebase_url"],
-                table="agentic_hmi.ml_recommendations",
+                    table="lakebase.agent_recommendations",
                 properties={
                     "user": spark.conf.get("lakebase.user"),
                     "password": spark.conf.get("lakebase.password"),
@@ -343,7 +346,7 @@ def update_pipeline_metrics(epoch_id, total_recs, critical_recs):
 
     metrics_df.write \
         .mode("append") \
-        .saveAsTable("main.monitoring.pipeline_metrics")
+        .saveAsTable(f"{CONFIG['catalog']}.{CONFIG['schema']}.pipeline_metrics")
 
 # COMMAND ----------
 
@@ -355,7 +358,7 @@ def update_pipeline_metrics(epoch_id, total_recs, critical_recs):
 # Main streaming query with webhook notifications
 recommendation_stream = (
     spark.readStream
-    .table("main.mining_operations.ml_recommendations_gold")
+    .table(f"{CONFIG['catalog']}.{CONFIG['schema']}.ml_recommendations_gold")
     .writeStream
     .foreachBatch(write_recommendations_and_notify)
     .trigger(processingTime=CONFIG["batch_interval"])  # 10 second batches
@@ -452,7 +455,7 @@ def monitor_pipeline_health():
             COUNT(*) as recs_last_hour,
             AVG(confidence) as avg_confidence,
             SUM(CASE WHEN urgency >= 4 THEN 1 ELSE 0 END) as critical_count
-        FROM main.mining_operations.ml_recommendations_gold
+        FROM field_engineering.mining_demo.ml_recommendations_gold
         WHERE created_timestamp > current_timestamp() - INTERVAL 1 HOUR
     """
 

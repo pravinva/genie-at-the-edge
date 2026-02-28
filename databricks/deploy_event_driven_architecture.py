@@ -26,8 +26,8 @@ print("="*80)
 CONFIG = {
     "catalog": "field_engineering",
     "schema": "mining_demo",
-    "lakebase_catalog": "lakebase",
-    "lakebase_schema": "agentic_hmi",
+    "lakebase_catalog": "field_engineering",
+    "lakebase_schema": "lakebase",
     "zerobus_checkpoint": "/mnt/zerobus/checkpoints/mining_ot",
     "workspace_user": "pravin.varma@databricks.com"
 }
@@ -423,7 +423,7 @@ LISTEN new_ml_recommendation;
 LISTEN recommendation_status_changed;
 
 -- Insert test recommendation
-INSERT INTO lakebase.agentic_hmi.agent_recommendations
+INSERT INTO field_engineering.lakebase.agent_recommendations
 (recommendation_id, equipment_id, issue_type, severity, confidence_score)
 VALUES (uuid(), 'TEST-001', 'test_anomaly', 'high', 0.95);
 

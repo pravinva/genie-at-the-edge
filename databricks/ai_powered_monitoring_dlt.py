@@ -28,13 +28,13 @@ from databricks.sdk.service import serving
 # COMMAND ----------
 
 # Pipeline configuration
-CATALOG = "main"
-SCHEMA = "mining_operations"
-LAKEBASE_CATALOG = "lakebase"
-LAKEBASE_SCHEMA = "agentic_hmi"
+CATALOG = "field_engineering"
+SCHEMA = "mining_demo"
+LAKEBASE_CATALOG = "field_engineering"
+LAKEBASE_SCHEMA = "lakebase"
 
 # ML Model configuration
-MODEL_NAME = "equipment_anomaly_detector"
+MODEL_NAME = f"{CATALOG}.ml_models.equipment_anomaly_detector"
 MODEL_VERSION = "champion"
 GENIE_SPACE_ID = "01ef97db3f721f5dbfeb1bc542b7fac8"
 
@@ -72,14 +72,14 @@ def sensor_stream_bronze():
         spark.readStream
         .format("delta")
         .option("readChangeFeed", "true")
-        .table(f"{CATALOG}.{SCHEMA}.sensor_data")
+        .table(f"{CATALOG}.{SCHEMA}.zerobus_sensor_stream")
         .select(
             F.col("equipment_id"),
-            F.col("sensor_type"),
+            F.col("sensor_name").alias("sensor_type"),
             F.col("sensor_value"),
             F.col("units"),
             F.col("timestamp"),
-            F.col("_change_type").alias("cdc_operation"),
+            F.lit("insert").alias("cdc_operation"),
             F.current_timestamp().alias("processed_timestamp")
         )
     )
@@ -687,8 +687,8 @@ def register_anomaly_model():
     training_data = spark.sql(f"""
         SELECT sensor_value,
                CASE WHEN sensor_value > 85 THEN 1 ELSE 0 END as is_anomaly
-        FROM {CATALOG}.{SCHEMA}.sensor_data
-        WHERE sensor_type = 'temperature'
+        FROM {CATALOG}.{SCHEMA}.zerobus_sensor_stream
+        WHERE sensor_name = 'temperature'
         LIMIT 10000
     """).toPandas()
 

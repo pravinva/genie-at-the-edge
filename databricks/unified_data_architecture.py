@@ -36,25 +36,26 @@ def read_lakebase_historian():
     # Option A: Query via Lakebase catalog (if in Unity Catalog)
     return spark.sql("""
         SELECT
-            tagpath as equipment_sensor,
-            t_stamp as timestamp,
-            floatvalue as value,
+            t.tagpath as equipment_sensor,
+            timestamp_millis(d.t_stamp) as timestamp,
+            d.floatvalue as value,
             -- Parse equipment and sensor from tagpath
-            SPLIT(tagpath, '/')[0] as equipment_id,
-            SPLIT(tagpath, '/')[1] as sensor_name,
+            SPLIT(t.tagpath, '/')[0] as equipment_id,
+            SPLIT(t.tagpath, '/')[1] as sensor_name,
             -- Calculate baselines
-            AVG(floatvalue) OVER (
-                PARTITION BY tagpath
-                ORDER BY t_stamp
+            AVG(d.floatvalue) OVER (
+                PARTITION BY t.tagpath
+                ORDER BY d.t_stamp
                 ROWS BETWEEN 10080 PRECEDING AND CURRENT ROW
             ) as baseline_7d,
-            STDDEV(floatvalue) OVER (
-                PARTITION BY tagpath
-                ORDER BY t_stamp
+            STDDEV(d.floatvalue) OVER (
+                PARTITION BY t.tagpath
+                ORDER BY d.t_stamp
                 ROWS BETWEEN 10080 PRECEDING AND CURRENT ROW
             ) as stddev_7d
-        FROM lakebase.ignition_historian.sqlt_data_1_2024_02
-        WHERE t_stamp > CURRENT_TIMESTAMP - INTERVAL 24 HOURS
+        FROM pravin_ignition_managed.public.sqlt_data_1_2026_02 d
+        JOIN pravin_ignition_managed.public.sqlth_te t ON d.tagid = t.id
+        WHERE d.t_stamp > unix_millis(CURRENT_TIMESTAMP - INTERVAL 24 HOURS)
     """)
 
     # Option B: Direct Delta table access (Lakebase IS Delta!)
@@ -373,8 +374,8 @@ def monitor_sources():
             COUNT(*) as record_count,
             MAX(t_stamp) as latest_timestamp,
             CURRENT_TIMESTAMP - MAX(t_stamp) as lag_seconds
-        FROM lakebase.ignition_historian.sqlt_data_1_2024_02
-        WHERE t_stamp > CURRENT_TIMESTAMP - INTERVAL 1 HOUR
+        FROM pravin_ignition_managed.public.sqlt_data_1_2026_02
+        WHERE t_stamp > unix_millis(CURRENT_TIMESTAMP - INTERVAL 1 HOUR)
 
         UNION ALL
 

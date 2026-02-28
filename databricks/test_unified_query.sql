@@ -6,12 +6,12 @@
 -- ==============================================================================
 
 SELECT 'Historian Tags' as source, COUNT(*) as record_count
-FROM lakebase.ignition_historian.sqlth_te
+FROM pravin_ignition_managed.public.sqlth_te
 
 UNION ALL
 
 SELECT 'Historian Data', COUNT(*)
-FROM lakebase.ignition_historian.sqlt_data_1_2024_02
+FROM pravin_ignition_managed.public.sqlt_data_1_2026_02
 
 UNION ALL
 
@@ -62,9 +62,9 @@ historical AS (
         AVG(d.floatvalue) as baseline_7d,
         STDDEV(d.floatvalue) as stddev_7d,
         PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY d.floatvalue) as p95_value
-    FROM lakebase.ignition_historian.sqlt_data_1_2024_02 d
-    JOIN lakebase.ignition_historian.sqlth_te t ON d.tagid = t.id
-    WHERE d.t_stamp > CURRENT_TIMESTAMP - INTERVAL 7 DAYS
+    FROM pravin_ignition_managed.public.sqlt_data_1_2026_02 d
+    JOIN pravin_ignition_managed.public.sqlth_te t ON d.tagid = t.id
+    WHERE d.t_stamp > UNIX_MILLIS(CURRENT_TIMESTAMP - INTERVAL 7 DAYS)
     GROUP BY SPLIT(t.tagpath, '/')[0], SPLIT(t.tagpath, '/')[1]
 ),
 business AS (
@@ -159,18 +159,18 @@ ORDER BY e.criticality_rating, e.equipment_id;
 SELECT
     SPLIT(t.tagpath, '/')[0] as equipment_id,
     SPLIT(t.tagpath, '/')[1] as sensor_type,
-    DATE(d.t_stamp) as date,
+    DATE(TIMESTAMP_MILLIS(d.t_stamp)) as date,
     COUNT(*) as reading_count,
     AVG(d.floatvalue) as daily_avg,
     MIN(d.floatvalue) as daily_min,
     MAX(d.floatvalue) as daily_max,
     STDDEV(d.floatvalue) as daily_stddev
-FROM lakebase.ignition_historian.sqlt_data_1_2024_02 d
-JOIN lakebase.ignition_historian.sqlth_te t ON d.tagid = t.id
-WHERE d.t_stamp > CURRENT_DATE - 7
+FROM pravin_ignition_managed.public.sqlt_data_1_2026_02 d
+JOIN pravin_ignition_managed.public.sqlth_te t ON d.tagid = t.id
+WHERE d.t_stamp > UNIX_MILLIS(CURRENT_TIMESTAMP - INTERVAL 7 DAYS)
   AND SPLIT(t.tagpath, '/')[0] IN ('HAUL-001', 'CRUSH-001')
   AND SPLIT(t.tagpath, '/')[1] IN ('temperature', 'vibration')
-GROUP BY SPLIT(t.tagpath, '/')[0], SPLIT(t.tagpath, '/')[1], DATE(d.t_stamp)
+GROUP BY SPLIT(t.tagpath, '/')[0], SPLIT(t.tagpath, '/')[1], DATE(TIMESTAMP_MILLIS(d.t_stamp))
 ORDER BY equipment_id, sensor_type, date DESC;
 
 -- ==============================================================================
