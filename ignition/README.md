@@ -307,6 +307,18 @@ CREATE TABLE agent_commands (
 
 ### Common Issues
 
+**"Lakebase NOTIFY listener does not start"**
+- Deploy `gateway_scripts/lakebase_notify_listener.py` as a Gateway Startup/Shutdown script.
+- Ensure these tags exist under `[default]Lakebase/`:
+  - `Host`, `Port`, `Database`, `User`, `Password`, `DbConnectionName`
+- Set `DbConnectionName` to your Ignition datasource name (for example `lakebase_historian`).
+- Validate datasource status in Gateway (`Config -> Databases -> Connections`) before restarting scripts.
+- Expected healthy startup logs include:
+  - `JDBC attempt 1/1: success`
+  - `Resolved notification connection class: org.postgresql.jdbc.PgConnection`
+  - `Listening on channel: recommendations` (and the other channels)
+  - `Lakebase NOTIFY listener connected successfully`
+
 **"Database connection not found"**
 - Check: Gateway → Configure → Database Connections
 - Verify "Lakebase_Connection" exists and shows "Valid"

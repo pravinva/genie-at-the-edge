@@ -1,403 +1,648 @@
 """
-PostgreSQL NOTIFY Listener for Ignition Gateway
-Receives real-time notifications from Lakebase and pushes to Perspective sessions
-Achieves <100ms notification latency as specified in architecture
+PostgreSQL NOTIFY listener for Ignition Gateway (8.1 / Jython-safe).
+
+Reads DB connection from:
+  [default]Lakebase/Host
+  [default]Lakebase/Port
+  [default]Lakebase/Database
+  [default]Lakebase/User
+  [default]Lakebase/Password
+
+Pushes events to Perspective via sendMessage and avoids any writes
+to optional Mining telemetry tags.
 """
 
 import system
 import time
-import json
+import traceback
 from java.lang import Thread, Runnable
-from org.postgresql import PGConnection
-from java.sql import DriverManager
+from java.sql import DriverManager, Connection as JdbcConnection
 from java.util import Properties
+from com.inductiveautomation.ignition.gateway import IgnitionGateway
+
 
 class LakebaseNotifyListener(Runnable):
-    """
-    Real-time listener for PostgreSQL NOTIFY events.
-    Runs in gateway scope and pushes notifications to Perspective sessions.
-    """
-
     def __init__(self):
-        # Connection parameters
-        self.host = system.tag.readBlocking(['[default]Lakebase/Host'])[0].value or 'localhost'
-        self.port = system.tag.readBlocking(['[default]Lakebase/Port'])[0].value or 5432
-        self.database = system.tag.readBlocking(['[default]Lakebase/Database'])[0].value or 'genie_mining'
-        self.user = system.tag.readBlocking(['[default]Lakebase/User'])[0].value or 'databricks_user'
-        self.password = system.tag.readBlocking(['[default]Lakebase/Password'])[0].value
+        self.logger = system.util.getLogger("LakebaseListener")
 
-        # JDBC URL
-        self.jdbc_url = f"jdbc:postgresql://{self.host}:{self.port}/{self.database}"
+        # Required connection tags
+        self.host = self._read_tag("[default]Lakebase/Host", "localhost")
+        self.port = self._read_tag("[default]Lakebase/Port", 5432)
+        self.database = self._read_tag("[default]Lakebase/Database", "historian")
+        self.user = self._read_tag("[default]Lakebase/User", "ignition_historian")
+        self.password = self._read_tag("[default]Lakebase/Password", "")
+        self.ignition_db_connection_name = self._read_tag("[default]Lakebase/DbConnectionName", "lakebase_historian")
 
-        # Channels to listen on
+        self.jdbc_url = "jdbc:postgresql://{0}:{1}/{2}".format(self.host, self.port, self.database)
+
         self.channels = [
-            'recommendations',
-            'recommendations_critical',
-            'recommendations_high',
-            'recommendations_medium',
-            'decisions',
-            'commands',
-            'agent_health'
+            "recommendations",
+            "recommendations_critical",
+            "recommendations_high",
+            "recommendations_medium",
+            "decisions",
+            "commands",
+            "agent_health"
         ]
 
-        # Connection and state
         self.connection = None
         self.pg_connection = None
         self.running = False
-        self.logger = system.util.getLogger("LakebaseListener")
+        self.last_error = None
+        self.last_connect_attempt_ms = None
 
-        # Performance metrics
-        self.notification_count = 0
-        self.total_latency_ms = 0
-        self.last_notification_time = None
+    def _build_connection_urls(self):
+        """
+        Build a hostname-based JDBC URL with explicit timeout params.
+        Keep hostname (not raw IP) for stable TLS/SNI behavior.
+        """
+        params = "sslmode=require&connectTimeout=5&socketTimeout=15&tcpKeepAlive=true&loginTimeout=5"
+        host_url = "jdbc:postgresql://{0}:{1}/{2}?{3}".format(self.host, self.port, self.database, params)
+        return [host_url]
+
+    def _list_registered_drivers(self):
+        drivers = []
+        try:
+            enum = DriverManager.getDrivers()
+            while enum.hasMoreElements():
+                try:
+                    drivers.append(str(enum.nextElement().getClass().getName()))
+                except Exception:
+                    drivers.append("<unknown-driver>")
+        except Exception as e:
+            drivers.append("<driver-enum-error:{0}>".format(str(e)))
+        return drivers
+
+    def _collect_jdbc_diagnostics(self, candidate_url):
+        """
+        Gather diagnostics before each JDBC attempt to speed up root cause analysis.
+        Keep this method lightweight and avoid APIs that can throw
+        uncaught driver-resolution errors in some Ignition runtimes.
+        """
+        diag = {
+            "host": str(self.host),
+            "resolved_ip": "<skipped>",
+            "driver_manager_driver": "<skipped>",
+            "driver_manager_driver_error": "<skipped>",
+            "registered_drivers": []
+        }
+
+        diag["registered_drivers"] = self._list_registered_drivers()
+        return diag
+
+    def _open_connection(self, candidate_url, props):
+        """
+        Open connection using Ignition Gateway datasource manager.
+        DriverManager and system.db.getConnection can fail in some
+        gateway scripting classloader/signature contexts.
+        """
+        self.logger.info("Using Ignition datasource connection: {0}".format(self.ignition_db_connection_name))
+        try:
+            gateway = IgnitionGateway.get()
+            if gateway is None:
+                raise Exception("IgnitionGateway.get() returned None")
+
+            ds_manager = gateway.getDatasourceManager()
+            if ds_manager is None:
+                raise Exception("Gateway datasource manager is unavailable")
+
+            conn = ds_manager.getConnection(str(self.ignition_db_connection_name))
+            if conn is None:
+                raise Exception("DatasourceManager.getConnection returned None")
+            return conn
+        except Exception as e:
+            raise Exception(
+                "Ignition datasource connect failed. "
+                "datasource={0} error={1}".format(self.ignition_db_connection_name, str(e))
+            )
+
+    def _read_tag(self, path, default_value):
+        try:
+            qv = system.tag.readBlocking([path])[0]
+            if qv is None or qv.value is None:
+                return default_value
+            return qv.value
+        except Exception as e:
+            self.logger.warn("Could not read tag {0}: {1}".format(path, str(e)))
+            return default_value
+
+    def _class_name(self, obj):
+        try:
+            return str(obj.getClass().getName())
+        except Exception:
+            return str(type(obj))
+
+    def _try_unwrap_connection(self, conn):
+        # 1) Generic JDBC unwrap to java.sql.Connection
+        try:
+            if hasattr(conn, "isWrapperFor") and conn.isWrapperFor(JdbcConnection):
+                inner = conn.unwrap(JdbcConnection)
+                if inner is not None and inner is not conn:
+                    return inner
+        except Exception:
+            pass
+
+        # 2) PostgreSQL-specific unwrap using the connection's classloader.
+        # This avoids relying on the gateway script classloader seeing PG classes.
+        try:
+            cl = conn.getClass().getClassLoader()
+            if cl is not None and hasattr(conn, "isWrapperFor") and hasattr(conn, "unwrap"):
+                for cname in ["org.postgresql.PGConnection", "org.postgresql.jdbc.PgConnection"]:
+                    try:
+                        pg_cls = cl.loadClass(cname)
+                        if conn.isWrapperFor(pg_cls):
+                            inner = conn.unwrap(pg_cls)
+                            if inner is not None and inner is not conn:
+                                return inner
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+        return None
+
+    def _try_named_unwrap_methods(self, conn):
+        method_names = [
+            "getUnderlyingConnection",
+            "getConnection",
+            "getDelegate",
+            "getInnermostDelegate",
+            "getRawConnection",
+            "getDelegateInternal"
+        ]
+
+        # Try public methods first.
+        for m in method_names:
+            try:
+                method = conn.getClass().getMethod(m, [])
+                cand = method.invoke(conn, [])
+                if cand is not None and cand is not conn:
+                    return cand
+            except Exception:
+                pass
+
+        # Then try declared (possibly non-public) methods up class hierarchy.
+        cls = conn.getClass()
+        while cls is not None:
+            for m in method_names:
+                try:
+                    method = cls.getDeclaredMethod(m, [])
+                    method.setAccessible(True)
+                    cand = method.invoke(conn, [])
+                    if cand is not None and cand is not conn:
+                        return cand
+                except Exception:
+                    pass
+            try:
+                cls = cls.getSuperclass()
+            except Exception:
+                cls = None
+        return None
+
+    def _try_declared_fields(self, conn):
+        field_names = ["delegate", "connection", "wrappedConnection", "underlyingConnection", "inner", "target"]
+        cls = conn.getClass()
+        while cls is not None:
+            for fname in field_names:
+                try:
+                    f = cls.getDeclaredField(fname)
+                    f.setAccessible(True)
+                    cand = f.get(conn)
+                    if cand is not None and cand is not conn:
+                        return cand
+                except Exception:
+                    pass
+            try:
+                cls = cls.getSuperclass()
+            except Exception:
+                cls = None
+        return None
+
+    def _resolve_notification_connection(self, base_conn):
+        """
+        DatasourceManager may return a wrapped connection object.
+        Walk common wrapper methods to find the underlying PG connection
+        that exposes getNotifications(...).
+        """
+        current = base_conn
+        seen = {}
+        for depth in range(0, 8):
+            if current is None:
+                break
+
+            cname = self._class_name(current)
+
+            # Found a connection object that supports PostgreSQL notification polling.
+            try:
+                getattr(current, "getNotifications")
+                self.logger.info("Resolved notification connection class: {0}".format(cname))
+                return current
+            except Exception:
+                pass
+
+            key = cname + "@" + str(depth)
+            if seen.get(key):
+                break
+            seen[key] = True
+
+            next_conn = self._try_unwrap_connection(current)
+            if next_conn is None:
+                next_conn = self._try_named_unwrap_methods(current)
+            if next_conn is None:
+                next_conn = self._try_declared_fields(current)
+
+            if next_conn is None:
+                break
+            current = next_conn
+
+        return None
+
+    def _poll_notifications(self, timeout_ms):
+        """
+        Poll notifications using whichever PGConnection getNotifications signature
+        is available in this runtime.
+        """
+        if self.pg_connection is None:
+            return None
+        try:
+            return self.pg_connection.getNotifications(timeout_ms)
+        except TypeError:
+            return self.pg_connection.getNotifications()
 
     def connect(self):
-        """Establish connection to Lakebase and set up listeners"""
+        props = Properties()
         try:
-            # Load PostgreSQL driver
-            Class.forName("org.postgresql.Driver")
+            self.last_connect_attempt_ms = system.date.toMillis(system.date.now())
+            self.logger.info("Connect step 1/5: validating credentials tag values")
+            if not self.password:
+                self.logger.error("Lakebase password tag is empty: [default]Lakebase/Password")
+                return False
 
-            # Connection properties
-            props = Properties()
-            props.setProperty("user", self.user)
-            props.setProperty("password", self.password)
+            # Avoid explicit classloading here; it can block in some 8.1 runtimes.
+            self.logger.info("Connect step 2/5: skipping explicit JDBC classloading")
 
-            # Create connection
-            self.connection = DriverManager.getConnection(self.jdbc_url, props)
+            self.logger.info("Connect step 3/5: preparing JDBC properties")
+            props.setProperty("user", str(self.user))
+            props.setProperty("password", str(self.password))
+            props.setProperty("sslmode", "require")
+
+            DriverManager.setLoginTimeout(15)
+            urls = self._build_connection_urls()
+            self.logger.info("Connect step 4/5: opening connection (candidates={0})".format(len(urls)))
+
+            last_conn_error = None
+            self.connection = None
+            for i in range(len(urls)):
+                candidate = urls[i]
+                try:
+                    self.logger.info("JDBC attempt {0}/{1}: {2}".format(i + 1, len(urls), candidate))
+                    self.connection = self._open_connection(candidate, props)
+                    self.logger.info("JDBC attempt {0}/{1}: success".format(i + 1, len(urls)))
+                    break
+                except Exception as ce:
+                    last_conn_error = ce
+                    self.logger.warn("JDBC attempt {0}/{1}: failed: {2}".format(i + 1, len(urls), str(ce)))
+
+            if self.connection is None:
+                if last_conn_error:
+                    raise last_conn_error
+                raise Exception("No JDBC candidates available for host {0}".format(self.host))
+
             self.connection.setAutoCommit(True)
+            self.pg_connection = self._resolve_notification_connection(self.connection)
+            if self.pg_connection is None:
+                raise Exception(
+                    "Connected but could not resolve PG notification connection. base_class={0}".format(
+                        self._class_name(self.connection)
+                    )
+                )
 
-            # Get PostgreSQL-specific connection for NOTIFY
-            self.pg_connection = self.connection.unwrap(PGConnection)
-
-            # Create statement for LISTEN commands
+            self.logger.info("Connect step 5/5: registering LISTEN channels")
             stmt = self.connection.createStatement()
-
-            # Listen on all channels
             for channel in self.channels:
-                stmt.execute(f"LISTEN {channel}")
-                self.logger.info(f"Listening on channel: {channel}")
-
+                stmt.execute("LISTEN {0}".format(channel))
+                self.logger.info("Listening on channel: {0}".format(channel))
             stmt.close()
 
-            # Update connection status tag
-            system.tag.writeBlocking(
-                ['[default]Mining/NotifyListener/Status'],
-                ['Connected']
-            )
-
+            self.last_error = None
             self.logger.info("Lakebase NOTIFY listener connected successfully")
             return True
-
         except Exception as e:
-            self.logger.error(f"Failed to connect: {str(e)}")
-            system.tag.writeBlocking(
-                ['[default]Mining/NotifyListener/Status'],
-                ['Disconnected']
+            self.last_error = str(e)
+            self.logger.error(
+                "Failed to connect to Lakebase: {0} | host={1} port={2} db={3} user={4} password_set={5}".format(
+                    str(e), str(self.host), str(self.port), str(self.database), str(self.user), bool(self.password)
+                )
             )
+            self.logger.error("Connect traceback:\n{0}".format(traceback.format_exc()))
             return False
 
     def run(self):
-        """Main listening loop - runs in separate thread"""
         self.running = True
         self.logger.info("Starting NOTIFY listener thread...")
+        self.logger.info("Run loop pre-check: beginning initial connect")
 
-        # Connect to database
         if not self.connect():
-            self.logger.error("Failed to establish initial connection")
+            self.logger.error("Initial connection failed; listener not started.")
+            self.running = False
             return
 
-        # Main loop
         while self.running:
             try:
-                # Get notifications (with 1 second timeout)
-                notifications = self.pg_connection.getNotifications(1000)
-
+                notifications = self._poll_notifications(1000)
                 if notifications:
                     for notification in notifications:
                         self.handle_notification(notification)
 
-                # Check connection health every 10 iterations
-                if self.notification_count % 10 == 0:
-                    self.check_connection_health()
-
+                self.check_connection_health()
             except Exception as e:
-                self.logger.error(f"Error in listen loop: {str(e)}")
+                self.last_error = str(e)
+                self.logger.error("Error in listen loop: {0}".format(str(e)))
+                if "getNotifications" in str(e):
+                    self.logger.error(
+                        "Connection object does not expose getNotifications(); "
+                        "verify PostgreSQL JDBC driver module is enabled."
+                    )
+                self.logger.error("Listen loop traceback:\n{0}".format(traceback.format_exc()))
+                time.sleep(2)
+                self._safe_reconnect()
 
-                # Try to reconnect
-                time.sleep(5)
-                if not self.connect():
-                    self.logger.error("Reconnection failed, will retry...")
-
-        # Cleanup
         self.cleanup()
 
-    def handle_notification(self, notification):
-        """Process a received notification"""
+    def _safe_reconnect(self):
         try:
-            # Track receive time for latency measurement
-            receive_time = system.date.now()
+            self.logger.info("Attempting reconnect...")
+            self.cleanup()
+        except Exception:
+            pass
+        if not self.connect():
+            self.logger.warn("Reconnect attempt failed; will retry.")
 
-            # Parse notification
+    def _safe_parse_payload(self, payload_str):
+        try:
+            return system.util.jsonDecode(payload_str)
+        except Exception:
+            self.logger.warn("Payload is not valid JSON: {0}".format(payload_str))
+            return {"raw_payload": payload_str}
+
+    def _normalize_recommendation_payload(self, payload):
+        return {
+            "data": {
+                "recommendationId": payload.get("recommendation_id"),
+                "equipmentId": payload.get("equipment_id"),
+                "issueType": payload.get("issue_type"),
+                "severity": payload.get("severity"),
+                "confidenceScore": payload.get("confidence_score"),
+                "recommendedAction": payload.get("recommended_action"),
+                "timestamp": payload.get("timestamp")
+            }
+        }
+
+    def _normalize_status_payload(self, payload):
+        return {
+            "data": {
+                "recommendationId": payload.get("recommendation_id"),
+                "newStatus": payload.get("new_status"),
+                "operatorId": payload.get("operator") or payload.get("operator_id"),
+                "operatorNotes": payload.get("operator_notes"),
+                "timestamp": payload.get("timestamp")
+            }
+        }
+
+    def handle_notification(self, notification):
+        try:
             channel = notification.getName()
             payload_str = notification.getParameter()
+            payload = self._safe_parse_payload(payload_str)
 
-            # Parse JSON payload
-            payload = system.util.jsonDecode(payload_str)
+            self.logger.info("[{0}] Event received".format(channel))
 
-            # Add receive timestamp and channel
-            payload['_received_at'] = str(receive_time)
-            payload['_channel'] = channel
-
-            # Calculate latency if timestamp in payload
-            if 'timestamp' in payload:
-                send_time = system.date.parse(payload['timestamp'])
-                latency_ms = system.date.millisBetween(send_time, receive_time)
-                payload['_latency_ms'] = latency_ms
-
-                # Update metrics
-                self.notification_count += 1
-                self.total_latency_ms += latency_ms
-                avg_latency = self.total_latency_ms / self.notification_count
-
-                # Log if latency exceeds 100ms threshold
-                if latency_ms > 100:
-                    self.logger.warn(f"High latency detected: {latency_ms}ms for {channel}")
-
-                # Update performance tags
-                system.tag.writeBlocking(
-                    [
-                        '[default]Mining/NotifyListener/AvgLatency',
-                        '[default]Mining/NotifyListener/LastLatency',
-                        '[default]Mining/NotifyListener/NotificationCount'
-                    ],
-                    [avg_latency, latency_ms, self.notification_count]
-                )
-
-            self.logger.info(f"[{channel}] {payload.get('event_type', 'unknown')}: latency={payload.get('_latency_ms', 'N/A')}ms")
-
-            # Route to appropriate handler
-            if channel.startswith('recommendations'):
+            if channel.startswith("recommendations"):
                 self.handle_recommendation(payload)
-            elif channel == 'decisions':
+            elif channel == "decisions":
                 self.handle_decision(payload)
-            elif channel == 'commands':
+            elif channel == "commands":
                 self.handle_command(payload)
-            elif channel == 'agent_health':
+            elif channel == "agent_health":
                 self.handle_agent_health(payload)
-
-            # Store last notification time
-            self.last_notification_time = receive_time
-
         except Exception as e:
-            self.logger.error(f"Error handling notification: {str(e)}")
+            self.last_error = str(e)
+            self.logger.error("Error handling notification: {0}".format(str(e)))
 
     def handle_recommendation(self, payload):
-        """Handle new recommendation notification"""
         try:
-            # Update recommendation count tag
-            count_tag = '[default]Mining/Recommendations/Count'
-            current_count = system.tag.readBlocking([count_tag])[0].value or 0
-            system.tag.writeBlocking([count_tag], [current_count + 1])
-
-            # Store latest recommendation
-            system.tag.writeBlocking(
-                ['[default]Mining/Recommendations/Latest'],
-                [system.util.jsonEncode(payload)]
-            )
-
-            # Send to all Perspective sessions
+            msg = self._normalize_recommendation_payload(payload)
             system.perspective.sendMessage(
-                'newRecommendation',
-                payload=payload,
-                scope='session'
+                "ML_RECOMMENDATION_UPDATE",
+                payload=msg,
+                scope="session"
             )
 
-            # Send to specific page if severity is critical
-            if payload.get('severity') == 'critical':
+            if (payload.get("severity") or "").lower() == "critical":
                 system.perspective.sendMessage(
-                    'criticalAlert',
-                    payload=payload,
-                    scope='page',
-                    pageId='/agent-hmi'
+                    "criticalAlert",
+                    payload=msg,
+                    scope="session"
                 )
 
-            # Log for audit
-            self.logger.info(f"New recommendation: {payload['recommendation_id']} for {payload['equipment_id']}")
-
+            self.logger.info(
+                "Recommendation pushed: {0} / {1}".format(
+                    payload.get("recommendation_id"), payload.get("equipment_id")
+                )
+            )
         except Exception as e:
-            self.logger.error(f"Error handling recommendation: {str(e)}")
+            self.last_error = str(e)
+            self.logger.error("Error handling recommendation: {0}".format(str(e)))
 
     def handle_decision(self, payload):
-        """Handle operator decision notification"""
         try:
-            # Send to Perspective sessions
+            msg = self._normalize_status_payload(payload)
             system.perspective.sendMessage(
-                'operatorDecision',
-                payload=payload,
-                scope='session'
+                "ML_RECOMMENDATION_STATUS",
+                payload=msg,
+                scope="session"
             )
-
-            # Update decision count by type
-            decision_type = payload.get('new_status', 'unknown')
-            tag_path = f"[default]Mining/Decisions/{decision_type.capitalize()}Count"
-            current = system.tag.readBlocking([tag_path])[0].value or 0
-            system.tag.writeBlocking([tag_path], [current + 1])
-
-            self.logger.info(f"Operator decision: {payload['new_status']} for {payload['recommendation_id']}")
-
+            self.logger.info(
+                "Decision pushed: {0} -> {1}".format(
+                    payload.get("recommendation_id"), payload.get("new_status")
+                )
+            )
         except Exception as e:
-            self.logger.error(f"Error handling decision: {str(e)}")
+            self.last_error = str(e)
+            self.logger.error("Error handling decision: {0}".format(str(e)))
 
     def handle_command(self, payload):
-        """Handle command execution notification"""
         try:
-            # Send to Perspective
             system.perspective.sendMessage(
-                'commandExecution',
+                "commandExecution",
                 payload=payload,
-                scope='session'
+                scope="session"
             )
-
-            # If command executed successfully, update the equipment tag
-            if payload.get('status') == 'executed':
-                tag_path = payload.get('tag_path')
-                if tag_path:
-                    system.tag.writeBlocking([tag_path], [payload.get('new_value')])
-                    self.logger.info(f"Tag updated: {tag_path} = {payload.get('new_value')}")
-
-            self.logger.info(f"Command {payload['command_id']}: {payload['status']}")
-
         except Exception as e:
-            self.logger.error(f"Error handling command: {str(e)}")
+            self.last_error = str(e)
+            self.logger.error("Error handling command: {0}".format(str(e)))
 
     def handle_agent_health(self, payload):
-        """Handle agent health update"""
         try:
-            # Update agent health tags
-            agent_id = payload.get('agent_id', 'unknown')
-            system.tag.writeBlocking(
-                [
-                    f"[default]Mining/Agents/{agent_id}/Status",
-                    f"[default]Mining/Agents/{agent_id}/LastHeartbeat",
-                    f"[default]Mining/Agents/{agent_id}/PollsCompleted"
-                ],
-                [
-                    payload.get('status'),
-                    payload.get('last_heartbeat'),
-                    payload.get('polls_completed')
-                ]
-            )
-
-            # Send to Perspective
             system.perspective.sendMessage(
-                'agentHealth',
+                "agentHealth",
                 payload=payload,
-                scope='session'
+                scope="session"
             )
-
-            self.logger.info(f"Agent health: {agent_id} - {payload.get('status')}")
-
         except Exception as e:
-            self.logger.error(f"Error handling agent health: {str(e)}")
+            self.last_error = str(e)
+            self.logger.error("Error handling agent health: {0}".format(str(e)))
 
     def check_connection_health(self):
-        """Periodic connection health check"""
         try:
-            # Simple query to check connection
+            if self.connection is None or self.connection.isClosed():
+                self.logger.warn("Connection is closed; reconnecting.")
+                self._safe_reconnect()
+                return
+
             stmt = self.connection.createStatement()
             rs = stmt.executeQuery("SELECT 1")
             rs.close()
             stmt.close()
-
-            # Update health tag
-            system.tag.writeBlocking(
-                ['[default]Mining/NotifyListener/Healthy'],
-                [True]
-            )
-
         except Exception as e:
-            self.logger.warn(f"Connection health check failed: {str(e)}")
-            system.tag.writeBlocking(
-                ['[default]Mining/NotifyListener/Healthy'],
-                [False]
-            )
+            self.last_error = str(e)
+            self.logger.warn("Connection health check failed: {0}".format(str(e)))
+            self.logger.warn("Health check traceback:\n{0}".format(traceback.format_exc()))
+            self._safe_reconnect()
 
     def stop(self):
-        """Stop the listener"""
         self.running = False
         self.logger.info("Stopping NOTIFY listener...")
 
     def cleanup(self):
-        """Clean up resources"""
         try:
-            if self.connection and not self.connection.isClosed():
-                # Unlisten from all channels
+            if self.connection and (not self.connection.isClosed()):
                 stmt = self.connection.createStatement()
                 for channel in self.channels:
-                    stmt.execute(f"UNLISTEN {channel}")
+                    try:
+                        stmt.execute("UNLISTEN {0}".format(channel))
+                    except Exception:
+                        pass
                 stmt.close()
-
-                # Close connection
                 self.connection.close()
-
-            # Update status
-            system.tag.writeBlocking(
-                ['[default]Mining/NotifyListener/Status'],
-                ['Stopped']
-            )
-
-            self.logger.info("NOTIFY listener cleaned up successfully")
-
+            self.connection = None
+            self.pg_connection = None
         except Exception as e:
-            self.logger.error(f"Error during cleanup: {str(e)}")
+            self.last_error = str(e)
+            self.logger.warn("Cleanup warning: {0}".format(str(e)))
 
 
-# Gateway startup function
 def start_lakebase_listener():
-    """Start the Lakebase NOTIFY listener in a separate thread"""
+    """Call from Gateway Startup script."""
+    logger = system.util.getLogger("LakebaseListener")
     try:
-        # Check if listener already running
-        if system.util.getGlobals().get('lakebaseListener'):
-            listener = system.util.getGlobals()['lakebaseListener']
-            if listener.running:
-                system.util.getLogger("LakebaseListener").info("Listener already running")
+        existing = system.util.getGlobals().get("lakebaseListener")
+        existing_thread = system.util.getGlobals().get("lakebaseListenerThread")
+        if existing:
+            is_running = getattr(existing, "running", False)
+            thread_alive = False
+            try:
+                thread_alive = bool(existing_thread and existing_thread.isAlive())
+            except Exception:
+                thread_alive = False
+
+            conn_ok = False
+            try:
+                conn_ok = bool(existing.connection and (not existing.connection.isClosed()))
+            except Exception:
+                conn_ok = False
+
+            if is_running and thread_alive and conn_ok:
+                logger.info("Listener already running and healthy.")
                 return
 
-        # Create and start listener
+            logger.warn(
+                "Found stale listener state; forcing restart. "
+                "running={0} thread_alive={1} conn_ok={2} last_error={3}".format(
+                    is_running, thread_alive, conn_ok, getattr(existing, "last_error", None)
+                )
+            )
+            try:
+                existing.stop()
+                existing.cleanup()
+            except Exception:
+                pass
+
         listener = LakebaseNotifyListener()
         thread = Thread(listener, "LakebaseNotifyListener")
         thread.setDaemon(True)
         thread.start()
 
-        # Store reference in globals
-        system.util.getGlobals()['lakebaseListener'] = listener
-        system.util.getGlobals()['lakebaseListenerThread'] = thread
+        system.util.getGlobals()["lakebaseListener"] = listener
+        system.util.getGlobals()["lakebaseListenerThread"] = thread
 
-        system.util.getLogger("LakebaseListener").info("Lakebase NOTIFY listener started")
-
+        logger.info(
+            "Lakebase NOTIFY listener start requested. host={0} port={1} db={2} user={3} password_set={4}".format(
+                listener.host, listener.port, listener.database, listener.user, bool(listener.password)
+            )
+        )
     except Exception as e:
-        system.util.getLogger("LakebaseListener").error(f"Failed to start listener: {str(e)}")
+        logger.error("Failed to start listener: {0}".format(str(e)))
+        logger.error("Startup traceback:\n{0}".format(traceback.format_exc()))
 
 
-# Gateway shutdown function
 def stop_lakebase_listener():
-    """Stop the Lakebase NOTIFY listener"""
+    """Call from Gateway Shutdown script."""
+    logger = system.util.getLogger("LakebaseListener")
     try:
-        listener = system.util.getGlobals().get('lakebaseListener')
+        listener = system.util.getGlobals().get("lakebaseListener")
         if listener:
             listener.stop()
-            thread = system.util.getGlobals().get('lakebaseListenerThread')
-            if thread:
-                thread.join(5000)  # Wait up to 5 seconds
 
-        system.util.getLogger("LakebaseListener").info("Lakebase NOTIFY listener stopped")
+        thread = system.util.getGlobals().get("lakebaseListenerThread")
+        if thread:
+            try:
+                thread.join(5000)
+            except Exception:
+                pass
 
+        logger.info("Lakebase NOTIFY listener stopped.")
     except Exception as e:
-        system.util.getLogger("LakebaseListener").error(f"Error stopping listener: {str(e)}")
+        logger.error("Error stopping listener: {0}".format(str(e)))
+        logger.error("Shutdown traceback:\n{0}".format(traceback.format_exc()))
 
 
-# Add to gateway startup script:
-# start_lakebase_listener()
+def debug_lakebase_listener_status():
+    """
+    Logs and returns detailed listener status from Gateway scope.
+    Call from a Gateway Event Script or message handler.
+    """
+    logger = system.util.getLogger("LakebaseListener")
+    g = system.util.getGlobals()
+    listener = g.get("lakebaseListener")
+    thread = g.get("lakebaseListenerThread")
 
-# Add to gateway shutdown script:
-# stop_lakebase_listener()
+    status = {
+        "listener_exists": bool(listener),
+        "thread_exists": bool(thread),
+        "running": False,
+        "thread_alive": False,
+        "has_connection": False,
+        "connection_closed": None,
+        "last_error": None,
+        "last_connect_attempt_ms": None
+    }
+
+    if listener:
+        status["running"] = bool(getattr(listener, "running", False))
+        status["last_error"] = getattr(listener, "last_error", None)
+        status["last_connect_attempt_ms"] = getattr(listener, "last_connect_attempt_ms", None)
+        try:
+            status["has_connection"] = bool(listener.connection is not None)
+            if listener.connection is not None:
+                status["connection_closed"] = bool(listener.connection.isClosed())
+        except Exception as e:
+            status["last_error"] = "{0} | conn_state_error={1}".format(status["last_error"], str(e))
+
+    if thread:
+        try:
+            status["thread_alive"] = bool(thread.isAlive())
+        except Exception:
+            status["thread_alive"] = False
+
+    logger.info("Listener status: {0}".format(status))
+    return status
