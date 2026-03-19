@@ -165,3 +165,34 @@ END $$;
 GRANT USAGE ON SCHEMA public TO ignition_user;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO ignition_user;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ignition_user;
+
+-- 8. Notify on ML recommendations written to public.ml_recommendations
+-- Maps current scoring output schema into the same 'recommendations' channel.
+CREATE OR REPLACE FUNCTION notify_ml_recommendation_insert()
+RETURNS trigger AS $$
+DECLARE
+  payload json;
+BEGIN
+  payload = json_build_object(
+    'event_type', 'new_recommendation',
+    'recommendation_id', COALESCE(NEW.equipment_id, 'unknown') || '_' || EXTRACT(EPOCH FROM NEW.scored_at)::bigint,
+    'equipment_id', NEW.equipment_id,
+    'issue_type', COALESCE(NEW.action_code, 'ml_recommendation'),
+    'severity', NEW.severity,
+    'recommended_action', NEW.recommendation_text,
+    'confidence_score', NEW.confidence,
+    'timestamp', NEW.scored_at
+  );
+
+  PERFORM pg_notify('recommendations', payload::text);
+  PERFORM pg_notify('recommendations_' || LOWER(COALESCE(NEW.severity, 'medium')), payload::text);
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS ml_recommendation_notify_trigger ON public.ml_recommendations;
+CREATE TRIGGER ml_recommendation_notify_trigger
+  AFTER INSERT ON public.ml_recommendations
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_ml_recommendation_insert();

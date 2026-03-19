@@ -90,6 +90,14 @@
 
 ## 🔧 Remaining Tasks
 
+### Strategic TODO (Backlog)
+1. **Generalize operator action HMI layer (remove domain-specific coupling)**
+   - Define canonical workflow entities and status model (recommendation, action, execution, feedback)
+   - Move approve/defer/reject logic behind shared service APIs instead of view-specific scripts
+   - Make recommendation/action payloads schema-driven for multi-domain reuse
+   - Introduce execution adapter pattern (Ignition tags, REST, other systems)
+   - Refactor Perspective views into reusable components bound to canonical contracts
+
 ### High Priority
 1. **Debug DLT Pipeline Failure**
    - Check event logs in Databricks UI

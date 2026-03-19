@@ -9,6 +9,7 @@ import time
 import json
 from java.sql import DriverManager, PreparedStatement, ResultSet
 from java.util import Properties
+from java.lang import Class
 
 class DirectJDBCManager:
     """
@@ -25,7 +26,9 @@ class DirectJDBCManager:
         self.password = system.tag.readBlocking(['[default]Lakebase/Password'])[0].value
 
         # JDBC URL for PostgreSQL
-        self.jdbc_url = f"jdbc:postgresql://{self.host}:{self.port}/{self.database}"
+        self.jdbc_url = "jdbc:postgresql://{0}:{1}/{2}".format(
+            self.host, self.port, self.database
+        )
 
         # Connection pool
         self.connection = None
@@ -54,7 +57,7 @@ class DirectJDBCManager:
             return self.connection
 
         except Exception as e:
-            system.util.getLogger("DirectJDBC").error(f"Failed to connect: {str(e)}")
+            system.util.getLogger("DirectJDBC").error("Failed to connect: {0}".format(str(e)))
             raise
 
     def write_operator_decision(self, recommendation_id, decision, operator, reason=None):
@@ -119,7 +122,9 @@ class DirectJDBCManager:
 
             # Log performance metrics
             system.util.getLogger("DirectJDBC").info(
-                f"Decision written in {latency_ms}ms: {decision} for {recommendation_id}"
+                "Decision written in {0}ms: {1} for {2}".format(
+                    latency_ms, decision, recommendation_id
+                )
             )
 
             # Send immediate feedback to UI
@@ -144,7 +149,7 @@ class DirectJDBCManager:
             }
 
         except Exception as e:
-            system.util.getLogger("DirectJDBC").error(f"Write failed: {str(e)}")
+            system.util.getLogger("DirectJDBC").error("Write failed: {0}".format(str(e)))
             return {
                 'success': False,
                 'error': str(e),
@@ -225,7 +230,7 @@ class DirectJDBCManager:
         except Exception as e:
             conn.rollback()
             conn.setAutoCommit(True)
-            system.util.getLogger("DirectJDBC").error(f"Batch write failed: {str(e)}")
+            system.util.getLogger("DirectJDBC").error("Batch write failed: {0}".format(str(e)))
             return {
                 'success': False,
                 'error': str(e),
@@ -281,7 +286,7 @@ class DirectJDBCManager:
             return None
 
         except Exception as e:
-            system.util.getLogger("DirectJDBC").error(f"Query failed: {str(e)}")
+            system.util.getLogger("DirectJDBC").error("Query failed: {0}".format(str(e)))
             return None
 
     def close(self):
@@ -327,7 +332,7 @@ def handle_direct_jdbc_message(payload):
         manager.close()
 
     except Exception as e:
-        system.util.getLogger("DirectJDBC").error(f"Message handler error: {str(e)}")
+        system.util.getLogger("DirectJDBC").error("Message handler error: {0}".format(str(e)))
         system.perspective.sendMessage(
             'jdbcError',
             payload={'error': str(e)},

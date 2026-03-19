@@ -29,6 +29,7 @@ import joblib
 
 CATALOG = "field_engineering"
 SCHEMA = "mining_demo"
+SOURCE_SCHEMA = "ignition_streaming"
 MODEL_SCHEMA = "ml_models"
 MODEL_NAME = f"{CATALOG}.{MODEL_SCHEMA}.equipment_anomaly_detector"
 
@@ -81,7 +82,15 @@ training_df = spark.sql(f"""
                 sensor_name AS sensor_type,
                 sensor_value,
                 timestamp
-            FROM {CATALOG}.{SCHEMA}.zerobus_sensor_stream
+            FROM (
+                SELECT
+                    regexp_extract(tag_path, '.*/([A-Z]+-[0-9]+)/', 1) AS equipment_id,
+                    lower(regexp_extract(tag_path, '.*/[A-Z]+-[0-9]+/([^/]+)$', 1)) AS sensor_name,
+                    numeric_value AS sensor_value,
+                    event_time AS timestamp
+                FROM {CATALOG}.{SOURCE_SCHEMA}.sensor_events
+                WHERE numeric_value IS NOT NULL
+            ) src
         ) src
         WHERE timestamp > CURRENT_TIMESTAMP() - INTERVAL 30 DAYS
     ),

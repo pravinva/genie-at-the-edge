@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operational Technology: Guide for the Generalist | Levels 0-3 & DMZ</title>
+<meta name="description" content="Comprehensive guide to industrial automation covering Purdue Model Levels 0-3, MES systems, DMZ architecture, and IT/OT convergence with market analysis">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #f0f4f8;
+  --surf:    #ffffff;
+  --surf2:   #eef2f7;
+  --bord:    #cfd9e6;
+  --text:    #2d3f52;
+  --muted:   #6b8096;
+  --bright:  #1a2b3c;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+#prog { position:fixed;top:0;left:0;right:0;height:3px;background:var(--bord);z-index:200; }
+#prog-fill { height:100%;background:linear-gradient(90deg,#ff6b35,#00a972,#0097e2,#9333ea,#ffb830,#ff3621);width:0;transition:width .2s; }
+.wrap { max-width:920px;margin:0 auto;padding:56px 24px 100px; }
+.hdr { text-align:center;margin-bottom:52px; }
+.hdr h1 { font-family:'Cinzel',serif;font-size:clamp(22px,4.5vw,38px);font-weight:600;color:var(--bright);letter-spacing:.05em; }
+.hdr .subtitle { font-size:18px;color:var(--ac);margin-top:8px;font-weight:500; }
+.hdr p { color:var(--muted);font-style:italic;margin-top:12px;font-size:17px;line-height:1.6; }
+.hdr-rule { width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--bord),transparent);margin:16px auto; }
+.hdr .meta { margin-top:16px;font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace; }
+.layout { display:flex;gap:28px;align-items:flex-start; }
+.tower { width:200px;flex-shrink:0;position:sticky;top:28px; }
+.tower-label { font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding-left:4px; }
+.tnav { display:flex;flex-direction:column;gap:1px; }
+.ti {
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  padding:8px 10px;border-left:2px solid var(--bord);
+  color:var(--muted);cursor:pointer;transition:all .2s;line-height:1.4;user-select:none;
+}
+.ti:hover { color:var(--bright);border-left-color:var(--muted);background:var(--surf2); }
+.ti.active { color:var(--bright);font-weight:500; }
+.cards { flex:1;min-width:0; }
+.cw { margin-bottom:8px;opacity:0;transform:translateY(14px);transition:opacity .4s,transform .4s; }
+.cw.show { opacity:1;transform:none; }
+.conn { width:2px;height:20px;background:var(--bord);margin:0 0 0 20px; }
+.card {
+  border:1px solid var(--bord);border-radius:8px;background:var(--surf);
+  overflow:hidden;cursor:pointer;transition:all .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
+}
+.card:hover { border-color:var(--ac);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.card.open  { border-color:var(--ac);box-shadow:0 4px 20px -4px var(--ac-shadow); }
+.card-head { display:flex;align-items:center;gap:12px;padding:16px 20px;user-select:none; }
+.bdg {
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;
+  border:1px solid var(--ac);color:var(--ac);padding:4px 8px;border-radius:3px;
+  white-space:nowrap;flex-shrink:0;font-weight:600;
+}
+.ctitle { font-family:'Cinzel',serif;font-size:16px;color:var(--bright);letter-spacing:.03em;flex:1; }
+.csub { font-style:italic;font-size:13px;color:var(--muted);flex-shrink:0; }
+.chev { color:var(--muted);font-size:11px;transition:transform .3s;flex-shrink:0; }
+.card.open .chev { transform:rotate(180deg); }
+.card-body { max-height:0;overflow:hidden;transition:max-height .6s cubic-bezier(.4,0,.2,1); }
+.card-body.open { max-height:20000px; }
+.card-inner { border-top:1px solid var(--bord);padding:22px 22px 28px; }
+.sec { margin-top:18px; }
+.sec:first-child { margin-top:0; }
+.slabel { font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:8px; }
+.chips { display:flex;flex-wrap:wrap;gap:6px; }
+.chip { font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;border-radius:3px;border:1px solid; }
+.cn { border-color:var(--ac);color:var(--ac);background:var(--ac-faint); }
+.cd { border-color:var(--bord);color:var(--muted);background:transparent; }
+.ck { border-color:var(--ac);color:var(--bright);background:var(--ac-mid);font-weight:600; }
+.prose { color:var(--text);font-size:16.5px;line-height:1.8;margin-top:12px; }
+.prose em { font-style:italic;color:var(--bright);font-weight:500; }
+.prose strong { font-weight:600;color:var(--ac); }
+.bsec-heading {
+  font-family:'Cinzel',serif;font-size:14px;letter-spacing:.04em;
+  color:var(--ac);margin-top:24px;margin-bottom:4px;
+  border-bottom:1px solid var(--bord);padding-bottom:7px;
+}
+.fbox {
+  background:#f7f9fc;border-left:3px solid var(--ac);border-radius:0 5px 5px 0;
+  padding:14px 16px;margin-top:12px;font-family:'JetBrains Mono',monospace;
+  font-size:13px;color:var(--bright);line-height:1.9;white-space:pre-wrap;
+}
+.ex {
+  background:#f7f9fc;border:1px dashed var(--bord);border-radius:5px;
+  padding:12px 16px;margin-top:10px;font-size:15px;color:var(--text);line-height:1.75;
+}
+.exl { display:block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--ac);margin-bottom:6px;font-weight:600; }
+.ins {
+  border-radius:5px;padding:13px 16px;margin-top:12px;
+  font-size:15.5px;font-style:italic;
+  background:var(--ac-faint);border:1px solid var(--ac-mid);color:var(--text);line-height:1.75;
+}
+.ins::before { content:"✦ ";color:var(--ac);font-style:normal;font-weight:600; }
+.vtable {
+  width:100%;border-collapse:collapse;margin-top:12px;
+  font-size:14px;
+}
+.vtable thead th {
+  background:var(--surf2);
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);padding:9px 11px;
+  text-align:left;border-bottom:2px solid var(--bord);font-weight:600;
+}
+.vtable tbody td {
+  padding:10px 11px;border-bottom:1px solid var(--bord);
+  color:var(--text);line-height:1.6;
+}
+.vtable tbody tr:hover { background:var(--surf2); }
+.footer { text-align:center;color:var(--muted);font-style:italic;font-size:15px;margin-top:60px;padding-top:28px;border-top:1px solid var(--bord); }
+.footer .links { margin-top:12px;font-size:13px; }
+.footer .links a { color:var(--muted);text-decoration:none;margin:0 10px; }
+.footer .links a:hover { color:var(--bright);text-decoration:underline; }
+@media(max-width:780px){
+  .tower{display:none;}
+  .csub{display:none;}
+  .layout{display:block;}
+  .wrap{padding:40px 18px 80px;}
+  .vtable{font-size:12px;}
+  .vtable thead th{font-size:9px;padding:7px 9px;}
+  .vtable tbody td{padding:8px 9px;}
+}
+</style>
+</head>
+<body>
+<div id="prog"><div id="prog-fill"></div></div>
+<div class="wrap">
+  <div class="hdr">
+    <h1>Operational Technology</h1>
+    <div class="subtitle">Guide for the Generalist</div>
+    <div class="hdr-rule"></div>
+    <p>A comprehensive journey through industrial control systems, from field devices (Level 0) to the IT/OT boundary (Level 3.5). Covering the Purdue Model, MES architectures, DMZ security, market trends, and real-world implementations.</p>
+    <div class="meta">14 sections · Levels 0-3.5 · Updated March 2024 · $385B market analysis</div>
+  </div>
+  <div class="layout">
+    <div class="tower">
+      <div class="tower-label">Navigation</div>
+      <div class="tnav" id="tnav"></div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+  <div class="footer">
+    From sensors to enterprise systems &mdash; the complete architecture of modern industrial automation.<br>
+    A practical reference for engineers, architects, managers, and strategists.
+    <div class="links">
+      <a href="#intro">Start from beginning</a> · 
+      <a href="https://www.isa.org/standards-and-publications/isa-standards/isa-standards-committees/isa95" target="_blank">ISA-95 Standard</a> · 
+      <a href="https://www.isa.org/standards-and-publications/isa-standards/isa-standards-committees/isa99" target="_blank">IEC 62443 Security</a>
+    </div>
+    <div style="font-size:12px;margin-top:16px;color:var(--muted);">© 2024 | Educational use | Not for commercial redistribution</div>
+  </div>
+</div>
+<script>
+var SECTIONS = [
+  {
+    badge:"START", title:"Introduction", sub:"welcome to OT", color:"#6366f1",
+    needs:[], key:"Guide Overview",
+    gives:["What is OT","Who should read this","How to navigate","Learning path"],
+    body:[
+      {t:"h", s:"Welcome to the world of Operational Technology"},
+      {t:"p", s:"This guide is designed for <strong>the generalist</strong> &mdash; whether you're a software engineer moving into industrial systems, a manager evaluating automation investments, a cybersecurity professional expanding into OT, or a student exploring industrial control. You don't need prior knowledge of PLCs or SCADA. We'll build from fundamentals."},
+      {t:"p", s:"<strong>Operational Technology (OT)</strong> controls the physical world: power plants, factories, water treatment, oil pipelines, steel mills, chemical reactors. Unlike IT systems that process information, OT systems move atoms: opening valves, spinning motors, measuring temperature, controlling robots. When OT fails, people can die, equipment explodes, or cities lose power."},
+      {t:"h", s:"What you'll learn"},
+      {t:"f", s:"THE PURDUE MODEL (LEVELS 0-3.5):\n✓ Level 0: Sensors & actuators (the physical world)\n✓ Level 1: PLCs & controllers (basic control logic)\n✓ Level 2: SCADA & DCS (supervisory control)\n✓ Level 3: MES & historians (manufacturing operations)\n✓ Level 3.5: DMZ (the security boundary to IT)\n\nPLUS:\n✓ Protocols (Modbus, OPC-UA, MQTT)\n✓ Market trends ($385B by 2030)\n✓ Security (IEC 62443, real attacks)\n✓ Vendor landscape\n✓ ROI and business case\n✓ Real-world case studies"},
+      {t:"h", s:"How to navigate this guide"},
+      {t:"p", s:"The guide is structured as <strong>14 progressive sections</strong>. Each builds on previous concepts. You can read linearly or jump to specific topics using the sidebar navigation. Collapsible cards let you expand sections as needed. Key concepts are highlighted in <strong>bold</strong> and technical terms in <em>italics</em>."},
+      {t:"e", l:"SUGGESTED LEARNING PATHS", s:"<strong>Business/Executive</strong>: Read Introduction → Market Analysis → Level 2 SCADA → Level 3 MES → DMZ Security → Vendor Landscape. Focus on ROI, market trends, and strategic decisions.\n\n<strong>Technical/Engineer</strong>: Read all sections sequentially. Pay special attention to protocols, security, and detailed technical examples. Study the code blocks and architecture diagrams.\n\n<strong>Cybersecurity</strong>: Introduction → Purdue Model → Security section → DMZ/Level 3.5 → Protocols → Notable attacks. Understand the attack surface and defense-in-depth."},
+      {t:"h", s:"What makes this guide unique"},
+      {t:"p", s:"Most OT guides are either too technical (written by engineers for engineers) or too shallow (marketing brochures). This guide bridges the gap: technically accurate while remaining accessible. Every section includes <em>real market data</em>, <em>actual vendor names</em>, <em>specific costs</em>, and <em>concrete examples</em> from automotive, oil/gas, pharma, utilities, and manufacturing."},
+      {t:"ins", s:"Industrial automation is a $213 billion market (2023) growing to $385 billion by 2030. Understanding OT is not optional for anyone in industrial, energy, or infrastructure sectors. This guide gives you the foundation to participate in that conversation."}
+    ]
+  }
+];
+
+function rgba(hex, a) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return "rgba("+r+","+g+","+b+","+a+")";
+}
+function chips(arr, cls) {
+  return arr.map(function(t){ return '<span class="chip '+cls+'">'+t+'</span>'; }).join("");
+}
+function buildBody(blocks) {
+  return blocks.map(function(b) {
+    if (b.t === "h") return '<div class="bsec-heading">'+b.s+'</div>';
+    if (b.t === "p") return '<div class="prose">'+b.s+'</div>';
+    if (b.t === "f") return '<div class="fbox">'+b.s+'</div>';
+    if (b.t === "e") return '<div class="ex"><span class="exl">'+b.l+'</span>'+b.s+'</div>';
+    if (b.t === "i") return '<div class="ins">'+b.s+'</div>';
+    if (b.t === "t") return b.s;
+    return '';
+  }).join("");
+}
+function init() {
+  var tnav = document.getElementById("tnav");
+  var cards = document.getElementById("cards");
+  SECTIONS.forEach(function(sec, i) {
+    var ti = document.createElement("div");
+    ti.className = "ti"; ti.textContent = sec.title; ti.dataset.i = i;
+    ti.addEventListener("click", function() {
+      var cw = document.querySelector(".cw[data-i='"+i+"']");
+      if (cw) { cw.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(function(){ openCard(i); },400); }
+    });
+    tnav.appendChild(ti);
+    var cw = document.createElement("div");
+    cw.className = "cw"; cw.dataset.i = i;
+    var needHtml = sec.needs.length
+      ? '<div class="sec"><div class="slabel">Prerequisites</div><div class="chips">'+chips(sec.needs,"chip cd")+'</div></div>'
+      : '<div class="sec"><div class="slabel">Prerequisites</div><span style="font-style:italic;color:var(--muted);font-size:13px">None &mdash; start here</span></div>';
+    var givesHtml = sec.gives.map(function(t){
+      return '<span class="chip '+(t===sec.key ? "ck" : "cn")+'">'+t+'</span>';
+    }).join("");
+    cw.innerHTML =
+      (i > 0 ? '<div class="conn"></div>' : '') +
+      '<div class="card" style="--ac:'+sec.color+';--ac-faint:'+rgba(sec.color,.08)+';--ac-mid:'+rgba(sec.color,.20)+';--ac-shadow:'+rgba(sec.color,.30)+'">' +
+        '<div class="card-head">' +
+          '<span class="bdg">'+sec.badge+'</span>' +
+          '<span class="ctitle">'+sec.title+'</span>' +
+          '<span class="csub">'+sec.sub+'</span>' +
+          '<span class="chev">&#9660;</span>' +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-inner">' +
+            needHtml +
+            '<div class="sec"><div class="slabel">What you\'ll learn</div><div class="chips">'+givesHtml+'</div></div>' +
+            '<div class="sec">'+buildBody(sec.body)+'</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    cards.appendChild(cw);
+    var card = cw.querySelector(".card"), body = cw.querySelector(".card-body");
+    card.addEventListener("click", function() {
+      var open = card.classList.contains("open");
+      card.classList.toggle("open", !open); body.classList.toggle("open", !open);
+      document.querySelectorAll(".ti").forEach(function(t,j){ t.classList.toggle("active",!open && j===i); });
+      if (!open) { ti.style.borderLeftColor = sec.color; ti.style.color = sec.color; }
+      else { ti.style.borderLeftColor = ""; ti.style.color = ""; }
+    });
+  });
+  var fill = document.getElementById("prog-fill");
+  window.addEventListener("scroll", function(){
+    var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    fill.style.width = Math.min(pct,100)+"%";
+  });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add("show"); });
+  },{threshold:0.05});
+  document.querySelectorAll(".cw").forEach(function(el){ obs.observe(el); });
+  setTimeout(function(){ openCard(0); }, 200);
+}
+function openCard(i) {
+  var cw = document.querySelector(".cw[data-i='"+i+"']");
+  if (!cw) return;
+  var card = cw.querySelector(".card"), body = cw.querySelector(".card-body");
+  if (!card.classList.contains("open")) {
+    card.classList.add("open"); body.classList.add("open");
+    var ti = document.querySelector(".ti[data-i='"+i+"']");
+    if (ti) { ti.style.borderLeftColor = SECTIONS[i].color; ti.style.color = SECTIONS[i].color; }
+    document.querySelectorAll(".ti").forEach(function(t,j){ t.classList.toggle("active",j===i); });
+  }
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industrial Automation Study Guide: Purdue Model Levels 0-2</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #f0f4f8;
+  --surf:    #ffffff;
+  --surf2:   #eef2f7;
+  --bord:    #cfd9e6;
+  --text:    #2d3f52;
+  --muted:   #6b8096;
+  --bright:  #1a2b3c;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+#prog { position:fixed;top:0;left:0;right:0;height:3px;background:var(--bord);z-index:200; }
+#prog-fill { height:100%;background:linear-gradient(90deg,#ff6b35,#00a972,#0097e2,#ffb830);width:0;transition:width .2s; }
+.wrap { max-width:900px;margin:0 auto;padding:56px 24px 100px; }
+.hdr { text-align:center;margin-bottom:52px; }
+.hdr h1 { font-family:'Cinzel',serif;font-size:clamp(22px,4.5vw,38px);font-weight:600;color:var(--bright);letter-spacing:.05em; }
+.hdr p { color:var(--muted);font-style:italic;margin-top:10px;font-size:17px; }
+.hdr-rule { width:60px;height:1px;background:var(--bord);margin:16px auto; }
+.layout { display:flex;gap:28px;align-items:flex-start; }
+.tower { width:190px;flex-shrink:0;position:sticky;top:28px; }
+.tower-label { font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding-left:4px; }
+.tnav { display:flex;flex-direction:column;gap:1px; }
+.ti {
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  padding:7px 10px;border-left:2px solid var(--bord);
+  color:var(--muted);cursor:pointer;transition:all .2s;line-height:1.3;user-select:none;
+}
+.ti:hover { color:var(--bright);border-left-color:var(--muted); }
+.ti.active { color:var(--bright); }
+.cards { flex:1;min-width:0; }
+.cw { margin-bottom:6px;opacity:0;transform:translateY(14px);transition:opacity .4s,transform .4s; }
+.cw.show { opacity:1;transform:none; }
+.conn { width:2px;height:18px;background:var(--bord);margin:0 0 0 20px; }
+.card {
+  border:1px solid var(--bord);border-radius:6px;background:var(--surf);
+  overflow:hidden;cursor:pointer;transition:border-color .25s,box-shadow .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,0.07);
+}
+.card:hover { border-color:var(--ac); }
+.card.open  { border-color:var(--ac);box-shadow:0 2px 20px -4px var(--ac-shadow); }
+.card-head { display:flex;align-items:center;gap:12px;padding:15px 18px;user-select:none; }
+.bdg {
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;
+  border:1px solid var(--ac);color:var(--ac);padding:3px 7px;border-radius:2px;
+  white-space:nowrap;flex-shrink:0;
+}
+.ctitle { font-family:'Cinzel',serif;font-size:15px;color:var(--bright);letter-spacing:.03em;flex:1; }
+.csub { font-style:italic;font-size:13px;color:var(--muted);flex-shrink:0; }
+.chev { color:var(--muted);font-size:11px;transition:transform .3s;flex-shrink:0; }
+.card.open .chev { transform:rotate(180deg); }
+.card-body { max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+.card-body.open { max-height:10000px; }
+.card-inner { border-top:1px solid var(--bord);padding:20px 20px 26px; }
+.sec { margin-top:16px; }
+.sec:first-child { margin-top:0; }
+.slabel { font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:7px; }
+.chips { display:flex;flex-wrap:wrap;gap:5px; }
+.chip { font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:2px;border:1px solid; }
+.cn { border-color:var(--ac);color:var(--ac);background:var(--ac-faint); }
+.cd { border-color:var(--bord);color:var(--muted);background:transparent; }
+.ck { border-color:var(--ac);color:var(--bright);background:var(--ac-mid);font-weight:500; }
+.prose { color:var(--text);font-size:16.5px;line-height:1.8;margin-top:12px; }
+.prose em { font-style:italic;color:var(--bright); }
+.prose strong { font-weight:600;color:var(--ac); }
+.bsec-heading {
+  font-family:'Cinzel',serif;font-size:13px;letter-spacing:.04em;
+  color:var(--ac);margin-top:22px;margin-bottom:2px;
+  border-bottom:1px solid var(--bord);padding-bottom:6px;
+}
+.fbox {
+  background:#f7f9fc;border-left:3px solid var(--ac);border-radius:0 4px 4px 0;
+  padding:12px 15px;margin-top:10px;font-family:'JetBrains Mono',monospace;
+  font-size:13px;color:var(--bright);line-height:1.8;white-space:pre-wrap;
+}
+.ex {
+  background:#f7f9fc;border:1px dashed var(--bord);border-radius:4px;
+  padding:11px 15px;margin-top:9px;font-size:15px;color:var(--text);line-height:1.7;
+}
+.exl { display:block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--ac);margin-bottom:5px;font-weight:500; }
+.ins {
+  border-radius:4px;padding:12px 15px;margin-top:11px;
+  font-size:15.5px;font-style:italic;
+  background:var(--ac-faint);border:1px solid var(--ac-mid);color:var(--text);
+}
+.ins::before { content:"✦ ";color:var(--ac);font-style:normal; }
+.vtable {
+  width:100%;border-collapse:collapse;margin-top:10px;
+  font-size:14px;
+}
+.vtable thead th {
+  background:var(--surf2);
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);padding:8px 10px;
+  text-align:left;border-bottom:2px solid var(--bord);
+}
+.vtable tbody td {
+  padding:9px 10px;border-bottom:1px solid var(--bord);
+  color:var(--text);line-height:1.6;
+}
+.vtable tbody tr:hover { background:var(--surf2); }
+.vtable code {
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  background:var(--ac-faint);padding:2px 5px;border-radius:2px;
+  color:var(--ac);
+}
+.footer { text-align:center;color:var(--muted);font-style:italic;font-size:15px;margin-top:52px;padding-top:26px;border-top:1px solid var(--bord); }
+/* Tablet and below (iPad portrait: 768px) */
+@media(max-width:1024px){
+  .wrap { padding:40px 20px 80px; }
+  .tower { width:160px; }
+  .ti { font-size:10px;padding:6px 8px; }
+}
+
+/* Mobile and small tablets */
+@media(max-width:768px){
+  body { font-size:16px; }
+  .wrap { padding:32px 16px 60px; }
+  .hdr h1 { font-size:clamp(20px,6vw,32px); }
+  .hdr p { font-size:15px; }
+  .tower { display:none; }
+  .layout { display:block; }
+  .card-head { padding:12px 14px;gap:8px; }
+  .bdg { font-size:8px;padding:2px 6px; }
+  .ctitle { font-size:14px; }
+  .csub { display:none; }
+  .card-inner { padding:16px 14px 20px; }
+  .prose { font-size:15.5px;line-height:1.75; }
+  .fbox { font-size:12px;padding:10px 12px; }
+  .ex { font-size:14px;padding:10px 12px; }
+  .ins { font-size:14.5px;padding:10px 12px; }
+  .vtable { font-size:11px;display:block;overflow-x:auto; }
+  .vtable thead th { font-size:9px;padding:6px 8px; }
+  .vtable tbody td { padding:6px 8px;font-size:11px; }
+  .chip { font-size:10px;padding:2px 7px; }
+  .footer { font-size:13px;margin-top:40px; }
+}
+
+/* Very small phones */
+@media(max-width:480px){
+  body { font-size:15px; }
+  .wrap { padding:24px 12px 50px; }
+  .hdr { margin-bottom:36px; }
+  .hdr h1 { font-size:24px; }
+  .card-head { padding:10px 12px; }
+  .card-inner { padding:12px; }
+  .prose { font-size:15px; }
+  .fbox { font-size:11px;padding:8px 10px; }
+  .bsec-heading { font-size:12px;margin-top:18px; }
+}
+</style>
+</head>
+<body>
+<div id="prog"><div id="prog-fill"></div></div>
+<div class="wrap">
+  <div class="hdr">
+    <h1>Industrial Automation Study Guide</h1>
+    <div class="hdr-rule"></div>
+    <p>A complete journey through Purdue Model Levels 0-2, OT protocols, and the evolution of industrial control systems.</p>
+  </div>
+  <div class="layout">
+    <div class="tower">
+      <div class="tower-label">Sections</div>
+      <div class="tnav" id="tnav"></div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+  <div class="footer">
+    From field devices to supervisory control &mdash; understanding the foundation of operational technology.<br>
+    A comprehensive study guide for industrial automation practitioners.
+  </div>
+</div>
+<script>
+var SECTIONS = [
+  {
+    badge:"FOUNDATION", title:"Introduction to OT", sub:"operational technology basics", color:"#00a972",
+    needs:[], key:"OT vs IT",
+    gives:["OT Definition","IT/OT Convergence","Purdue Model Overview","Industrial Control Systems","Critical Infrastructure"],
+    body:[
+      {t:"h", s:"What is Operational Technology (OT)?"},
+      {t:"p", s:"<strong>Operational Technology (OT)</strong> refers to hardware and software that detects or causes change through direct monitoring and control of physical devices, processes, and events in the enterprise. Unlike Information Technology (IT), which handles data and information, OT deals with the physical world: turbines, pumps, valves, robots, and manufacturing lines."},
+      {t:"p", s:"OT has existed for decades in environments like power plants, factories, oil refineries, and water treatment facilities. Historically isolated from corporate networks for reliability and safety, OT systems are now increasingly connected to IT networks for remote monitoring, predictive maintenance, and data analytics."},
+      {t:"h", s:"Key differences between OT and IT"},
+      {t:"f", s:"OT PRIORITIES:\n  1. Safety (prevent harm to people/environment)\n  2. Availability (uptime is critical, downtime costs millions)\n  3. Integrity (accurate control and measurement)\n  4. Confidentiality (least important of the four)\n\nIT PRIORITIES:\n  1. Confidentiality (protect data from unauthorized access)\n  2. Integrity (data accuracy and trustworthiness)\n  3. Availability (minimize downtime, but more tolerance than OT)"},
+      {t:"e", l:"CONSEQUENCE OF FAILURE", s:"An IT system breach might leak customer data or cause a website outage. An OT system breach could cause a pipeline explosion, power grid failure, or release of toxic chemicals. The physical consequences make OT security fundamentally different from IT security."},
+      {t:"h", s:"Why the Purdue Model matters"},
+      {t:"p", s:"The <strong>Purdue Enterprise Reference Architecture (PERA)</strong>, also known as the Purdue Model or ISA-95, provides a hierarchical framework for organizing industrial control systems. Developed in the 1990s at Purdue University, it defines six levels (0-5) that separate physical processes from business operations."},
+      {t:"p", s:"This study guide focuses on <strong>Levels 0, 1, and 2</strong> &mdash; the operational technology layers where actual physical control happens. Understanding these foundational levels is essential for anyone working in industrial automation, OT security, or IIoT deployments."},
+      {t:"i", s:"The Purdue Model is not just a theoretical framework. It is embedded in every modern factory, power plant, and water treatment facility. Knowing which level you are operating at determines which protocols, security controls, and network architectures are appropriate."}
+    ]
+  },
+  {
+    badge:"ARCHITECTURE", title:"The Purdue Model", sub:"ISA-95 hierarchy", color:"#0097e2",
+    needs:["OT Definition"], key:"Purdue Model",
+    gives:["Level 0: Process","Level 1: Control","Level 2: Supervision","Level 3: MES","Level 4: Business","Level 5: Enterprise","DMZ Concept"],
+    body:[
+      {t:"h", s:"The six levels explained"},
+      {t:"p", s:"The Purdue Model organizes industrial systems into six hierarchical levels, each with distinct responsibilities. Data flows upward (from sensors to business systems) and control flows downward (from operators to actuators)."},
+      {t:"f", s:"LEVEL 5: Enterprise Network (ERP, finance, corporate)\nLEVEL 4: Business Planning & Logistics (SAP, Oracle)\nLEVEL 3: Manufacturing Operations (MES, historians)\n--- INDUSTRIAL DMZ (security boundary) ---\nLEVEL 2: Supervisory Control (SCADA, DCS, HMI)\nLEVEL 1: Basic Control (PLCs, RTUs, controllers)\nLEVEL 0: Physical Process (sensors, actuators, equipment)"},
+      {t:"e", l:"THE INDUSTRIAL DMZ", s:"The demilitarized zone between Level 3 and Level 2 is critical for security. It contains firewalls, data diodes (one-way communication), and jump servers that allow limited communication between the business network and the control network without exposing PLCs and SCADA systems to corporate IT threats."},
+      {t:"h", s:"Why the hierarchy exists"},
+      {t:"p", s:"The separation into levels serves multiple purposes: <em>latency requirements</em> (Level 0-1 need millisecond response times, Level 4-5 can tolerate seconds or minutes), <em>security isolation</em> (protecting critical control systems from corporate network threats), and <em>functional specialization</em> (each level uses different protocols and has different operational needs)."},
+      {t:"e", l:"LATENCY EXAMPLE", s:"A pressure relief valve at Level 0 must respond in under 10 milliseconds to prevent equipment damage. A PLC at Level 1 controlling a batch process operates on 100ms cycles. SCADA at Level 2 updates dashboards every 1-5 seconds. An ERP system at Level 4 might run reports hourly or daily. Each level has fundamentally different timing requirements."},
+      {t:"h", s:"Historical context: how we got here"},
+      {t:"p", s:"In the 1960s-1980s, industrial systems were entirely standalone: proprietary hardware, no networking, physically isolated control rooms. The rise of Ethernet, TCP/IP, and remote access in the 1990s-2000s created the need for a formal architecture to manage connectivity while preserving safety and reliability. The Purdue Model emerged as the industry standard for this architecture."},
+      {t:"i", s:"Modern IIoT initiatives are challenging the strict Purdue hierarchy. Edge computing, cloud analytics, and real-time monitoring blur the lines between levels. But even in modern architectures, the core principle remains: never compromise the safety and availability of Level 0-2 for the convenience of higher-level systems."}
+    ]
+  },
+  {
+    badge:"LEVEL 0", title:"Physical Process Layer", sub:"sensors and actuators", color:"#ff6b35",
+    needs:["Purdue Model"], key:"Sensors & Actuators",
+    gives:["Sensors","Actuators","Analog Signals","Digital Signals","4-20mA","Field Devices","Process Variables"],
+    body:[
+      {t:"h", s:"What happens at Level 0"},
+      {t:"p", s:"<strong>Level 0</strong> is where the physical world meets the control system. This layer consists of sensors (measuring temperature, pressure, flow, level) and actuators (valves, motors, pumps) that directly interact with the industrial process. No computation happens here &mdash; only measurement and actuation."},
+      {t:"p", s:"Level 0 devices are often called <em>field devices</em> or <em>field instruments</em>. They must operate reliably in harsh environments: extreme temperatures, vibration, dust, moisture, and electromagnetic interference. Many run on simple analog signals and have no digital intelligence."},
+      {t:"h", s:"Types of sensors"},
+      {t:"e", l:"TEMPERATURE SENSORS", s:"Thermocouples (millivolt signals, wide range, rugged) and RTDs (resistance temperature detectors, more accurate, 4-wire connection). Used in furnaces, chemical reactors, HVAC systems."},
+      {t:"e", l:"PRESSURE SENSORS", s:"Strain gauge transducers, capacitive sensors, piezoelectric sensors. Critical for pipelines, tanks, hydraulic systems. Output 4-20mA analog signals proportional to pressure."},
+      {t:"e", l:"FLOW SENSORS", s:"Magnetic flowmeters (conductive liquids), ultrasonic flowmeters (non-invasive), turbine meters (mechanical). Measure gallons per minute, cubic meters per hour, etc."},
+      {t:"e", l:"LEVEL SENSORS", s:"Radar sensors (non-contact, top-of-tank), ultrasonic sensors, float switches, pressure transmitters at tank bottom. Used in silos, tanks, and vessels."},
+      {t:"e", l:"DISCRETE SENSORS", s:"Limit switches (detect position), proximity sensors (detect metal objects without contact), photoelectric sensors (detect presence via light beam). Output simple on/off digital signals."},
+      {t:"h", s:"The 4-20mA analog standard"},
+      {t:"p", s:"The dominant signaling method in Level 0 is the <strong>4-20mA current loop</strong>. A sensor outputs a current between 4mA (minimum measurement, e.g., 0 psi) and 20mA (maximum measurement, e.g., 100 psi). The PLC at Level 1 reads this current and converts it to engineering units."},
+      {t:"f", s:"WHY 4-20mA?\n  - Current signals are immune to voltage drop over long cable runs\n  - 4mA live zero: any reading below 4mA indicates a broken wire\n  - Two-wire systems: power and signal on same wires\n  - Industry standard since 1950s, backwards compatible"},
+      {t:"e", l:"ANALOG TO DIGITAL CONVERSION", s:"A PLC reads 12.0 mA from a pressure sensor configured for 0-100 psi. The calculation: (12.0 - 4.0) / (20.0 - 4.0) = 0.50, so pressure = 0.50 * 100 psi = 50 psi. The PLC performs this scaling in software."},
+      {t:"h", s:"Actuators: making things move"},
+      {t:"p", s:"<strong>Actuators</strong> convert electrical signals from PLCs into physical motion. The most common types are control valves (pneumatic, hydraulic, motorized), electric motors (AC induction, variable frequency drives), solenoid valves (fast on/off control), and cylinders (linear motion via air or hydraulic pressure)."},
+      {t:"e", l:"FAIL-SAFE DESIGN", s:"A control valve on a chemical reactor is designed to fail closed (spring-loaded) if air pressure is lost. This ensures that a power failure or broken airline does not cause uncontrolled flow of hazardous chemicals. Fail-safe logic is fundamental to Level 0 design."},
+      {t:"i", s:"Level 0 must be able to operate safely without Level 1, or be shut down safely in the event of Level 1 failure. This is the foundational safety principle of the Purdue Model. Emergency shutdown systems at Level 0 are often hardwired, bypassing all digital control."}
+    ]
+  },
+  {
+    badge:"LEVEL 1", title:"Basic Control Layer", sub:"PLCs and RTUs", color:"#00a972",
+    needs:["Sensors & Actuators","4-20mA"], key:"PLC",
+    gives:["PLC","RTU","Ladder Logic","Function Block","Real-time Control","Scan Cycle","I/O Modules","Local Control"],
+    body:[
+      {t:"h", s:"What happens at Level 1"},
+      {t:"p", s:"<strong>Level 1</strong> is where intelligent control begins. Programmable Logic Controllers (PLCs) and Remote Terminal Units (RTUs) read sensor data from Level 0, execute control logic, and send commands back to actuators. This is real-time control: scan cycles of 10-100 milliseconds, deterministic execution, and no tolerance for delays."},
+      {t:"p", s:"PLCs replaced relay-based control panels in the 1970s. A relay panel might have hundreds of physical relays wired together to implement logic. A PLC does the same logic in software, making it easier to modify, troubleshoot, and maintain. Modern PLCs are ruggedized industrial computers with specialized I/O for analog and digital signals."},
+      {t:"h", s:"How a PLC works"},
+      {t:"f", s:"PLC SCAN CYCLE (repeats every 10-100ms):\n  1. Read all inputs from I/O modules (sensors)\n  2. Execute user program (ladder logic, function blocks)\n  3. Update internal memory and flags\n  4. Write all outputs to I/O modules (actuators)\n  5. Handle communication with HMI/SCADA\n  6. Repeat"},
+      {t:"p", s:"The scan cycle is <strong>deterministic</strong>: it completes in a predictable time. If logic execution takes too long, the PLC throws a watchdog timer fault and stops. This ensures that outputs are always updated within the guaranteed cycle time."},
+      {t:"e", l:"LADDER LOGIC PROGRAMMING", s:"Ladder logic is a graphical programming language resembling electrical relay diagrams. Each rung represents a logic condition. Example: IF (start_button is pressed) AND (safety_guard is closed) THEN (motor_starter ON). Easy for electricians to read, widely used in manufacturing."},
+      {t:"e", l:"FUNCTION BLOCK PROGRAMMING", s:"Function blocks are graphical elements representing control functions: PID controllers, timers, counters, math operations. You wire blocks together like a flowchart. Used in process industries (chemical, pharmaceutical) where continuous control is needed rather than discrete on/off logic."},
+      {t:"h", s:"PLC vs RTU: what is the difference?"},
+      {t:"p", s:"A <strong>PLC</strong> (Programmable Logic Controller) is designed for factory automation: high-speed I/O, complex logic, integration with robots and conveyors. An <strong>RTU</strong> (Remote Terminal Unit) is designed for remote sites like pipelines, substations, and water tanks: built-in radios, low power consumption, wide temperature range, fewer I/O points."},
+      {t:"p", s:"Functionally, modern PLCs and RTUs have converged. Many vendors offer a single controller that can act as either, depending on the I/O modules and communication protocols configured. The distinction is now more about application domain (factory vs remote site) than technical architecture."},
+      {t:"h", s:"I/O modules: the interface to Level 0"},
+      {t:"p", s:"PLCs are modular: you plug in I/O modules for different signal types. <strong>Analog input</strong> modules read 4-20mA or 0-10V signals with 12-16 bit resolution. <strong>Digital input</strong> modules read on/off signals (24VDC, 120VAC). <strong>Analog output</strong> modules send 4-20mA commands to control valves. <strong>Digital output</strong> modules switch relays or transistors to control motors and solenoids."},
+      {t:"e", l:"WIRING EXAMPLE", s:"A temperature sensor wired to a PLC: sensor outputs 4-20mA, two wires run in conduit to the control cabinet, connected to terminals on an analog input module. The PLC reads the current, scales it to degrees Celsius, and uses it in the control logic. Simple and robust."},
+      {t:"i", s:"PLCs are the workhorses of industrial automation. They run 24/7 for years without rebooting, in environments that would destroy a consumer computer. Reliability and predictability are more important than raw computing power. A modern PLC might have the performance of a 1990s PC, but that is all it needs."}
+    ]
+  },
+  {
+    badge:"LEVEL 2", title:"Supervisory Control", sub:"SCADA and DCS", color:"#0097e2",
+    needs:["PLC","RTU"], key:"SCADA",
+    gives:["SCADA","DCS","HMI","Historian","Alarm Management","Batch Control","Trending","Remote Monitoring"],
+    body:[
+      {t:"h", s:"What happens at Level 2"},
+      {t:"p", s:"<strong>Level 2</strong> provides supervisory control and data acquisition (SCADA) for multiple PLCs and processes. While Level 1 does local control (one PLC controlling one machine), Level 2 coordinates across an entire facility: monitoring hundreds of sensors, managing alarms, recording trends, and allowing operators to adjust setpoints."},
+      {t:"p", s:"Level 2 systems run on standard computers (Windows, Linux) in the control room. They poll PLCs for data, display graphical HMIs (Human-Machine Interfaces), log data to historians, and send commands when operators intervene. The communication is typically Ethernet-based, with industrial protocols like Modbus TCP, OPC-UA, or Ethernet/IP."},
+      {t:"h", s:"SCADA vs DCS: what is the difference?"},
+      {t:"p", s:"<strong>SCADA</strong> (Supervisory Control and Data Acquisition) is designed for geographically distributed assets: pipelines, power grids, water distribution. Hundreds of remote sites, each with an RTU, reporting to a central control room over radio, cellular, or satellite links. The focus is on monitoring and remote control."},
+      {t:"p", s:"<strong>DCS</strong> (Distributed Control System) is designed for continuous process control in a single facility: refineries, chemical plants, paper mills. Thousands of I/O points connected via high-speed networks, with redundant controllers and advanced regulatory control (PID loops, cascade control, model predictive control). The focus is on tight process control and uptime."},
+      {t:"f", s:"SCADA: \n  - Geographically distributed\n  - RTUs at remote sites\n  - Monitoring-focused\n  - Wireless communication common\n  - Examples: pipeline, water, power grid\n\nDCS:\n  - Single facility or plant\n  - Integrated control and I/O\n  - Control-focused (continuous processes)\n  - Wired Ethernet backbone\n  - Examples: refinery, chemical plant"},
+      {t:"e", l:"SCADA EXAMPLE: WATER UTILITY", s:"A city water utility has 50 pump stations across 200 square miles. Each station has an RTU monitoring tank levels, pump status, and flow rates. The SCADA system in the central control room polls each RTU every 5 seconds, displays a map with all stations, and allows operators to remotely start/stop pumps. Alarms trigger if a tank level goes out of range."},
+      {t:"e", l:"DCS EXAMPLE: OIL REFINERY", s:"A refinery has 10,000 I/O points: temperature, pressure, flow, and level sensors throughout the distillation columns, heat exchangers, and storage tanks. The DCS runs hundreds of PID loops to maintain precise temperatures and pressures. Operators use graphical HMIs to monitor the entire process and adjust setpoints. The system is fully redundant: if one controller fails, its backup takes over in milliseconds."},
+      {t:"h", s:"Historians: the memory of the plant"},
+      {t:"p", s:"A <strong>historian</strong> is a specialized time-series database that logs process data at high frequency (1-10 second intervals) and stores it for years. This enables trend analysis, compliance reporting, and predictive maintenance. The most common historians are OSI PI, Wonderware, and Honeywell Uniformance."},
+      {t:"e", l:"HISTORIAN USE CASE", s:"An operator notices that Product Quality has been declining over the past week. She opens the historian, plots Temperature Sensor 42 for the last 7 days, and sees that it has been drifting upward by 2 degrees. She schedules maintenance to recalibrate the sensor. Without the historian, this slow drift would have gone unnoticed until a batch failed quality control."},
+      {t:"h", s:"Alarm management: avoiding alarm floods"},
+      {t:"p", s:"Poor alarm management is a leading cause of industrial incidents. If operators receive hundreds of alarms per hour, they become desensitized and miss critical warnings. Modern Level 2 systems use alarm rationalization: each alarm is categorized by priority, many nuisance alarms are suppressed, and operators are trained to respond to the most critical alarms first."},
+      {t:"i", s:"The most important principle of Level 2: it supervises, but does not replace Level 1. If the SCADA system crashes, PLCs at Level 1 continue running their control logic. The plant keeps operating, even though operators have lost visibility. This independence is by design and is required by safety standards like IEC 61511."}
+    ]
+  },
+  {
+    badge:"PROTOCOLS", title:"OT Communication Protocols", sub:"Modbus, OPC-UA, MQTT", color:"#ffb830",
+    needs:["PLC","SCADA"], key:"OPC-UA",
+    gives:["Modbus RTU","Modbus TCP","OPC-UA","MQTT Sparkplug","EtherNet/IP","Profinet","DNP3","BACnet"],
+    body:[
+      {t:"h", s:"Why OT protocols are different from IT"},
+      {t:"p", s:"OT protocols are optimized for real-time control, not bulk data transfer. They are <em>deterministic</em> (predictable timing), <em>lightweight</em> (small packets, low overhead), and <em>robust</em> (work in electrically noisy environments). Many were designed 30-40 years ago and are still in use because reliability matters more than features."},
+      {t:"p", s:"Unlike IT protocols where new versions deprecate old ones, OT protocols coexist. A modern factory might use Modbus (1979), Profibus (1989), EtherNet/IP (2000s), and OPC-UA (2008) simultaneously. Backward compatibility is essential because industrial equipment has a 20-30 year lifespan."},
+      {t:"h", s:"Modbus: the universal protocol"},
+      {t:"p", s:"<strong>Modbus</strong> (1979) is the most widely used OT protocol. Simple, open, and supported by virtually every device. Two variants: <strong>Modbus RTU</strong> (serial RS-485, binary encoding, 9600-115200 baud) and <strong>Modbus TCP</strong> (Ethernet, same register model as RTU, TCP port 502)."},
+      {t:"f", s:"MODBUS DATA MODEL:\n  - Coils: single-bit read/write (outputs)\n  - Discrete Inputs: single-bit read-only (inputs)\n  - Input Registers: 16-bit read-only (sensor data)\n  - Holding Registers: 16-bit read/write (setpoints)\n\nFunction codes:\n  - 0x01: Read Coils\n  - 0x03: Read Holding Registers\n  - 0x06: Write Single Register\n  - 0x10: Write Multiple Registers"},
+      {t:"e", l:"MODBUS QUERY EXAMPLE", s:"SCADA system reads temperature from PLC at address 40001. Query: [Device ID: 1] [Function: 0x03] [Start: 40001] [Count: 1]. Response: [Device ID: 1] [Function: 0x03] [Byte Count: 2] [Value: 0x0320] = 800 (scale to 80.0°C). Simple request-response, no encryption, no authentication. Security must be added at network layer."},
+      {t:"h", s:"OPC-UA: the modern standard"},
+      {t:"p", s:"<strong>OPC Unified Architecture</strong> (OPC-UA, 2008) is the successor to OPC Classic. Unlike OPC Classic (which was Windows-only and based on DCOM), OPC-UA is platform-independent, secure by design, and supports complex data models. It is becoming the dominant protocol for IIoT and Industry 4.0."},
+      {t:"p", s:"OPC-UA features: <strong>security</strong> (TLS encryption, X.509 certificates, user authentication), <strong>rich data model</strong> (objects, properties, relationships, not just registers), <strong>pub/sub</strong> (not just request/response), and <strong>information models</strong> (standard models for pumps, motors, etc. defined by industry groups)."},
+      {t:"e", l:"OPC-UA ADOPTION", s:"Most modern PLCs, DCS systems, and SCADA packages now support OPC-UA. Siemens, Rockwell, Schneider, ABB, and Emerson all provide OPC-UA servers in their controllers. This interoperability allows mixing vendors in a single system, which was nearly impossible with proprietary protocols."},
+      {t:"h", s:"MQTT + Sparkplug B: IIoT messaging"},
+      {t:"p", s:"<strong>MQTT</strong> (Message Queuing Telemetry Transport) is a lightweight pub/sub protocol from IBM (1999), now standard in IIoT. Clients publish messages to topics on a broker; subscribers receive messages. <strong>Sparkplug B</strong> (2016) is an MQTT specification for industrial systems, defining how to represent OT data (sensors, alarms, assets) in MQTT topics and payloads."},
+      {t:"f", s:"SPARKPLUG B TOPIC STRUCTURE:\n  spBv1.0/group_id/message_type/edge_node_id/device_id\n\nExample:\n  spBv1.0/Plant1/DDATA/PLC_East/MotorSpeed → 1450 RPM\n  spBv1.0/Plant1/DDATA/PLC_East/TankLevel → 75%"},
+      {t:"e", l:"UNIFIED NAMESPACE (UNS)", s:"Many modern IIoT architectures use a single MQTT broker as the Unified Namespace (UNS): all devices publish to one broker, all applications subscribe to the broker. This decouples producers and consumers, making it easy to add new sensors or new dashboards without rewiring connections. Hivemq, Mosquitto, and AWS IoT Core are popular MQTT brokers."},
+      {t:"h", s:"Protocol comparison table"},
+      {t:"p", s:"Below is a comparison of the most common Level 1-2 protocols:"},
+      {t:"t", s:"<table class=\"vtable\"><thead><tr><th>Protocol</th><th>Layer</th><th>Transport</th><th>Latency</th><th>Security</th><th>Use Case</th></tr></thead><tbody><tr><td>Modbus RTU</td><td>1-2</td><td>RS-485 serial</td><td>100-500ms</td><td>None</td><td>Simple PLC-HMI, legacy</td></tr><tr><td>Modbus TCP</td><td>1-2</td><td>Ethernet</td><td>10-100ms</td><td>None</td><td>PLC-SCADA, modern</td></tr><tr><td>OPC-UA</td><td>1-3</td><td>TCP/IP</td><td>50-200ms</td><td>TLS+X.509</td><td>Interoperability, IIoT</td></tr><tr><td>MQTT Sparkplug</td><td>1-3</td><td>TCP/IP</td><td>50-500ms</td><td>TLS+certs</td><td>Pub/sub, cloud integration</td></tr><tr><td>EtherNet/IP</td><td>0-2</td><td>Ethernet</td><td>&lt;10ms</td><td>None</td><td>Rockwell ecosystem</td></tr><tr><td>Profinet</td><td>0-2</td><td>Ethernet</td><td>&lt;1ms</td><td>None</td><td>Siemens ecosystem</td></tr><tr><td>DNP3</td><td>1-2</td><td>Serial/TCP</td><td>100-500ms</td><td>Optional</td><td>Electric utilities</td></tr><tr><td>BACnet</td><td>2</td><td>IP</td><td>500-2000ms</td><td>None</td><td>Building automation</td></tr></tbody></table>"},
+      {t:"i", s:"The future of OT protocols is convergence on Ethernet-based, secure, open standards. But legacy protocols will remain in production for decades. Understanding both old and new is essential for anyone working in OT."}
+    ]
+  },
+  {
+    badge:"HISTORY", title:"Evolution of Industrial Control", sub:"from relays to IIoT", color:"#ff6b35",
+    needs:["OT Definition"], key:"Industrial Revolutions",
+    gives:["Industry 1.0","Industry 2.0","Industry 3.0","Industry 4.0","PLC History","DCS History","IIoT","Edge Computing"],
+    body:[
+      {t:"h", s:"The four industrial revolutions"},
+      {t:"f", s:"INDUSTRY 1.0 (1760s-1840s): Mechanization\n  - Steam power, water wheels, textile machines\n  - Manual control, no automation\n\nINDUSTRY 2.0 (1870s-1960s): Electrification & Mass Production\n  - Electric motors, assembly lines, Ford Model T\n  - Relay-based control panels, hardwired logic\n\nINDUSTRY 3.0 (1970s-2000s): Automation & Computers\n  - PLCs, DCS, SCADA, CNC machines\n  - Programmable logic replaces relay panels\n\nINDUSTRY 4.0 (2010s-present): Cyber-Physical Systems\n  - IIoT, digital twins, AI/ML, cloud analytics\n  - IT/OT convergence, predictive maintenance"},
+      {t:"h", s:"The birth of the PLC (1968)"},
+      {t:"p", s:"In 1968, General Motors issued a request to replace relay-based control systems in their automotive plants. Relays were bulky, hard to troubleshoot, and required weeks to rewire when production lines changed. Dick Morley of Bedford Associates designed the first PLC: the Modicon 084."},
+      {t:"e", l:"MODICON 084 (1969)", s:"The first commercial PLC had 128 words of memory, 64 I/O points, and programmed via punch tape. It cost $20,000 (equivalent to $150,000 today). Despite the cost, GM adopted it because the savings in rewiring time paid for itself in months. This sparked the PLC industry: Modicon, Allen-Bradley, Siemens, and others."},
+      {t:"e", l:"LADDER LOGIC ORIGINS", s:"Ladder logic was chosen as the programming language because it resembled the relay diagrams electricians already used. This made adoption easier: electricians could read ladder logic without learning a new paradigm. The same reasoning applies today: ladder logic remains dominant in discrete manufacturing because it is intuitive for the workforce."},
+      {t:"h", s:"The rise of DCS (1975)"},
+      {t:"p", s:"While PLCs were conquering discrete manufacturing, process industries (oil, gas, chemicals) had a different problem: they needed continuous control of hundreds of analog loops, not on/off logic. Honeywell introduced the first Distributed Control System (DCS) in 1975: the TDC 2000."},
+      {t:"p", s:"The innovation was <em>distribution</em>: instead of one giant centralized computer controlling everything, control was distributed across multiple controllers connected by a network. If one controller failed, others kept running. This redundancy was essential for 24/7 process plants where downtime costs millions per hour."},
+      {t:"h", s:"SCADA and the energy sector (1960s-1990s)"},
+      {t:"p", s:"SCADA emerged in the 1960s for electric utilities, oil pipelines, and water systems. Early SCADA used dedicated radio networks and proprietary RTUs. Communication was slow (1200 baud modems) but reliable enough for remote monitoring. The key benefit: one operator in a control room could monitor hundreds of remote sites that previously required on-site personnel."},
+      {t:"e", l:"RADIO SCADA NETWORKS", s:"Before cellular and internet, utilities used VHF/UHF radio networks with repeater towers to reach remote sites. Data rates were 300-1200 baud. Protocols like DNP3 (1990) were designed for these slow, unreliable links: efficient encoding, error detection, and store-and-forward capabilities."},
+      {t:"h", s:"The IIoT era (2010s-present)"},
+      {t:"p", s:"The Industrial Internet of Things (IIoT) brings IT technologies into OT: cloud computing, big data analytics, machine learning, and wireless sensors. The promise is predictive maintenance (fix before failure), real-time optimization (increase efficiency), and digital twins (simulate before changing)."},
+      {t:"e", l:"PREDICTIVE MAINTENANCE EXAMPLE", s:"Vibration sensors on rotating equipment (motors, pumps, turbines) stream data to the cloud at 10kHz sampling rates. ML models trained on historical data detect bearing wear patterns weeks before failure. Maintenance is scheduled during planned downtime, avoiding unplanned outages. This is only possible with IIoT-scale data collection and analytics."},
+      {t:"i", s:"We are living through the IT/OT convergence. The challenge is bringing IT capabilities (analytics, remote access, scalability) to OT environments without compromising OT priorities (safety, availability, deterministic control). This tension defines the current era of industrial automation."}
+    ]
+  },
+  {
+    badge:"SECURITY", title:"OT Cybersecurity", sub:"IEC 62443 and defense in depth", color:"#00a972",
+    needs:["Purdue Model","SCADA"], key:"IEC 62443",
+    gives:["IEC 62443","Defense in Depth","Network Segmentation","Zones and Conduits","Air Gap","Data Diode","Incident Response"],
+    body:[
+      {t:"h", s:"Why OT security is different"},
+      {t:"p", s:"Traditional IT security focuses on confidentiality: keep data from leaking. OT security focuses on <em>availability and integrity</em>: keep systems running and ensure control commands are not tampered with. A ransomware attack that encrypts files is an IT problem. A cyberattack that shuts down a power plant or opens a dam gate is an OT problem with physical consequences."},
+      {t:"p", s:"OT systems cannot be patched quickly. A Windows server can be patched monthly, but a PLC running a production line might not be patched for years because taking the line offline for maintenance costs millions. This creates a huge attack surface of unpatched systems."},
+      {t:"h", s:"IEC 62443: the OT security standard"},
+      {t:"p", s:"<strong>IEC 62443</strong> is the international standard for industrial cybersecurity, published by the International Electrotechnical Commission. It defines security levels (SL 1-4), zones and conduits, and requirements for both products (PLCs, switches) and systems (entire facilities)."},
+      {t:"f", s:"IEC 62443 SECURITY LEVELS:\n  SL 1: Protection against casual or coincidental violation\n  SL 2: Protection against intentional violation using simple means\n  SL 3: Protection against intentional violation using sophisticated means\n  SL 4: Protection against intentional violation using sophisticated means with extended resources"},
+      {t:"p", s:"Most critical infrastructure (power, water, oil/gas) requires SL 2 or SL 3. SL 4 is for the most critical systems where state-level attacks are expected (e.g., military facilities, nuclear plants)."},
+      {t:"h", s:"Defense in depth: layers of security"},
+      {t:"e", l:"PHYSICAL SECURITY", s:"Locked control rooms, badge access, cameras. If an attacker has physical access to a PLC, they can reprogram it with a laptop. Physical security is the first layer."},
+      {t:"e", l:"NETWORK SEGMENTATION", s:"Separate Level 0-2 networks from Level 3-5 using firewalls and VLANs. The goal: prevent malware on the corporate network from reaching PLCs. The industrial DMZ is the choke point where all traffic is inspected."},
+      {t:"e", l:"AUTHENTICATION", s:"Require multi-factor authentication for remote access. Use certificate-based authentication for OPC-UA connections. Disable default passwords on all devices (a major vulnerability: many PLCs ship with admin/admin defaults)."},
+      {t:"e", l:"MONITORING", s:"Deploy IDS (Intrusion Detection Systems) that understand OT protocols. Detect abnormal behavior: unexpected Modbus commands, unauthorized device connections, protocol violations. Nozomi, Claroty, and Dragos are leading vendors."},
+      {t:"e", l:"AIR GAP OR DATA DIODE", s:"For the most critical systems, physically disconnect from external networks (air gap) or use a data diode (one-way communication device that allows monitoring data out but prevents commands in). Used in nuclear plants and military systems."},
+      {t:"h", s:"Notable OT cyberattacks"},
+      {t:"e", l:"STUXNET (2010)", s:"First known cyberweapon targeting OT. Infected Iranian uranium enrichment centrifuges via USB sticks, modified PLC code to overspeed centrifuges while reporting normal operation to operators. Destroyed ~1000 centrifuges. Demonstrated that air-gapped OT systems are vulnerable to sophisticated attacks."},
+      {t:"e", l:"UKRAINE POWER GRID (2015)", s:"BlackEnergy malware used to open breakers at Ukrainian substations, causing power outages affecting 225,000 people. Attackers used VPNs to gain remote access, then manually opened breakers via SCADA. First confirmed cyberattack to cause a grid blackout."},
+      {t:"e", l:"TRITON/TRISIS (2017)", s:"Targeted Triconex safety instrumented systems (SIS) at a petrochemical plant in Saudi Arabia. Attempted to reprogram the SIS to allow unsafe conditions. The attack failed only because of a bug in the malware. This was an attempt to cause a physical explosion or toxic release."},
+      {t:"e", l:"COLONIAL PIPELINE (2021)", s:"Ransomware attack (DarkSide) on IT systems caused Colonial Pipeline to shut down OT systems as a precaution. The OT systems were not directly infected, but the incident demonstrated IT/OT interdependence: IT incident caused OT shutdown, leading to fuel shortages across the US East Coast."},
+      {t:"i", s:"Every OT security strategy begins with: know what you have (asset inventory), know how it communicates (network mapping), segment networks (enforce Purdue Model), monitor for anomalies, and have an incident response plan. Patching and hardening come later, after visibility is established."}
+    ]
+  },
+  {
+    badge:"TRENDS", title:"Future of OT", sub:"edge, cloud, and convergence", color:"#0097e2",
+    needs:["IIoT","OPC-UA"], key:"Edge Computing",
+    gives:["Edge Computing","Digital Twins","Time-Sensitive Networking","5G in Manufacturing","Unified Namespace","AI at the Edge"],
+    body:[
+      {t:"h", s:"Edge computing: intelligence at the source"},
+      {t:"p", s:"<strong>Edge computing</strong> places compute power close to sensors and actuators, rather than sending all data to the cloud or a central data center. This reduces latency, bandwidth costs, and dependence on internet connectivity. Edge devices run analytics, ML models, and even local control logic."},
+      {t:"e", l:"EDGE USE CASE: PREDICTIVE MAINTENANCE", s:"A motor has a vibration sensor. Instead of streaming 10kHz data to the cloud (which would overwhelm the network), an edge gateway analyzes vibrations locally using an ML model. Only anomalies or summary statistics are sent to the cloud. This is 100x less data, while providing faster detection."},
+      {t:"p", s:"Edge platforms: AWS IoT Greengrass, Azure IoT Edge, Litmus Edge, and industrial PCs running containers (Docker, Kubernetes). The trend is containerized workloads running on ruggedized hardware at the factory edge."},
+      {t:"h", s:"Digital twins: virtual replicas"},
+      {t:"p", s:"A <strong>digital twin</strong> is a virtual model of a physical asset (machine, production line, entire factory) that is continuously updated with real-time data. You can simulate changes in the digital twin before applying them to the physical system, reducing risk and optimizing performance."},
+      {t:"e", l:"DIGITAL TWIN EXAMPLE", s:"A turbine manufacturer creates a digital twin of each turbine sold. Sensor data from the real turbine (temperature, vibration, power output) updates the digital twin in real time. Engineers run simulations: 'What if we increase RPM by 5%? Will it increase output or damage bearings?' The twin predicts the outcome before the change is made in production."},
+      {t:"h", s:"Time-Sensitive Networking (TSN)"},
+      {t:"p", s:"<strong>TSN</strong> (IEEE 802.1) is a set of Ethernet standards that add deterministic, low-latency communication to standard Ethernet. This allows IT and OT traffic to share the same network without real-time control traffic being delayed by bulk data transfers. TSN enables converged networks for OT and IT."},
+      {t:"p", s:"TSN is critical for Industry 4.0 because it allows a single Ethernet network to carry SCADA, video, ERP, and motion control simultaneously. Previously, each would require a separate network. Siemens, Cisco, and the Industrial Internet Consortium are driving TSN adoption."},
+      {t:"h", s:"5G in manufacturing"},
+      {t:"p", s:"<strong>5G private networks</strong> offer low latency (1-10ms), high bandwidth, and the ability to replace wired connections with wireless for mobile robots, AGVs (Automated Guided Vehicles), and AR headsets. Nokia, Ericsson, and Qualcomm are deploying private 5G networks in factories."},
+      {t:"e", l:"5G USE CASE: AGV COORDINATION", s:"A warehouse has 50 autonomous mobile robots (AGVs) delivering parts. They communicate via 5G to a central coordinator that optimizes routes and prevents collisions. 5G's low latency allows real-time coordination that WiFi cannot match. This is already deployed at BMW and Mercedes-Benz factories."},
+      {t:"h", s:"Unified Namespace (UNS)"},
+      {t:"p", s:"The <strong>Unified Namespace</strong> concept uses a single MQTT broker as the central hub for all plant data. Every device publishes to the broker; every application subscribes to the broker. This decouples data producers from data consumers, making the architecture more flexible and scalable."},
+      {t:"p", s:"UNS is being adopted by companies following the Sparkplug B specification. It simplifies integration: instead of point-to-point connections between every PLC and every application, you have a star topology with the MQTT broker at the center. Adding a new dashboard or ML model is as simple as subscribing to the relevant MQTT topics."},
+      {t:"i", s:"The OT of the future blends the reliability of traditional industrial control with the flexibility and intelligence of cloud-native architectures. But one principle remains: never compromise safety and availability for convenience. The best modern architectures preserve the Purdue Model's defense-in-depth while enabling data-driven insights."}
+    ]
+  },
+  {
+    badge:"VENDORS", title:"Major OT Vendors", sub:"ecosystem and platforms", color:"#ffb830",
+    needs:["PLC","DCS","SCADA"], key:"Vendor Ecosystems",
+    gives:["Siemens","Rockwell","Schneider","ABB","Honeywell","Emerson","GE Digital","Wonderware"],
+    body:[
+      {t:"h", s:"The big players"},
+      {t:"p", s:"Industrial automation is dominated by a handful of global vendors, each with ecosystems of PLCs, DCS, SCADA, sensors, and software. Choosing a vendor is a long-term commitment: their protocols, programming tools, and support determine your architecture for decades."},
+      {t:"h", s:"Vendor comparison"},
+      {t:"t", s:"<table class=\"vtable\"><thead><tr><th>Vendor</th><th>Origin</th><th>Strengths</th><th>PLC Brand</th><th>DCS Brand</th><th>SCADA Brand</th></tr></thead><tbody><tr><td><strong>Siemens</strong></td><td>Germany</td><td>Process control, automotive, discrete manufacturing</td><td>S7-1500</td><td>PCS 7</td><td>WinCC</td></tr><tr><td><strong>Rockwell (Allen-Bradley)</strong></td><td>USA</td><td>Discrete manufacturing, packaging, automotive</td><td>ControlLogix</td><td>PlantPAx</td><td>FactoryTalk</td></tr><tr><td><strong>Schneider Electric</strong></td><td>France</td><td>Energy management, building automation, IIoT</td><td>Modicon M580</td><td>Foxboro</td><td>EcoStruxure</td></tr><tr><td><strong>ABB</strong></td><td>Switzerland</td><td>Power, robotics, process automation</td><td>AC500</td><td>Ability System 800xA</td><td>Ability</td></tr><tr><td><strong>Honeywell</strong></td><td>USA</td><td>Process industries (oil/gas, chemicals)</td><td>ControlEdge</td><td>Experion</td><td>Uniformance</td></tr><tr><td><strong>Emerson</strong></td><td>USA</td><td>Process control, oil/gas, power</td><td>PACSystems</td><td>DeltaV</td><td>Ovation</td></tr><tr><td><strong>GE Digital (now part of Emerson)</strong></td><td>USA</td><td>Historian, analytics, Predix platform</td><td>N/A</td><td>N/A</td><td>iFIX, CIMPLICITY</td></tr><tr><td><strong>Wonderware (AVEVA)</strong></td><td>UK</td><td>SCADA, HMI, historian (platform-agnostic)</td><td>N/A</td><td>N/A</td><td>System Platform</td></tr></tbody></table>"},
+      {t:"h", s:"Historians: the time-series specialists"},
+      {t:"p", s:"While most vendors offer historians, <strong>OSI PI</strong> (AVEVA) is the market leader in process industries. PI can collect data from any PLC/DCS, regardless of vendor, and store decades of high-frequency time-series data. Its AF (Asset Framework) feature allows modeling the plant hierarchy: sites, areas, units, equipment."},
+      {t:"e", l:"WHY OSI PI DOMINATES", s:"A refinery might have Honeywell DCS, Siemens PLCs, and Emerson safety systems. PI connects to all of them, normalizing data into a single historian. This vendor-agnostic approach is why PI has 70%+ market share in oil/gas and chemicals. Alternatives include Wonderware Historian and Honeywell PHD."},
+      {t:"h", s:"Open platforms: software-defined OT"},
+      {t:"p", s:"A new generation of vendors is building software-defined OT platforms that run on standard hardware and integrate with any PLCs via OPC-UA and MQTT. Examples: <strong>Ignition</strong> (Inductive Automation), <strong>Litmus Edge</strong>, and <strong>Tulip</strong> (no-code manufacturing apps). These platforms challenge the traditional model where you buy everything from one vendor."},
+      {t:"e", l:"IGNITION PLATFORM", s:"Ignition is a web-based SCADA platform with unlimited tags and clients for a flat-fee license ($10k-$50k). It connects to any PLC via OPC-UA, Modbus, or native drivers. Because it is not tied to a hardware vendor, it is popular with integrators and mid-size manufacturers who want flexibility. Inductive Automation has grown rapidly by undercutting traditional SCADA vendors on price."},
+      {t:"i", s:"Vendor lock-in is real in OT. Switching from Siemens to Rockwell means replacing PLCs, rewriting ladder logic, retraining staff, and reconfiguring SCADA. This is why most facilities standardize on one or two vendors and stick with them for decades. But the rise of OPC-UA and open platforms is slowly shifting the industry toward interoperability."}
+    ]
+  },
+  {
+    badge:"REFERENCE", title:"Level 0-2 Cheat Sheet", sub:"quick reference guide", color:"#ff3621",
+    needs:["Level 0","Level 1","Level 2"], key:"Cheat Sheet",
+    gives:["Quick Reference","Troubleshooting","Common Terminology","Standards","Resources"],
+    body:[
+      {t:"h", s:"Level 0 at a glance"},
+      {t:"f", s:"LEVEL 0: Physical Process\nDevices: Sensors, actuators, field instruments\nSignals: 4-20mA, 0-10V, digital on/off\nResponse time: Immediate (milliseconds)\nKey vendors: Rosemount, Endress+Hauser, Yokogawa\nCommon issues: Wiring faults, sensor drift, valve stiction\nTroubleshooting: Measure with multimeter, check terminal blocks"},
+      {t:"h", s:"Level 1 at a glance"},
+      {t:"f", s:"LEVEL 1: Basic Control\nDevices: PLCs, RTUs, controllers\nLanguages: Ladder logic, function blocks, structured text\nScan cycle: 10-100ms\nProtocols: Modbus RTU, Profibus, DeviceNet\nKey vendors: Siemens, Rockwell, Schneider\nCommon issues: I/O faults, watchdog timeouts, program errors\nTroubleshooting: Check I/O status lights, use PLC diagnostics"},
+      {t:"h", s:"Level 2 at a glance"},
+      {t:"f", s:"LEVEL 2: Supervisory Control\nSystems: SCADA, DCS, HMI, historian\nProtocols: Modbus TCP, OPC-UA, MQTT\nUpdate rate: 1-10 seconds\nHardware: Windows/Linux servers, industrial PCs\nKey vendors: Wonderware, Ignition, Honeywell, Emerson\nCommon issues: Network latency, database overload, alarm floods\nTroubleshooting: Check network connectivity, review logs"},
+      {t:"h", s:"Common terminology"},
+      {t:"f", s:"TERMS YOU MUST KNOW:\nPV: Process Variable (measured value)\nSP: Setpoint (desired value)\nMV: Manipulated Variable (control output)\nPID: Proportional-Integral-Derivative (control algorithm)\nHMI: Human-Machine Interface (operator screen)\nI/O: Input/Output (connections to field)\nSIS: Safety Instrumented System (emergency shutdown)\nTrip: Emergency shutdown action\nInterlocks: Logic that prevents unsafe operations\nPermissives: Conditions that must be true to allow action"},
+      {t:"h", s:"Key standards"},
+      {t:"e", l:"ISA-95 / IEC 62264", s:"Enterprise-Control System Integration standard. Defines the Purdue Model and interfaces between Levels 3 and 4."},
+      {t:"e", l:"ISA-101", s:"Human-Machine Interface design standard. Defines alarm priority levels, HMI navigation, and display best practices."},
+      {t:"e", l:"IEC 61131-3", s:"PLC programming languages standard. Defines ladder logic, function block, structured text, sequential function chart, and instruction list."},
+      {t:"e", l:"IEC 61511", s:"Functional safety standard for Safety Instrumented Systems (SIS). Defines Safety Integrity Levels (SIL 1-4)."},
+      {t:"e", l:"IEC 62443", s:"Industrial cybersecurity standard. Defines security levels, zones/conduits, and hardening requirements."},
+      {t:"h", s:"Learning resources"},
+      {t:"e", l:"BOOKS", s:"<em>Industrial Network Security</em> by Eric D. Knapp and Joel Thomas Langill (2nd ed, 2014) is the definitive OT security reference. <em>Practical Industrial Data Communications</em> by Steve Mackay covers protocols. <em>ISA-95 for Dummies</em> by Charlie Gifford explains the Purdue Model."},
+      {t:"e", l:"ONLINE COURSES", s:"ISA (International Society of Automation) offers certifications: CCST (Certified Control Systems Technician), CAP (Certified Automation Professional), CSE (Cybersecurity Expert). Coursera and Udemy have IIoT and PLC programming courses."},
+      {t:"e", l:"COMMUNITIES", s:"r/PLC and r/SCADA on Reddit, ISA forums, Control.com forums, and LinkedIn groups like \"Industrial Automation Professionals\" are active communities for troubleshooting and best practices."},
+      {t:"i", s:"This cheat sheet is your starting point. OT is a vast field spanning mechanical, electrical, and software engineering. The key is hands-on experience: touch the hardware, write the ladder logic, troubleshoot the faults. Theory is necessary, but OT skills are built in the field."}
+    ]
+  }
+];
+
+function rgba(hex, a) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return "rgba("+r+","+g+","+b+","+a+")";
+}
+function chips(arr, cls) {
+  return arr.map(function(t){ return '<span class="chip '+cls+'">'+t+'</span>'; }).join("");
+}
+function buildBody(blocks) {
+  return blocks.map(function(b) {
+    if (b.t === "h") return '<div class="bsec-heading">'+b.s+'</div>';
+    if (b.t === "p") return '<div class="prose">'+b.s+'</div>';
+    if (b.t === "f") return '<div class="fbox">'+b.s+'</div>';
+    if (b.t === "e") return '<div class="ex"><span class="exl">'+b.l+'</span>'+b.s+'</div>';
+    if (b.t === "i") return '<div class="ins">'+b.s+'</div>';
+    if (b.t === "t") return b.s;
+    return '';
+  }).join("");
+}
+function init() {
+  var tnav = document.getElementById("tnav");
+  var cards = document.getElementById("cards");
+  SECTIONS.forEach(function(sec, i) {
+    var ti = document.createElement("div");
+    ti.className = "ti"; ti.textContent = sec.title; ti.dataset.i = i;
+    ti.addEventListener("click", function() {
+      var cw = document.querySelector(".cw[data-i='"+i+"']");
+      if (cw) { cw.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(function(){ openCard(i); },350); }
+    });
+    tnav.appendChild(ti);
+    var cw = document.createElement("div");
+    cw.className = "cw"; cw.dataset.i = i;
+    var needHtml = sec.needs.length
+      ? '<div class="sec"><div class="slabel">Prerequisites</div><div class="chips">'+chips(sec.needs,"chip cd")+'</div></div>'
+      : '<div class="sec"><div class="slabel">Prerequisites</div><span style="font-style:italic;color:var(--muted);font-size:13px">Foundation &mdash; no prerequisites</span></div>';
+    var givesHtml = sec.gives.map(function(t){
+      return '<span class="chip '+(t===sec.key ? "ck" : "cn")+'">'+t+'</span>';
+    }).join("");
+    cw.innerHTML =
+      (i > 0 ? '<div class="conn"></div>' : '') +
+      '<div class="card" style="--ac:'+sec.color+';--ac-faint:'+rgba(sec.color,.08)+';--ac-mid:'+rgba(sec.color,.22)+';--ac-shadow:'+rgba(sec.color,.35)+'">' +
+        '<div class="card-head">' +
+          '<span class="bdg">'+sec.badge+'</span>' +
+          '<span class="ctitle">'+sec.title+'</span>' +
+          '<span class="csub">'+sec.sub+'</span>' +
+          '<span class="chev">&#9660;</span>' +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="card-inner">' +
+            needHtml +
+            '<div class="sec"><div class="slabel">Key Concepts</div><div class="chips">'+givesHtml+'</div></div>' +
+            '<div class="sec">'+buildBody(sec.body)+'</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    cards.appendChild(cw);
+    var card = cw.querySelector(".card"), body = cw.querySelector(".card-body");
+    card.addEventListener("click", function() {
+      var open = card.classList.contains("open");
+      card.classList.toggle("open", !open); body.classList.toggle("open", !open);
+      document.querySelectorAll(".ti").forEach(function(t,j){ t.classList.toggle("active",!open && j===i); });
+      if (!open) { ti.style.borderLeftColor = sec.color; ti.style.color = sec.color; }
+      else { ti.style.borderLeftColor = ""; ti.style.color = ""; }
+    });
+  });
+  var fill = document.getElementById("prog-fill");
+  window.addEventListener("scroll", function(){
+    var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    fill.style.width = Math.min(pct,100)+"%";
+  });
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add("show"); });
+  },{threshold:0.05});
+  document.querySelectorAll(".cw").forEach(function(el){ obs.observe(el); });
+  setTimeout(function(){ openCard(0); }, 150);
+}
+function openCard(i) {
+  var cw = document.querySelector(".cw[data-i='"+i+"']");
+  if (!cw) return;
+  var card = cw.querySelector(".card"), body = cw.querySelector(".card-body");
+  if (!card.classList.contains("open")) {
+    card.classList.add("open"); body.classList.add("open");
+    var ti = document.querySelector(".ti[data-i='"+i+"']");
+    if (ti) { ti.style.borderLeftColor = SECTIONS[i].color; ti.style.color = SECTIONS[i].color; }
+    document.querySelectorAll(".ti").forEach(function(t,j){ t.classList.toggle("active",j===i); });
+  }
+}
+init();
+</script>
+</body>
+</html>

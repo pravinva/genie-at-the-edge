@@ -66,19 +66,33 @@ def sensor_stream_bronze():
     Read raw sensor data from Ignition/IoT devices
     This is the entry point for all sensor telemetry
     """
-    # In production, this would read from Event Hubs/Kafka
-    # For now, reading from the existing sensor_data table
-    return (
+    # Read from the active Zerobus ingestion table and normalize columns
+    normalized_source = (
         spark.readStream
         .format("delta")
         .option("readChangeFeed", "true")
-        .table(f"{CATALOG}.{SCHEMA}.zerobus_sensor_stream")
+        .table(f"{CATALOG}.ignition_streaming.sensor_events")
+        .filter(F.col("numeric_value").isNotNull())
+        .withColumn("equipment_id", F.regexp_extract(F.col("tag_path"), r".*/([A-Z]+-[0-9]+)/", 1))
+        .withColumn("sensor_name", F.lower(F.regexp_extract(F.col("tag_path"), r".*/[A-Z]+-[0-9]+/([^/]+)$", 1)))
+        .withColumn("units",
+            F.when(F.col("sensor_name") == "temperature", F.lit("C"))
+             .when(F.col("sensor_name") == "vibration", F.lit("mm/s"))
+             .when(F.col("sensor_name") == "pressure", F.lit("bar"))
+             .when(F.col("sensor_name") == "throughput", F.lit("tph"))
+             .when(F.col("sensor_name") == "speed", F.lit("rpm"))
+             .otherwise(F.lit(""))
+        )
+    )
+
+    return (
+        normalized_source
         .select(
             F.col("equipment_id"),
             F.col("sensor_name").alias("sensor_type"),
-            F.col("sensor_value"),
+            F.col("numeric_value").alias("sensor_value"),
             F.col("units"),
-            F.col("timestamp"),
+            F.col("event_time").alias("timestamp"),
             F.lit("insert").alias("cdc_operation"),
             F.current_timestamp().alias("processed_timestamp")
         )
@@ -685,10 +699,11 @@ def register_anomaly_model():
 
     # Train a simple anomaly detection model
     training_data = spark.sql(f"""
-        SELECT sensor_value,
-               CASE WHEN sensor_value > 85 THEN 1 ELSE 0 END as is_anomaly
-        FROM {CATALOG}.{SCHEMA}.zerobus_sensor_stream
-        WHERE sensor_name = 'temperature'
+        SELECT numeric_value AS sensor_value,
+               CASE WHEN numeric_value > 85 THEN 1 ELSE 0 END as is_anomaly
+        FROM {CATALOG}.ignition_streaming.sensor_events
+        WHERE lower(regexp_extract(tag_path, '.*/[A-Z]+-[0-9]+/([^/]+)$', 1)) = 'temperature'
+          AND numeric_value IS NOT NULL
         LIMIT 10000
     """).toPandas()
 

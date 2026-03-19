@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Quiz Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #000;
+            color: #FFD700;
+        }
+        button {
+            padding: 20px 40px;
+            font-size: 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #d32f2f;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <h1>Clear Quiz Storage</h1>
+        <button onclick="clearStorage()">Clear All Saved Progress</button>
+        <div class="message" id="message"></div>
+    </div>
+    <script>
+        function clearStorage() {
+            localStorage.removeItem('flipbook_quiz_progress');
+            document.getElementById('message').innerHTML = '✅ Storage cleared! You can now <a href="flipbook.html" style="color: #FFD700;">return to the quiz</a>';
+        }
+    </script>
+</body>
+</html>
