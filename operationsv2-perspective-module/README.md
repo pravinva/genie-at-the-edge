@@ -1,7 +1,126 @@
+# OperationsV2 Perspective Module (`react-ops`)
+
+Custom Ignition Perspective module that delivers the `react-ops` HMI screen as a first-class component.
+
+This module started from the SDK sample scaffold and is now the runtime implementation for:
+
+- Operations dashboard layout (left status rail, center trends + recommendation card/table, right Genie panel)
+- Live recommendation refresh from Lakebase
+- Trend charts by selected equipment
+- Operator actions (`APPROVE`, `DEFER`, `REJECT`) persisted to Lakebase
+- Genie ask/clear flow with SQL/table attachments rendered in UI
+
+## Where The Code Lives
+
+### Runtime component (React)
+- `web/packages/client/typescript/components/OperationsV2Panel.tsx`
+- `web/packages/client/scss/_operations-v2-panel.scss`
+
+### Gateway event handlers (Java)
+- `gateway/src/main/java/org/fakester/gateway/delegate/OperationsV2ComponentModelDelegate.java`
+
+### Component descriptors/registration
+- `common/src/main/java/org/fakester/common/component/display/OperationsV2Panel.java`
+- `common/src/main/resources/operationsv2panel.props.json`
+- `gateway/src/main/java/org/fakester/gateway/RadGatewayHook.java`
+- `designer/src/main/java/org/fakester/designer/RadDesignerHook.java`
+
+## Perspective Usage
+
+Component type:
+
+- `ops.display.operationsv2`
+
+View currently using this component:
+
+- `react-ops`
+
+Client URL example:
+
+- `http://localhost:8183/data/perspective/client/samplequickstart/react-ops`
+
+## Data And Behavior
+
+### Recommendation refresh
+
+- Event: `opsv2-refresh-event`
+- Source: `public.ml_recommendations`
+- Hide handled rows by excluding entries already present in `public.operator_feedback` for matching `equipment_id + scored_at`.
+
+### Trend refresh
+
+- Event: `opsv2-trend-event`
+- Source: `public.sensor_data`
+- Metrics:
+  - Temperature (`sensor_type in ('temperature','temp')`)
+  - Flow (`sensor_type in ('flow_rate','flow')`)
+- Normalized equipment matching (trim + dash/underscore compatibility).
+- Includes robust payload formats for Perspective transport compatibility (JSON and CSV fallback parsing in client).
+
+### Decision actions
+
+- Event: `opsv2-decision-event`
+- Buttons: `APPROVE`, `DEFER`, `REJECT`
+- Persisted to Lakebase table:
+  - `public.operator_feedback(equipment_id, scored_at, decision, operator_id, feedback_text, created_at)`
+- UI behavior:
+  - Row is removed on subsequent refresh due to handled-row filtering logic.
+
+### Genie panel
+
+- Events:
+  - Ask: `opsv2-genie-ask-event`
+  - Clear: `opsv2-genie-clear-event`
+  - Result: `opsv2-genie-result-event`
+- Gateway invokes project script:
+  - `genie.api.queryGenie(question, conversationId)`
+- UI rendering:
+  - Structured chat turns (`OPERATOR`, `GENIE`, `SYSTEM`)
+  - Parsed markdown table into rendered HTML table
+  - Toggleable SQL panel (`SHOW SQL` / `HIDE SQL`)
+
+## Styling Notes (Current)
+
+- Typography targets Barlow family for HMI readability.
+- Trend cards use light industrial palette with gradient plot area and crisp legends.
+- Recommendation card split into:
+  - colored summary section above table
+  - separate white table section below
+- Genie controls and cards aligned to industrial dashboard style.
+
+## Build And Deploy
+
+From this directory:
+
+```bash
+./gradlew clean build
+```
+
+Generated module artifact:
+
+- `build/OperationsV2Components.unsigned.modl`
+
+Typical local deploy to running Ignition container:
+
+```bash
+docker cp build/OperationsV2Components.unsigned.modl genie-at-edge-ignition:/usr/local/bin/ignition/user-lib/modules/OperationsV2Components.unsigned.modl
+docker restart genie-at-edge-ignition
+```
+
+After deploy, use a hard refresh in browser:
+
+- macOS: `Cmd+Shift+R`
+
+## Current Version
+
+- Module ID: `org.fakester.operationsv2`
+- Module Name: `OperationsV2Components`
+- Module Version: `1.0.1`
+
+---
+
 # Perspective Component Module Example
-This is an example module which adds some custom components to the Perspective module.  There are 3 different components
-in this example, each exercising different aspects of the Perspective component API, as well as demonstrating
-a few different ways of dealing with data and configuration of the components in the gateway designer.
+This started as the default Perspective SDK example module. The legacy documentation below is retained for scaffold reference.
 
 ### Summary of Components
 
