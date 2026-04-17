@@ -3,410 +3,332 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>First Call - L3 SA Bootcamp Adventure</title>
+<title>FE Launchpad — Account Simulator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0F0A1E;--surface:#1A1230;--card:#211840;--border:#3D2F6B;--orange:#FF3621;--gold:#F5A623;--green:#2ECC71;--text:#F0EAD6;--muted:#9B8EC4;--panel:#16102B}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
-pre{font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-word}
 button{cursor:pointer;border:none;font-family:inherit;font-weight:600;transition:opacity .15s,transform .1s}
 button:hover{opacity:.88;transform:translateY(-1px)}
 button:active{transform:translateY(0)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
 .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite var(--delay)}
 @keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-@keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(245,166,35,.4)}50%{box-shadow:0 0 32px rgba(245,166,35,.8)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 16px rgba(245,166,35,.35)}50%{box-shadow:0 0 28px rgba(245,166,35,.65)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1.3)}100%{opacity:0;transform:translateY(-40px) scale(1)}}
-@keyframes unlockSpin{0%{transform:rotate(-20deg) scale(.5);opacity:0}60%{transform:rotate(10deg) scale(1.2)}100%{transform:rotate(0) scale(1);opacity:1}}
-@keyframes answerDrop{0%{opacity:0;transform:scale(.92) translateY(12px)}100%{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes fadeSlide{0%{opacity:0;transform:translateY(-8px)}100%{opacity:1;transform:translateY(0)}}
-@keyframes confFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:.3}}
-@keyframes lockWobble{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(-36px) scale(1)}}
 
-/* SCREENS */
-#intro,#setup,#victory{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 24px}
+#intro,#setup,#victory{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 24px;position:relative;z-index:1}
 #intro{background:radial-gradient(ellipse at 50% 0%,#2a1a50 0%,var(--bg) 60%)}
-#game{display:none;min-height:100vh;flex-direction:column}
 #setup{display:none}
-#victory{display:none;position:relative}
+#game{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1}
+#victory{display:none;min-height:100vh}
 
-/* INTRO */
-.intro-content{position:relative;z-index:1}
-.game-title{font-family:'Cinzel',serif;font-size:clamp(36px,7vw,72px);font-weight:900;color:var(--gold);text-shadow:0 0 40px rgba(245,166,35,.5);line-height:1.1;margin-bottom:32px}
-.intro-emblem{font-size:80px;margin-bottom:16px;animation:float 4s ease-in-out infinite}
-.start-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border:none;border-radius:12px;padding:18px 48px;font-size:18px;font-weight:800;font-family:'Cinzel',serif;cursor:pointer;letter-spacing:1px;box-shadow:0 0 40px rgba(255,54,33,.5);transition:.2s;margin-top:32px}
-.start-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 0 60px rgba(255,54,33,.7)}
-.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-.ibadge{background:#1A123088;border:1px solid var(--border);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--muted)}
+.game-title{font-family:'Cinzel',serif;font-size:clamp(32px,6vw,56px);font-weight:900;color:var(--gold);text-shadow:0 0 36px rgba(245,166,35,.45);line-height:1.15;margin-bottom:16px}
+.subtitle{font-size:14px;color:var(--orange);font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+.lead{max-width:640px;font-size:15px;color:var(--muted);line-height:1.75;margin:0 auto 20px}
+.start-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border-radius:12px;padding:16px 40px;font-size:17px;font-weight:800;font-family:'Cinzel',serif;letter-spacing:1px;box-shadow:0 0 36px rgba(255,54,33,.45);margin-top:8px}
+.badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.ibadge{background:#1A123088;border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--muted)}
 
-/* SETUP */
-.setup-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:100%;max-width:520px;box-shadow:0 0 60px rgba(255,54,33,.1)}
-.setup-box h2{font-size:18px;font-weight:700;color:var(--gold);margin-bottom:24px}
-.team-row{display:flex;gap:10px;margin-bottom:12px;align-items:center}
-.team-row input{flex:1;background:#0F0A1E;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border .2s}
+.setup-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:520px}
+.setup-box h2{font-size:16px;color:var(--gold);margin-bottom:16px}
+.team-row{display:flex;gap:10px;margin-bottom:10px;align-items:center}
+.team-row input{flex:1;background:#0F0A1E;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;outline:none}
 .team-row input:focus{border-color:var(--orange)}
-.team-row input::placeholder{color:var(--muted)}
-.remove-btn{background:none;border:1px solid #5a2a2a;border-radius:6px;color:#f08080;width:32px;height:32px;font-size:16px;cursor:pointer;transition:.2s}
-.remove-btn:hover{background:#5a2a2a}
-.add-team-btn{background:none;border:1px dashed var(--border);border-radius:8px;padding:10px;width:100%;color:var(--muted);font-size:14px;cursor:pointer;transition:.2s;margin-top:4px}
-.add-team-btn:hover{border-color:var(--orange);color:var(--orange)}
-.launch-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border:none;border-radius:10px;padding:15px 36px;font-size:16px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(255,54,33,.4);margin-top:20px;width:100%;transition:.2s}
-.launch-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(255,54,33,.5)}
+.remove-btn{background:none;border:1px solid #5a2a2a;border-radius:6px;color:#f08080;width:32px;height:32px;font-size:14px}
+.add-team-btn{background:none;border:1px dashed var(--border);border-radius:8px;padding:10px;width:100%;color:var(--muted);font-size:13px;margin-top:4px}
+.launch-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border-radius:10px;padding:14px;width:100%;font-size:15px;font-weight:800;margin-top:18px}
 
-/* HEADER */
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
-.hdr-logo{display:flex;align-items:center;gap:8px}
-.hdr-logobox{width:28px;height:28px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff}
-.hdr-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);font-weight:700}
-.hdr-badge{font-size:11px;background:#FF362122;color:var(--orange);border:1px solid #FF362155;border-radius:20px;padding:3px 10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.hdr-logobox{width:28px;height:28px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff}
+.hdr-title{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);font-weight:700;margin-left:8px}
+.hdr-badge{font-size:10px;background:#FF362122;color:var(--orange);border:1px solid #FF362155;border-radius:20px;padding:4px 10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
 
-/* GAME BODY */
-.game-body{display:flex;flex:1;gap:0}
-.sidebar{width:200px;min-width:200px;background:var(--panel);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
-.sidebar-title{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:4px}
-.team-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;position:relative;overflow:hidden}
+.game-body{display:flex;flex:1;min-height:0}
+.sidebar{width:280px;min-width:280px;background:var(--panel);border-right:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(100vh - 52px)}
+.sidebar-title{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:8px}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;position:relative}
 .team-card.top-team{border-color:var(--gold);box-shadow:0 0 12px rgba(245,166,35,.2)}
-.team-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.team-score{font-family:'Cinzel',serif;font-size:28px;font-weight:900;color:var(--gold);line-height:1;margin-bottom:8px}
-.pts-btns{display:flex;gap:4px}
-.pts-btn{flex:1;background:#FF362122;border:1px solid #FF362155;border-radius:5px;color:var(--orange);font-size:11px;font-weight:700;padding:4px 2px;cursor:pointer;transition:.15s}
-.pts-btn:hover{background:var(--orange);color:#fff;transform:scale(1.05)}
-.pts-btn.minus{background:#1a0a0a;border-color:#5a2020;color:#f08080}
-.pts-btn.minus:hover{background:#5a2020;color:#fff}
-.float-pts{position:absolute;top:10px;right:10px;font-weight:900;font-size:18px;pointer-events:none;animation:floatUp .9s ease-out forwards;opacity:0}
+.team-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.team-score{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:var(--gold)}
+.pick-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px}
+.letter-grid{display:flex;flex-wrap:wrap;gap:4px}
+.letter-btn{width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:800;padding:0}
+.letter-btn.sel{background:var(--orange);border-color:var(--orange);color:#fff}
+.letter-btn:disabled{opacity:.35}
+.score-team-btn{width:100%;margin-top:8px;padding:8px;font-size:12px;border-radius:8px;background:linear-gradient(135deg,#1a5a35,#2d8a56);color:#fff}
+.toast-mini{font-size:11px;color:var(--green);margin-top:4px;min-height:14px}
 
-/* CENTER */
-.center-scroll{flex:1;overflow-y:auto;height:calc(100vh - 54px)}
-.center-col{max-width:800px;margin:0 auto;width:100%;padding:28px 32px 60px}
+.center-scroll{flex:1;overflow-y:auto;max-height:calc(100vh - 52px)}
+.center-col{max-width:900px;margin:0 auto;padding:20px 24px 48px}
 
-/* QUEST MAP */
-.quest-map{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:36px;padding:20px 16px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow-x:auto}
-.q-node{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:1;min-width:52px}
-.q-orb{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid var(--border);background:var(--surface);transition:.3s}
-.q-orb.done{background:var(--orange);border-color:var(--orange);box-shadow:0 0 16px rgba(255,54,33,.5)}
-.q-orb.active{background:var(--card);border-color:var(--gold);animation:pulse 1.8s ease-in-out infinite}
+.quest-map{display:flex;align-items:center;justify-content:flex-start;gap:0;margin-bottom:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow-x:auto}
+.q-node{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px}
+.q-orb{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid var(--border);background:var(--surface)}
+.q-orb.done{background:var(--orange);border-color:var(--orange)}
+.q-orb.active{border-color:var(--gold);animation:pulse 1.8s ease-in-out infinite}
 .q-orb.locked{opacity:.35}
-.q-label{font-size:8px;font-weight:700;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.5px;max-width:52px}
+.q-label{font-size:8px;font-weight:700;color:var(--muted);text-align:center;max-width:56px;text-transform:uppercase}
 .q-label.active{color:var(--gold)}
-.q-label.done{color:var(--orange)}
-.q-line{flex:1;min-width:12px;height:3px;background:var(--border);margin-bottom:22px;transition:.3s}
-.q-line.done{background:var(--orange);box-shadow:0 0 6px rgba(255,54,33,.4)}
+.q-line{flex:1;min-width:10px;height:3px;background:var(--border);margin-bottom:18px}
+.q-line.done{background:var(--orange)}
 
-/* CASE CARD */
-.case-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4)}
-.case-header{padding:20px 24px 0}
-.case-tag{font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px}
-.case-title{font-family:'Cinzel',serif;font-size:22px;font-weight:900;color:var(--gold);margin-bottom:6px;line-height:1.3}
-.case-flavour{font-size:14px;color:var(--muted);line-height:1.65;padding-bottom:18px;border-bottom:1px solid var(--border)}
-.lock-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;gap:16px;text-align:center}
-.lock-icon{font-size:64px;animation:lockWobble 3s ease-in-out infinite}
-.lock-text{font-size:15px;color:var(--muted)}
+.case-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.case-header{padding:18px 22px;border-bottom:1px solid var(--border)}
+.case-tag{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.case-title{font-family:'Cinzel',serif;font-size:20px;font-weight:900;color:var(--gold);line-height:1.25}
+.case-theme{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.55}
 
-/* ARTIFACTS */
-.artifact-wrap{padding:20px 24px}
-.art-doc{border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-.art-logbody{background:#080512;padding:16px 20px;font-family:'Courier New',monospace;font-size:13px;color:#c8c8ff;line-height:1.85}
-.art-email-hdr{background:#1A1230;padding:12px 18px;border-bottom:1px solid var(--border)}
-.art-email-subj{font-weight:700;font-size:14px;color:var(--gold);margin-bottom:4px}
-.art-email-meta{font-size:12px;color:var(--muted)}
-.art-email-body{background:#080512;padding:14px 18px;font-size:13px;color:#d0d0ff;line-height:1.85}
-.art-slidehdr{background:var(--orange);padding:9px 16px}
-.art-slidetitle{font-size:13px;font-weight:700;color:#fff}
-.preso-slide{padding:10px 18px;border-bottom:1px solid #1f1640;background:#0a0718}
-.preso-slide:last-child{border-bottom:none}
-.preso-slide strong{font-size:13px;color:var(--text)}
-.preso-val{color:var(--orange);font-size:13px;padding-left:18px;display:block;margin-top:3px}
-.art-riddle{background:linear-gradient(135deg,#1a0a2e,#0a0718);padding:30px 34px;text-align:center;font-family:Georgia,serif;font-size:16px;color:#D4B8F0;line-height:2.3}
-.art-chat{background:#080512;padding:16px 20px;font-family:'Courier New',monospace;font-size:12px;color:#c8c8ff;line-height:1.95}
-.chat-line{margin-bottom:8px}
-.chat-you{color:#4a9eff}
-.chat-them{color:#ff9f4a}
-.chat-sys{color:#888;font-style:italic}
+.block{padding:18px 22px;border-bottom:1px solid var(--border)}
+.block h3{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.block ul{margin:0;padding-left:18px;font-size:14px;line-height:1.65;color:var(--text)}
+.block p{font-size:14px;line-height:1.65;color:var(--muted)}
 
-/* EXTRAS */
-.extras{padding:0 24px 20px;display:flex;flex-direction:column;gap:12px}
-.question-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;font-size:16px;font-weight:700;color:var(--gold);line-height:1.55}
-.hint-box{background:#1a1500;border:1px solid #554400;border-radius:8px;padding:14px 18px;animation:fadeSlide .4s ease}
-.hint-title{font-size:11px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-.hint-text{font-size:14px;color:#E8D44D;line-height:1.6}
-.answer-wrap{animation:answerDrop .5s cubic-bezier(.175,.885,.32,1.275)}
-.answer-top{background:linear-gradient(135deg,#0a2010,#0e3018);padding:16px 20px;border:1px solid #1a6035;border-bottom:none;border-radius:10px 10px 0 0}
-.answer-label{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.answer-text{font-size:15px;color:var(--text);line-height:1.75}
-.punchline-box{background:#1a0808;border:1px solid #5a1a1a;border-top:none;padding:12px 18px;border-radius:0 0 10px 10px;font-size:14px;color:#f08080;line-height:1.6}
+.profile-grid{display:grid;gap:10px;font-size:13px;line-height:1.55}
+.profile-grid strong{color:var(--gold);font-weight:700}
 
-/* GM PANEL */
-.gm-panel{padding:20px 24px;background:#0a0718;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
-.gm-label{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase}
-.gm-btns{display:flex;gap:10px;flex-wrap:wrap}
-.gmbtn{border-radius:8px;padding:11px 22px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:.15s;letter-spacing:.3px}
-.gmbtn:hover{transform:translateY(-2px);filter:brightness(1.1)}
-.gmbtn-unlock{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;box-shadow:0 4px 20px rgba(255,54,33,.4)}
-.gmbtn-hint{background:#2a2040;border:1px solid var(--border);color:var(--gold)}
-.gmbtn-answer{background:linear-gradient(135deg,#1a5a35,#2ECC71);color:#fff}
-.gmbtn-next{background:linear-gradient(135deg,#3a2a70,#6a4aaa);color:#fff}
+.action-table{width:100%;border-collapse:collapse;font-size:13px}
+.action-table th{text-align:left;padding:8px 10px;background:var(--panel);border:1px solid var(--border);color:var(--gold);font-size:11px;width:36px}
+.action-table td{padding:10px 12px;border:1px solid var(--border);vertical-align:top}
+.action-code{font-weight:900;color:var(--orange);font-family:'Courier New',monospace}
 
-/* UNLOCK OVERLAY */
-.unlock-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
-.unlock-overlay.active{display:flex}
-.unlock-big{font-size:100px;animation:unlockSpin .7s ease-out forwards}
-.unlock-text{font-family:'Cinzel',serif;font-size:32px;color:var(--gold);text-shadow:0 0 30px rgba(245,166,35,.8);animation:fadeIn .5s .4s both}
+.lock-state{padding:48px 24px;text-align:center}
+.lock-icon{font-size:56px;margin-bottom:12px;animation:float 3s ease-in-out infinite}
+.lock-text{color:var(--muted);font-size:14px}
 
-/* VICTORY */
-.confetti-container{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:10}
-.conf{position:absolute;width:10px;height:10px;animation:confFall var(--d) var(--delay) linear forwards;opacity:0}
-.victory-title{font-family:'Cinzel',serif;font-size:clamp(32px,6vw,56px);font-weight:900;color:var(--gold);text-shadow:0 0 50px rgba(245,166,35,.7);margin-bottom:12px}
-.final-scores{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:32px 0}
-.final-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:20px 28px;min-width:140px}
-.final-card.winner{border-color:var(--gold);box-shadow:0 0 30px rgba(245,166,35,.3)}
-.final-rank{font-size:28px;margin-bottom:4px}
-.final-tname{font-size:14px;font-weight:700;color:var(--text)}
-.final-tscore{font-family:'Cinzel',serif;font-size:32px;font-weight:900;color:var(--gold)}
-.final-pts{font-size:11px;color:var(--muted)}
-.replay-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:13px 32px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;margin-top:16px;transition:.2s}
-.replay-btn:hover{border-color:var(--orange);color:var(--orange)}
+.fac-bar{padding:14px 22px;background:#0a0718;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fac-label{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-right:8px}
+.fac-btn{border-radius:8px;padding:11px 20px;font-size:13px;font-weight:700}
+.fac-unlock{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff}
+.fac-next{background:linear-gradient(135deg,#3a2a70,#6a4aaa);color:#fff}
+
+.account-accordion summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--gold);padding:8px 0}
+.account-body{font-size:12px;color:var(--muted);line-height:1.6;padding-bottom:8px}
+
+.victory-title{font-family:'Cinzel',serif;font-size:clamp(28px,5vw,48px);font-weight:900;color:var(--gold);margin-bottom:12px}
+.final-scores{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:28px 0}
+.final-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:18px 24px;min-width:130px}
+.final-card.winner{border-color:var(--gold);box-shadow:0 0 24px rgba(245,166,35,.25)}
+.final-tname{font-size:13px;font-weight:700}
+.final-tscore{font-family:'Cinzel',serif;font-size:36px;font-weight:900;color:var(--gold)}
+.replay-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;margin-top:12px}
+
+.unlock-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.unlock-overlay.on{display:flex}
+.unlock-big{font-size:80px}
+.unlock-text{font-family:'Cinzel',serif;font-size:28px;color:var(--gold)}
 </style>
 </head>
 <body>
 
 <div class="stars" id="stars"></div>
 
-<!-- INTRO -->
 <div id="intro">
-  <div class="intro-content">
-    <div class="intro-emblem">&#x1F4DE;</div>
-    <div style="font-size:12px;color:var(--orange);font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px">L3 SA Bootcamp Challenge</div>
-    <h1 class="game-title">First Call</h1>
-    <p style="font-size:15px;color:var(--muted);max-width:520px;line-height:1.7;margin:0 auto 10px">You're a new Solution Architect fresh out of training.<br>Navigate <strong style="color:var(--orange)">8 real customer scenarios</strong> using builder culture and AI-first principles to earn your first closed deal.</p>
-    <div class="badge-row">
-      <div class="ibadge">&#x1F528; Builder Culture</div>
-      <div class="ibadge">&#x1F916; AI-First</div>
-      <div class="ibadge">&#x1F50D; Discovery</div>
-      <div class="ibadge">&#x1F3D7; Architecture</div>
-      <div class="ibadge">&#x1F94A; Competition</div>
-      <div class="ibadge">&#x1F9EA; POCs</div>
-      <div class="ibadge">&#x1F4B0; TCO</div>
-    </div>
-    <button class="start-btn" onclick="showSetup()">&#x1F680; Start Your Journey</button>
+  <div class="subtitle">FE Launchpad · Account Simulator</div>
+  <h1 class="game-title">The Silent Erosion</h1>
+  <p class="lead">Four-quarter journey through a single fictional account — <strong style="color:var(--text)">Meridian Health Systems</strong>. SE pairs diagnose signals, discuss, and choose actions. The facilitator advances rounds and records scores. <em>No answer key appears in this app</em> — you reveal ground truth live after each round.</p>
+  <div class="badge-row">
+    <div class="ibadge">4 rounds</div>
+    <div class="ibadge">Top 3 actions / round</div>
+    <div class="ibadge">3 pts per correct pick</div>
+    <div class="ibadge">Max 36 pts</div>
   </div>
+  <button class="start-btn" type="button" onclick="showSetup()">Begin session</button>
+  <p style="margin-top:20px"><a href="l3_sa_bootcamp_facilitator_guide.html" target="_blank" style="color:var(--gold);font-size:13px;font-weight:600">Facilitator guide</a></p>
 </div>
 
-<!-- SETUP -->
 <div id="setup">
-  <div style="position:relative;z-index:1;width:100%;max-width:520px">
-    <div style="margin-bottom:24px">
-      <div class="game-title" style="font-size:32px;margin-bottom:4px">Assemble Your Teams</div>
-      <p style="font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase">Facilitator controls all hints &amp; points</p>
-    </div>
-    <div class="setup-box">
-      <h2>&#x1F3F4; Enter Team Names</h2>
-      <div id="team-inputs"></div>
-      <button class="add-team-btn" onclick="addTeam()">+ Add another team</button>
-      <button class="launch-btn" onclick="startGame()">&#x26A1; Launch Game</button>
-    </div>
+  <div class="game-title" style="font-size:30px">Team names</div>
+  <p class="lead" style="margin-bottom:20px">Add one card per pair. The facilitator uses the sidebar each round to enter each team’s <strong style="color:var(--text)">three</strong> action codes and apply points.</p>
+  <div class="setup-box">
+    <h2>Who is playing?</h2>
+    <div id="team-inputs"></div>
+    <button type="button" class="add-team-btn" onclick="addTeam()">+ Add team</button>
+    <button type="button" class="launch-btn" onclick="startGame()">Launch simulator</button>
   </div>
 </div>
 
-<!-- GAME -->
 <div id="game">
   <header class="hdr">
-    <div class="hdr-logo">
+    <div style="display:flex;align-items:center">
       <div class="hdr-logobox">D</div>
-      <div class="hdr-title">First Call</div>
+      <div class="hdr-title">Meridian · Account Simulator</div>
     </div>
-    <div class="hdr-badge">&#x2699; Facilitator Mode</div>
+    <div class="hdr-badge">Facilitator scoring</div>
   </header>
   <div class="game-body">
-    <div class="sidebar">
-      <div class="sidebar-title">&#x1F3C6; Scoreboard</div>
+    <aside class="sidebar">
+      <div class="sidebar-title">Scoreboard</div>
       <div id="scoreboard"></div>
-    </div>
+      <details class="account-accordion" open>
+        <summary>Account profile (reference)</summary>
+        <div class="account-body" id="account-side"></div>
+      </details>
+    </aside>
     <div class="center-scroll">
       <div class="center-col">
         <div class="quest-map" id="quest-map"></div>
-        <div class="case-card" id="case-card"></div>
+        <div id="case-card"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- VICTORY -->
 <div id="victory">
-  <div class="confetti-container" id="confetti"></div>
-  <div style="position:relative;z-index:1;text-align:center">
-    <div style="font-size:80px;margin-bottom:16px;animation:float 3s ease-in-out infinite">&#x1F528;</div>
-    <div class="victory-title">First Deal Closed!</div>
-    <p style="font-size:16px;color:var(--muted);max-width:520px;margin:0 auto 8px;line-height:1.6">You've navigated your first customer journey using builder culture and AI-first principles. <em style="color:var(--text)">Your manager just Slacked: "This is what builder culture looks like. They bought because you BUILT with them, not AT them."</em></p>
-    <div style="background:var(--card);border:2px solid var(--orange);border-radius:14px;padding:22px 40px;margin:24px auto;display:inline-block">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Achievement Unlocked:</div>
-      <div style="font-family:'Courier New',monospace;font-size:26px;font-weight:900;color:var(--orange);letter-spacing:4px">BUILDER_SA</div>
-    </div>
-    <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px">Final Scores</div>
-    <div class="final-scores" id="final-scores"></div>
-    <button class="replay-btn" onclick="location.reload()">&#x21A9; Play Again</button>
-  </div>
+  <div class="subtitle">Session complete</div>
+  <div class="victory-title">Standings</div>
+  <p class="lead">Great work navigating partial information under pressure — the same judgment real accounts demand.</p>
+  <div class="final-scores" id="final-scores"></div>
+  <button type="button" class="replay-btn" onclick="location.reload()">Play again</button>
 </div>
 
-<!-- UNLOCK OVERLAY -->
 <div class="unlock-overlay" id="unlock-overlay">
-  <div class="unlock-big">&#x1F513;</div>
-  <div class="unlock-text">SCENARIO UNLOCKED</div>
+  <div class="unlock-big">&#128275;</div>
+  <div class="unlock-text">Round unlocked</div>
 </div>
 
 <script>
-var CASES = [
+var POINTS_PER_CORRECT = 3;
+
+/** optimalSet is used only for scoring — never rendered */
+var ROUNDS = [
   {
-    label: "Case 1 — Discovery & Qualification",
-    emoji: "S1",
-    title: "The First Discovery Call",
-    icon: "&#x1F50D;",
-    flavour: "9am Tuesday. Your first lead as an L3 SA. A mid-market retail company wants to 'modernize their data stack.' The AE sends you the Salesforce notes: '500 employees, AWS, some data lakes, wants AI.' That's it. The discovery call starts in 60 minutes.",
-    artifact: {
-      type: "email",
-      subject: "RE: Databricks Introduction Call - Agenda",
-      from: "David Chen, Head of Data <d.chen@retailmart.com>",
-      to: "You",
-      body: "Hi,\n\nLooking forward to our call at 10am.\n\nQuick background: we're a retail chain (200 stores across AU/NZ) and\nour current data situation is a mess. We have:\n  - Transactional data in PostgreSQL (on-prem)\n  - Customer data in Salesforce\n  - Website clickstream going to S3 (via Segment)\n  - Excel reports everywhere\n\nOur CEO read an article about AI and now wants 'predictive analytics\nfor inventory' by end of quarter. We also need to replace our nightly\nETL jobs (currently Talend) because they keep breaking.\n\nI've been told Databricks can solve all of this?\n\nA few vendors are on our shortlist:\n  - Snowflake (we talked to them last week)\n  - AWS (they say we should just use Redshift + SageMaker)\n  - Databricks (you)\n\nBudget: $150K for Year 1, but we need to show ROI quickly.\n\nLet me know if you need anything else before the call.\n\nDavid"
-    },
-    question: "You have 60 minutes to prepare. What are the top 3 questions you MUST ask on this call — and what should you BUILD before the follow-up?",
-    hint: "David wants you to solve everything. Builder culture means showing, not telling. What do you need to learn, and what can you prototype?",
-    answer: "Top 3 questions:\n1. Current pain: What breaks most often? What keeps you up at night? (Don't let them list features — get to the real business impact)\n2. Timeline & decision process: Is 'end of quarter' a real deadline or aspirational? Who else needs to sign off? What does the evaluation process look like?\n3. AI use case specifics: What decisions would predictive inventory analytics enable? Do you have historical data? Who would use the predictions?\n\nBUILDER CULTURE MOVE:\nAfter the call, IMMEDIATELY:\n- Use Genie to search internal docs for similar retail/inventory use cases\n- Clone a retail demo notebook and customize it with their data sources (S3 clickstream + Postgres transactions)\n- Build a simple 3-table Bronze→Silver→Gold pipeline using their schema in a shared workspace\n- Send them the working notebook link within 24 hours: 'Here's what we discussed, running on sample data'\n\nAI-FIRST TIP: Use AI Assistant in notebooks to generate the initial data ingestion code from their schema. Don't start from scratch.\n\nDo NOT:\n- Pitch the full platform in the first 15 minutes\n- Promise everything by end of quarter\n- Just send them a PDF deck — BUILD something they can see and touch",
-    punchline: "Builder culture: After the discovery call, they should have a working notebook link in their inbox before lunch tomorrow. Show, don't tell."
+    short: "Q1",
+    label: "Round 1 — Q1: The First Cracks",
+    title: "The First Cracks",
+    theme: "Champion departure, usage shift, and competitive noise land at the same time.",
+    events: [
+      "Marcus messages you on Slack: \"Hey, heads up — Priya just announced she's leaving Meridian at the end of next month. She's taking a role at another company. No replacement has been named yet.\"",
+      "Your Databricks consumption dashboard shows a 12% drop in DBU usage this quarter. The drop is concentrated in the analytics org — SQL warehouse queries are down significantly.",
+      "Marcus mentions in passing: \"Tom's been running some benchmarks on a trial account with another vendor. He's been pretty vocal about it in the engineering Slack channel.\""
+    ],
+    diagnosisPrompt: "As a pair, discuss: What signals are you seeing? What’s the likely root cause behind each signal? How are these events connected (if at all)? Capture notes on flip chart or paper — nothing to submit in this app.",
+    actions: [
+      { code: "A", text: "Make sure a 1:1 with Dr. Sharma happens before she leaves — partner with your AE to get it on the calendar and co-develop the agenda (who else champions the platform internally, who should we be building relationships with before she walks out)" },
+      { code: "B", text: "Request an urgent meeting with Marcus to understand the consumption drop and his read on the broader landscape" },
+      { code: "C", text: "Pull in your manager to discuss the champion loss" },
+      { code: "D", text: "Engage an SSA to run a technical deep-dive on their SQL workloads" },
+      { code: "E", text: "Ask Marcus to facilitate an intro meeting with Tom so you can understand his concerns firsthand" },
+      { code: "F", text: "Request an EBR with Meridian leadership" },
+      { code: "G", text: "Contact the Snowflake competitive intelligence team internally" },
+      { code: "H", text: "Create/update a UCO for the competitive threat" },
+      { code: "I", text: "Engage Technical Services for a platform health check" },
+      { code: "J", text: "Do nothing yet — monitor for another quarter" },
+      { code: "K", text: "Schedule a discovery call with the analytics org to understand the usage decline" },
+      { code: "L", text: "Ask Marcus for his read on Priya's likely successor and what the transition means for the platform team" }
+    ],
+    optimalSet: ["A", "K", "E"]
   },
   {
-    label: "Case 2 — Solution Architecture",
-    emoji: "S2",
-    title: "Design on a Whiteboard",
-    icon: "&#x1F3D7;",
-    flavour: "Post-discovery, the customer wants a technical deep-dive. Your AE says 'they love us, just draw the architecture.' You're screen-sharing in a Zoom with their Head of Data, Lead Data Engineer, and CISO. The CISO just unmuted.",
-    artifact: {
-      type: "chat",
-      body: "[CISO] Before we go further — I need to understand data governance.\nWe're in healthcare. We have HIPAA obligations. Patient data cannot\nleave our VPC. We also can't have data scientists directly querying\nraw PHI tables.\n\n[Head of Data] Also, our data eng team is 2 people. They know SQL and\nPython but they've never used Spark. Can they actually operate this?\n\n[Lead Engineer] One more thing — we tried Delta Lake 2 years ago and\nit was a disaster. Constant small files problem, slow queries, data\nskew. We gave up and went back to Parquet. Why would it be different\nnow?\n\n[AE, in Slack DM to you] 'This is going great, just show them the\nreference architecture slide'"
-    },
-    question: "You're now screen-sharing a blank Excalidraw canvas. How do you structure this architecture discussion — and what should you BUILD after the call to prove it?",
-    hint: "Don't start with the Lakehouse platform diagram. Start with their constraints, then BUILD a working example with AI tools.",
-    answer: "On the call (whiteboard architecture):\n\n1. Start with CISO's concern FIRST (most senior, compliance is veto risk):\n   - Unity Catalog for column-level masking and row-level security\n   - Customer-managed VPC deployment (data never leaves their AWS account)\n   - Audit logging for all data access (HIPAA compliance logs)\n   - Show how data scientists can query de-identified views, not raw PHI\n\n2. Address operational simplicity (Head of Data + Lead Eng):\n   - SQL and Python is enough — Delta Live Tables writes the Spark for them\n   - Auto-optimize and auto-compaction solves small files problem\n   - Photon engine handles skew and performance\n   - Serverless = no cluster tuning\n\n3. Draw THEIR architecture:\n   Bronze (raw PHI, restricted) → Silver (cleaned, governed) → Gold (de-identified, consumable)\n   Unity Catalog controlling access at every layer\n\nBUILDER CULTURE MOVE (after the call):\nWithin 24 hours, BUILD a working example in their eval workspace:\n- Use AI Assistant to generate a sample healthcare pipeline (synthetic PHI data)\n- Set up Unity Catalog with row filters and column masking\n- Create two personas: 'data_engineer' (sees raw PHI) vs 'analyst' (sees masked data)\n- Build AI/BI dashboard that analysts can query with Genie: 'Show me patient readmission trends'\n- Send them the workspace link: 'Here's the architecture we discussed, running'\n\nAI-FIRST TOOLS:\n- AI Assistant for pipeline code generation\n- DLT pipeline templates\n- AI/BI for governed dashboards\n- Genie Space for natural language queries\n\nDo NOT show generic reference architecture slides. Build their specific solution.",
-    punchline: "Builder culture: They should have a working, governed healthcare pipeline in their workspace before the next meeting. Show with code, not slides."
+    short: "Q2",
+    label: "Round 2 — Q2: The Plot Thickens",
+    title: "The Plot Thickens",
+    theme: "New leadership, ML uptick, SQL slide, and support load all demand prioritization.",
+    events: [
+      "Dr. Sharma has left. Her replacement is David Park, a new VP of Data who came from a Snowflake-heavy org. He's agreed to a 30-minute intro call with you next week. Marcus warns you: \"David's first question in his all-hands was why we're spending $2M on Databricks when his last company did everything on Snowflake for less.\"",
+      "Consumption ticked up 5% this quarter — but it's all coming from the ML team. Aisha's team has started running large-scale model training jobs on Databricks. Meanwhile, SQL warehouse usage dropped another 8%.",
+      "Marcus escalates to you: \"We have 14 open support tickets now. Most are Unity Catalog permission errors. My team is spending 20% of their time on UC troubleshooting instead of building pipelines. This is becoming a problem.\""
+    ],
+    diagnosisPrompt: "Discuss diagnosis: What’s changing in the account? What’s signal vs noise? What would you want to validate before pulling in specialists?",
+    actions: [
+      { code: "A", text: "Prepare a tailored value narrative for the David Park intro call focused on what Databricks does that Snowflake can't" },
+      { code: "B", text: "Prepare for the David Park call with discovery questions — understand his priorities, pain points, and vision before pitching" },
+      { code: "C", text: "Set up a working session with Aisha and her ML team — understand what's driving the growth, what they want next, and where they see risk" },
+      { code: "D", text: "Engage Technical Services for a Unity Catalog health check and architecture review" },
+      { code: "E", text: "Propose a Databricks SQL workshop for the analytics team to re-engage them" },
+      { code: "F", text: "Create a UCO for the ML expansion opportunity" },
+      { code: "G", text: "Escalate the support ticket volume to your manager" },
+      { code: "H", text: "Request an EBR with David Park and Rebecca Owens (CFO)" },
+      { code: "I", text: "Build a competitive comparison deck: Databricks vs Snowflake for David Park" },
+      { code: "J", text: "Work with Marcus to triage the UC tickets — review patterns and identify if it's a config issue vs a product gap" },
+      { code: "K", text: "Engage Support to escalate the UC ticket cluster" },
+      { code: "L", text: "Engage an ML SSA to help Aisha's team optimize and expand their ML workloads" }
+    ],
+    optimalSet: ["B", "C", "D"]
   },
   {
-    label: "Case 3 — Builder Culture",
-    emoji: "S3",
-    title: "Build It, Don't Present It",
-    icon: "&#x1F528;",
-    flavour: "Week 2 of a logistics company eval. You've done discovery. Your manager asks 'What's your plan for the technical deep-dive next week?' You start to say 'I'll show them the standard supply chain demo...' — they cut you off.",
-    artifact: {
-      type: "chat",
-      body: "[Your Manager] Stop. We don't do canned demos anymore.\nBuilder culture means you BUILD something WITH their data, not show\nthem something we built 2 years ago for a different customer.\n\n[You] But I only have 4 days until the deep-dive...\n\n[Manager] Then you better start building today.\n\nHere's what they told you in discovery:\n  - They ship 40,000 packages/day across AU/NZ\n  - Current problem: 12% of shipments are delayed, they don't know why\n  - Data: They have 18 months of shipment tracking data in S3 (CSV)\n  - They want to see if Databricks can 'predict delays before they happen'\n  - Tech team: 2 data analysts (SQL-only), 1 data engineer (Python)\n\n[Manager] You have access to their S3 bucket (read-only). They're\nexpecting a working prototype, not slides. Go build.\n\n[Your Manager] Oh, and use AI Assistant to speed this up. I don't want\nto see you writing boilerplate for 3 days. Builder culture is AI-first."
-    },
-    question: "It's Monday 2pm. The deep-dive is Friday 10am. What's your 4-day build plan — and what AI-first tools do you use to accelerate it?",
-    hint: "You're not building a production system. You're building a proof point. What's the minimum viable prototype that shows value?",
-    answer: "4-Day Build Plan:\n\nDay 1 (Monday PM):\n- Use AI Assistant to generate S3 → Delta Lake ingestion notebook from their CSV schema\n- Use Genie to search 'shipment delay prediction examples' in internal Databricks docs/repos\n- Build Bronze table: Raw shipment data from S3\n\nDay 2 (Tuesday):\n- Build Silver table: Clean data, join carrier/route/weather dims if available\n- Use AI/BI to explore the data — what patterns exist in the 12% delayed shipments?\n- Document 3 delay factors you discover (e.g., specific carriers, routes, time windows)\n\nDay 3 (Wednesday):\n- Use AutoML to train a delay prediction model (binary classification: on-time vs delayed)\n- Don't hand-tune — let AutoML find the best model in 2 hours\n- Register model to Unity Catalog\n- Build Gold table: Daily shipment predictions scored by the model\n\nDay 4 (Thursday):\n- Build AI/BI dashboard showing: actual delays vs predictions, top delay factors, cost impact\n- Use Genie Space for natural language queries: 'Show me predicted high-risk shipments for next week'\n- Document the workflow in a README so their team can reproduce it\n- Dry-run the demo (verify every cell runs, 10-minute walktrough time)\n\nAI-FIRST TOOLS YOU MUST USE:\n- AI Assistant in notebooks (code generation, debugging)\n- Genie for internal knowledge search\n- AutoML for model training (don't write sklearn by hand)\n- AI/BI for dashboard creation (faster than hand-coding viz)\n- Genie Spaces for customer-facing NLP queries\n\nDo NOT:\n- Spend 3 days writing data engineering code from scratch\n- Build slides — build a working notebook\n- Ignore AI tools and do it 'the old way'\n- Over-engineer (you have 4 days, not 4 weeks)",
-    punchline: "Builder culture is not 'show them what we built.' It's 'build something WITH their data in their workspace.' AI-first means you should be writing 30% of the code, AI Assistant writes 70%."
+    short: "Q3",
+    label: "Round 3 — Q3: Turning Point",
+    title: "Turning Point",
+    theme: "Proof points, executive asks, and a formal competitive proposal collide.",
+    events: [
+      "Great news: The Technical Services engagement identified the UC permission issue. It was a misconfigured inheritance model — Marcus's team had set up 200+ individual grants instead of using group-based access. Tech Services helped them restructure it over two sessions. Support tickets dropped from 14 to 3. Marcus messaged you: \"This is a game-changer. My team just got 20% of their time back.\"",
+      "David Park's feedback after your intro call: \"I appreciated that you asked questions instead of pitching. I want to understand the ML side better — can you set up a demo of model serving? Also, I need a cost optimization review before I can justify our platform spend to Rebecca.\"",
+      "Consumption is now flat overall. ML workloads grew 18%, but SQL warehouse usage dropped another 10%. You learn from Marcus that Tom has formally proposed migrating all analytics workloads to Snowflake. The proposal is on David Park's desk.",
+      "Your discovery session with Aisha's team surfaced a real expansion opportunity around feature engineering and model serving — and a real technical depth requirement that goes beyond what you can support solo."
+    ],
+    diagnosisPrompt: "What is David optimizing for? What does Rebecca care about? Where is credible proof more powerful than narrative?",
+    actions: [
+      { code: "A", text: "Set up the model serving demo with an ML SSA — make it tailored to Meridian's actual use cases" },
+      { code: "B", text: "Conduct a cost optimization review showing current vs optimized spend" },
+      { code: "C", text: "Proactively build a TCO comparison: Databricks (optimized) vs Snowflake + Databricks (split)" },
+      { code: "D", text: "Request an EBR with David Park and Rebecca Owens" },
+      { code: "E", text: "Ask David Park to delay Tom's Snowflake migration proposal until after the cost review" },
+      { code: "F", text: "Engage the competitive intelligence team for a Snowflake battle card" },
+      { code: "G", text: "Meet with Tom Kowalski to understand his specific pain points with Databricks SQL" },
+      { code: "H", text: "Propose a Databricks SQL Serverless POC for the analytics team — show them what \"fast and cost-efficient\" looks like on Databricks" },
+      { code: "I", text: "Create a UCO for the cost optimization engagement" },
+      { code: "J", text: "Align with your AE on account strategy — share the signals, the state of play, and co-own the next moves" },
+      { code: "K", text: "Ask Aisha to present the ML team's success story to David Park" },
+      { code: "L", text: "Engage Technical Services for a SQL warehouse performance optimization" }
+    ],
+    optimalSet: ["B", "A", "K"]
   },
   {
-    label: "Case 4 — Competitive Positioning",
-    emoji: "S4",
-    title: "The Snowflake Question",
-    icon: "&#x1F94A;",
-    flavour: "Week 3 of the eval. You're in the final technical session. The customer's Lead Architect has been quiet the whole call. Then, with 10 minutes left, they unmute.",
-    artifact: {
-      type: "email",
-      subject: "Technical Concerns - Databricks vs Snowflake",
-      from: "Sarah Kim, Lead Data Architect <s.kim@logistics.com.au>",
-      to: "You; AE",
-      body: "Thanks for the demo today. A few technical questions before we proceed:\n\n1. Snowflake told us their Zero-Copy Cloning is instant and free for\n   testing and dev environments. How does Databricks handle this?\n   Our current AWS bill is $45K/month just for non-prod copies.\n\n2. We don't have Spark expertise in-house. Snowflake is 'just SQL'.\n   If we go with Databricks, do we need to hire Spark engineers?\n   Our CFO won't approve headcount.\n\n3. Snowflake showed us data sharing with our logistics partners\n   (external companies) without copying data. Can Databricks do this?\n   We share data with 12 external partners today via S3 and it's a mess.\n\n4. Their sales engineer said 'Databricks is for data science teams,\n   Snowflake is for data analytics teams.' We're mostly analytics.\n   Are we the right fit for Databricks?\n\nI want to be fair to both vendors, but I need straight answers.\n\nSarah"
-    },
-    question: "How do you respond to each of Sarah's 4 concerns — and which one is the landmine you need to be most careful with?",
-    hint: "Sarah is doing her job — evaluating honestly. Don't trash Snowflake. What's true, what's a mischaracterization, and where does Databricks actually win?",
-    answer: "Responses:\n\n1. Zero-Copy Cloning:\n   - Delta Lake supports shallow clones (metadata-only copy) — same concept, same instant speed, same cost savings\n   - Deep clones available when you actually need a full physical copy for compliance reasons\n   - Show the SQL: CREATE TABLE dev.orders SHALLOW CLONE prod.orders\n\n2. 'Just SQL' vs Spark:\n   - Databricks SQL (DBSQL) is also 'just SQL' — serverless SQL warehouses, no Spark knowledge required\n   - Your analysts use the same ANSI SQL they use today\n   - Delta Live Tables = SQL or Python pipelines, no Spark tuning needed\n   - Only data engineers building complex transformations touch Spark APIs directly, and we have training for that\n\n3. Data Sharing:\n   - Delta Sharing (open-source standard) for secure external data sharing without copying\n   - Works across clouds, works with non-Databricks recipients (they can read with Pandas, Spark, Trino, etc.)\n   - Unity Catalog + Delta Sharing = governance + sharing in one place\n\n4. 'Databricks is for data science' (THE LANDMINE):\n   - This is outdated positioning from 2019. Do NOT get defensive.\n   - Truth: Databricks started in data science, but 60%+ of workloads today are SQL analytics (cite Gartner MQ if needed)\n   - Delta Lake + DBSQL + Serverless SQL Warehouses were built specifically for analytics teams\n   - Ask: 'What analytics use cases did Snowflake show that you think we can't handle?' (flip it back to requirements)\n\nDo NOT say 'Snowflake is just a data warehouse, we're a data lakehouse' — that's jargon. Talk about her specific needs.\n\nBonus: Acknowledge Snowflake is a strong product. Credibility comes from honesty, not trash talk.",
-    punchline: "The competitor didn't lose Sarah's trust. You can only lose yours. Answer her questions, don't dodge them."
-  },
-  {
-    label: "Case 5 — Technical Objections",
-    emoji: "S5",
-    title: "Security Says No",
-    icon: "&#x1F6E1;",
-    flavour: "You're in the final stages of a deal. Commercial terms are agreed. Architecture is approved. Then Security sends this.",
-    artifact: {
-      type: "email",
-      subject: "Databricks Security Review - CONCERNS",
-      from: "James Park, CISO <j.park@financeco.com.au>",
-      to: "Procurement; Your AE (CC: you)",
-      body: "Our InfoSec team has completed the Databricks security assessment.\nWe have identified several concerns that are BLOCKERS to deployment:\n\n1. DATA RESIDENCY:\n   Databricks Control Plane is hosted in US-East-1.\n   Our data governance policy requires all customer data and metadata\n   remain in Australia. This appears to violate our policy.\n\n2. SECRETS MANAGEMENT:\n   We do not allow application secrets stored in vendor-managed systems.\n   All secrets must be in our Azure Key Vault (we are Azure-only).\n   Can Databricks integrate with our existing Key Vault instance?\n\n3. NETWORK ISOLATION:\n   We require all compute to run in our locked-down VNet with no\n   internet egress. Our SOC must inspect all outbound traffic.\n   Can Databricks clusters operate in a fully private network?\n\n4. SSO & MFA:\n   We use Okta for SSO with hardware MFA tokens (YubiKey).\n   We do not allow username/password auth for any production system.\n   Does Databricks support this?\n\n5. AUDIT LOGGING:\n   All access logs must be exported to our SIEM (Splunk) in real-time.\n   We cannot rely on vendor-provided UI for audit compliance.\n\nUntil these are resolved, we cannot approve the vendor.\n\nJames Park, CISO"
-    },
-    question: "You have 24 hours to respond. Which of these 5 concerns are real blockers, which are easily solved, and what's your response strategy?",
-    hint: "James is doing his job. This isn't a negotiation, it's a technical compliance check. What's actually not possible vs what's a config/deployment option?",
-    answer: "Easy solves (respond with confidence):\n\n2. Secrets Management: YES — Azure Key Vault integration is native. Secrets scopes can reference customer-managed Key Vaults. No secrets stored in Databricks.\n\n4. SSO & MFA: YES — SAML-based SSO (Okta) is standard. MFA handled by Okta. Databricks doesn't handle passwords, it delegates to your IdP.\n\n5. Audit Logging: YES — Unity Catalog audit logs export to customer storage (Azure Blob/ADLS) in real-time. Ingest into Splunk via standard log collector.\n\nNeeds architecture discussion:\n\n3. Network Isolation: YES, but needs Private Link deployment:\n   - Secure Cluster Connectivity (no public IPs on clusters)\n   - Azure Private Link for backend communication (no internet egress required)\n   - All compute runs in customer VNet, fully locked down\n   - This is a deployment option, not a limitation\n\nThe landmine:\n\n1. Data Residency (CONTROL PLANE):\n   - Customer data NEVER goes to control plane — it stays in their Azure region\n   - Only metadata (cluster configs, job definitions, notebooks) touch control plane\n   - If this violates their interpretation of policy, escalate to Databricks Solutions Architect for compliance documentation\n   - Australia control plane exists but may require Enterprise tier — check with your SE leadership\n\nResponse strategy:\n- Call James, don't email (email = paper trail of 'no')\n- Walk through 2, 4, 5 first (build credibility with easy wins)\n- Co-design Private Link architecture for #3 (show you understand their network model)\n- Bring in Databricks Security SME for #1 if needed (don't guess on compliance)\n\nDo NOT:\n- Say 'this is standard, everyone does it this way' (dismissive)\n- Forward to your SE and disappear (you own the relationship)\n- Promise something you can't deliver (you'll lose the deal AND damage Databricks reputation)",
-    punchline: "Security objections are not personal. They're a checklist. If you can check the boxes, you're in. If you argue with the checklist, you're out."
-  },
-  {
-    label: "Case 6 — POC Management",
-    emoji: "S6",
-    title: "The Scope-Creeping POC",
-    icon: "&#x1F9EA;",
-    flavour: "You agreed to a 2-week Proof of Concept. Today is Day 8. The customer just sent this.",
-    artifact: {
-      type: "email",
-      subject: "POC Update + Additional Scope",
-      from: "Rachel Nguyen, Data Platform Lead <r.nguyen@telco.com.au>",
-      to: "You; AE",
-      body: "Hi,\n\nThanks for setting up the POC workspace. The team is making progress.\n\nWe've successfully:\n  ✓ Loaded sample clickstream data to Delta Lake\n  ✓ Built a basic SQL dashboard (though it's slower than we expected)\n  ✓ Set up Unity Catalog permissions for 3 test users\n\nA few things we need help with before we can finish the eval:\n\n1. Can you help us migrate our production Airflow DAGs to Databricks\n   Workflows? We have 40+ DAGs and need to see if they'll run as-is.\n\n2. Our ML team wants to test AutoML on our churn prediction model.\n   Can you set up MLflow tracking and register a model to production?\n   They need this working to get buy-in from the VP of Data Science.\n\n3. The dashboard is slow (4-5 sec load time). Snowflake's demo was\n   instant. Can you tune this? We think it's a partitioning issue but\n   we don't know Spark well enough to optimize it ourselves.\n\n4. Can we extend the POC to 4 weeks total? We need time to test the\n   streaming use case (Kafka → Delta Live Tables), which wasn't in\n   the original scope but our architect says it's critical to the decision.\n\nLet me know what you can do. The steering committee meets in 10 days\nand they'll want to see all of this working.\n\nRachel"
-    },
-    question: "Original POC scope: 'Ingest sample data, build one dashboard, demonstrate Unity Catalog RBAC.' What do you say yes to, what do you BUILD with AI-first tools, and how do you stay on track?",
-    hint: "Rachel is asking for 3 weeks of consulting in a 2-week POC. Builder culture means you prototype fast, not deliver production. What can you BUILD in hours, not days?",
-    answer: "Say YES and BUILD (using AI-first approach):\n\n3. Dashboard performance:\n   - Use AI/BI Query Profile analyzer to diagnose bottleneck (auto-suggests fixes)\n   - If it's partitioning: Use AI Assistant to generate OPTIMIZE/ZORDER command\n   - Build a side-by-side comparison: before/after query times\n   - 2 hours of AI-assisted building beats 2 days of manual tuning\n\n2. AutoML + MLflow (BUILDER MOVE):\n   - Use AutoML to train the churn model in ONE HOUR with their data\n   - Have AI Assistant generate the model deployment notebook\n   - Register model to Unity Catalog, create a batch scoring job\n   - Invite their ML team to a working session: they click buttons, model trains, you narrate\n   - This is builder culture: you built a working model in their workspace, not a slide deck\n\nSay NO to (with AI-accelerated alternative):\n\n1. Migrate 40 Airflow DAGs:\n   - Too much scope, but here's the builder move:\n   - Pick ONE representative DAG, convert it to Databricks Workflows in 1 hour using AI Assistant\n   - Document the pattern, give them the conversion template\n   - Say: 'Here's the working example. Your team can replicate this pattern for the other 39.'\n\n4. Extend POC to 4 weeks + add streaming:\n   - Builder culture accelerates, not extends\n   - Offer: 'Let me BUILD a simple Kafka → DLT streaming prototype in 2 hours tomorrow using AI Assistant'\n   - Use DLT AI-generated pipeline starter template\n   - Show it working with sample streaming data — proves the capability without extending timeline\n\nAI-FIRST PRINCIPLE:\nEvery request is a build opportunity. Use AI Assistant, AutoML, Genie, and AI/BI to compress 3 days of work into 3 hours.\n\nDo NOT:\n- Manually code everything from scratch (that's not AI-first)\n- Say 'we can't do that in the timeline' — builder culture finds a way\n- Let the POC drift — compress scope, don't extend time",
-    punchline: "Builder culture + AI-first = you can prototype in hours what used to take weeks. The customer doesn't need production, they need proof."
-  },
-  {
-    label: "Case 7 — TCO & Business Case",
-    emoji: "S7",
-    title: "The CFO Wants Numbers",
-    icon: "&#x1F4B0;",
-    flavour: "You've won the technical eval. The customer wants to move forward. Then Finance gets involved.",
-    artifact: {
-      type: "email",
-      subject: "Databricks Business Case - Cost Justification Required",
-      from: "Linda Wu, VP Finance <l.wu@manufacturing.com.au>",
-      to: "Your AE; CTO (CC: you)",
-      body: "I've reviewed the Databricks proposal.\n\nProposed spend:\n  - Year 1: $420,000 AUD (DBUs + cloud infrastructure)\n  - Year 2-3: $520,000/year (projected growth)\n\nCurrent state costs:\n  - On-prem Hadoop cluster: $180K/year (capex amortized + ops)\n  - Informatica licenses: $95K/year\n  - Tableau: $48K/year\n  - Data engineering team: 4 FTEs @ $140K = $560K/year\n\nYou're asking for $420K net new spend. I need a business case that shows:\n\n1. Cost avoidance: What are we shutting down? Hadoop EOL is 2026, so\n   we're stuck with it for 2 more years. Informatica is contracted\n   until Dec 2025. Tableau isn't going anywhere.\n\n2. Productivity gains: You claim 'faster time to insight' but I need\n   quantified hours saved per week. Our DE team is already underwater\n   — if Databricks saves them time, what new work will they take on\n   to justify the investment?\n\n3. Revenue impact: Our CTO mentioned 'real-time inventory analytics'\n   could reduce stockouts by 8%. That's $2.4M/year revenue upside.\n   Can you validate this number or is it aspirational?\n\n4. TCO comparison: The Snowflake proposal was $310K Year 1 with no\n   data engineering required (they claim). Why is Databricks $110K more?\n\nI'm not against this, but I need a CFO-ready business case to present\nto the Board. Can you provide this by Friday?\n\nLinda"
-    },
-    question: "You have 3 days to build a CFO-grade business case. What numbers do you lead with — and which of Linda's 4 questions is the hardest to answer honestly?",
-    hint: "Linda is doing ROI math, not technical eval. You can't hand-wave cost savings. What can you actually quantify vs what's a customer assumption?",
-    answer: "Lead with this structure:\n\n1. Cost Avoidance (the hardest one to fudge):\n   - Hadoop: Can't shut down until 2026, BUT can freeze-grow (no new capex, migrate new workloads to Databricks starting now)\n   - Informatica: Contracted until Dec 2025, but non-renewal saves $95K/year starting Y2 (Databricks replaces this)\n   - Tableau: NOT replaced by Databricks — you're complementary (don't claim this)\n   - Honest answer: $95K/year hard savings starting Year 2, $180K/year starting Year 3 (when Hadoop retires)\n   - Year 1 is investment year, not savings year\n\n2. Productivity Gains (quantify it):\n   - Current: 4 DEs spending 60% of time on pipeline maintenance/debugging (Hadoop + Informatica)\n   - Databricks target: 30% maintenance, 70% new feature development\n   - Freed capacity: ~1.2 FTE-equivalent time redirected to revenue-generating projects\n   - Assign that to: real-time inventory analytics, customer 360 use cases, ML model deployment\n   - Do NOT claim headcount reduction (you'll lose the DE team's support and they're your champions)\n\n3. Revenue Impact (BE CAREFUL HERE):\n   - The $2.4M stockout reduction is the CTO's business case assumption, not yours to validate\n   - Your job: Show Databricks enables the technical capability (real-time streaming, predictive ML models, dashboard refresh latency)\n   - Defer business impact quantification to CTO + Operations team (they own the inventory model assumptions)\n   - What you CAN say: 'Databricks provides the technical foundation to test this hypothesis in a 6-week pilot'\n\n4. TCO vs Snowflake (the knife fight):\n   - Snowflake $310K vs Databricks $420K — call out what's different:\n   - Databricks includes: Streaming (DLT), ML/AI (AutoML, MLflow), Notebooks (collaborative engineering), Orchestration (Workflows)\n   - Snowflake $310K is likely: SQL warehouse + storage + Snowpark (basic)\n   - If customer only needs SQL analytics: Snowflake might be cheaper (be honest)\n   - If customer needs ML, streaming, or complex transformations: Databricks TCO is better when you include avoided tool sprawl (no separate Airflow, MLflow, Jupyter, etc.)\n\nThe HARDEST question:\n#3 — Revenue impact. You cannot make up numbers. The $2.4M is their assumption. If it's wrong, they'll blame you. Scope your answer to technical enablement, not business outcome guarantees.\n\nDo NOT:\n- Claim Databricks is cheaper than Snowflake if it's not (you'll lose credibility)\n- Promise Year 1 cost savings when there aren't any (Year 1 is investment, Year 2+ is payback)\n- Make up productivity percentages — work with their DE lead to validate estimates",
-    punchline: "CFOs don't buy platforms, they buy ROI. If you can't quantify it, don't claim it. Honest TCO beats oversold business cases every time."
-  },
-  {
-    label: "Case 8 — The Final Riddle",
-    emoji: "S8",
-    title: "The SA Code",
-    icon: "&#x1F9E9;",
-    flavour: "One last scenario. Solve this riddle and you're ready for your first live customer.",
-    artifact: {
-      type: "riddle",
-      body: "I'm not the salesperson, but I'm in every sales call.\nI don't write the contract, but I'm blamed when deals stall.\nI know more than the docs, but I'm not support.\nI'm technical enough to code, commercial enough to consult.\n\nI build what hasn't been built — with AI as my co-pilot.\nI prototype in hours what used to take weeks.\nI don't show canned demos, I create working examples.\nI use Genie, AutoML, and AI Assistant before I write a single line.\n\nI answer questions no one thought to ask,\nand ask questions no one wants to answer.\nI'm measured on bookings, but I don't carry quota.\nI'm judged on demos, but delivery owns the outcome.\n\nI translate 'lakehouse' into 'this solves your problem.'\nI exist in the space between what's sold and what's built.\nBuilder culture is my operating system.\nAI-first is my default mode.\n\nPresales loves me when I close deals.\nPost-sales blames me when I overpromise.\nProduct asks for my feedback but ships it anyway.\nCustomers think I work for them.\n\nWhat am I?"
-    },
-    question: "What am I?",
-    hint: "You're living this job right now. Builder culture + AI-first.",
-    answer: "A Solution Architect (SA) in the builder culture era — or Solutions Engineer (SE), or Pre-Sales Engineer.\n\nAll accepted: SA, SE, Pre-Sales Engineer, Sales Engineer, Builder.\n\nBut the real answer is: A BUILDER who sells by showing, not telling. AI-first means you're never coding alone — Genie, AI Assistant, AutoML, and AI/BI are your co-pilots.",
-    punchline: "Somewhere right now an SA is on a discovery call, building a custom notebook with AI Assistant, and prototyping a customer solution — all before lunch. Builder culture changes everything. Welcome to the job."
+    short: "Q4",
+    label: "Round 4 — Q4: The Close",
+    title: "The Close",
+    theme: "Shift from defending the platform to growing trust, consumption, and commitment.",
+    events: [
+      "The cost optimization review was a hit. You identified $340K in annual savings through right-sizing clusters and moving to serverless SQL warehouses. Rebecca called it \"the most useful vendor meeting I've had this year.\" David shared the findings with his leadership team.",
+      "Aisha presented the ML team's results at David's monthly data org all-hands. The presentation showed 3x model training speedup, 60% cost reduction vs SageMaker, and a roadmap for model serving. After the meeting, two analytics engineers asked Marcus: \"Can we use Databricks for our dashboards too?\"",
+      "Tom has withdrawn his Snowflake migration proposal. In a meeting with David, he said: \"I still think Snowflake is better for pure analytics, but I can't argue with the ML results or the cost savings. Let's optimize what we have first.\" David is now asking about Databricks SQL Serverless and wants to understand Databricks' BI capabilities.",
+      "Your AE shares that Rebecca wants to discuss right-sizing the commitment. She's open to a 2-year deal if the team can show a credible consumption growth plan tied to the ML expansion and the analytics modernization."
+    ],
+    diagnosisPrompt: "What moves convert momentum into a credible growth story the CFO will fund?",
+    actions: [
+      { code: "A", text: "Propose a Databricks SQL Serverless POC for the analytics team" },
+      { code: "B", text: "Work with the ML SSA to build an ML expansion roadmap (feature store, model serving, monitoring)" },
+      { code: "C", text: "Request an EBR with David Park, Rebecca Owens, and your AE — your SA role is to frame the value story and prep the agenda" },
+      { code: "D", text: "Engage Technical Services to help the analytics team migrate their dashboards to Databricks SQL" },
+      { code: "E", text: "Create a joint success plan document mapping Meridian's business outcomes to Databricks capabilities" },
+      { code: "F", text: "Build a consumption growth forecast for the AE to use in their commercial conversations" },
+      { code: "G", text: "Introduce Tom to a Databricks SQL product manager for a feedback session" },
+      { code: "H", text: "Propose a Databricks Champions program at Meridian (Aisha as ML champion, Marcus as platform champion)" },
+      { code: "I", text: "Do nothing about Tom — he's neutralized" },
+      { code: "J", text: "Set up an architecture review with Technical Services for the analytics modernization" },
+      { code: "K", text: "Create UCOs for the SQL Serverless POC and ML expansion" },
+      { code: "L", text: "Celebrate — the account is saved" }
+    ],
+    optimalSet: ["C", "E", "A"]
   }
 ];
 
-var teams = [];
-var caseIdx = 0;
-var casePhase = "locked";
+var ACCOUNT_HTML = ''
+  + '<div class="profile-grid">'
+  + '<div><strong>Company</strong> · Meridian Health Systems · Healthcare / Life Sciences · ~12,000 employees, ~$4.2B revenue</div>'
+  + '<div><strong>Databricks</strong> · ~$1.8M ARR · ~$2.0M commitment (under-consuming ~10%) · UC, Delta Lake, DBSQL, MLflow (limited) · 40+ all-purpose clusters, 15 job clusters, 3 SQL warehouses · AWS</div>'
+  + '<div><strong>Personas</strong> · Dr. Priya Sharma (VP Data, champion) · Marcus Chen (Platform lead) · Aisha Johnson (Sr DS, ML) · Tom Kowalski (DE/Oracle voice) · Rebecca Owens (CFO)</div>'
+  + '<div><strong>Baseline</strong> · Flat consumption 2 quarters · 6 open support tickets · EBR 5 months ago · Snowflake meeting analytics · Priya presented ROI at board — well received</div>'
+  + '</div>';
 
-// Stars
-(function() {
+var teams = [];
+var roundIdx = 0;
+var phase = "locked";
+/** @type {string[][]} picks[teamIndex] = up to 3 codes */
+var picks = [];
+
+(function stars() {
   var c = document.getElementById("stars");
-  for (var i = 0; i < 80; i++) {
+  for (var i = 0; i < 70; i++) {
     var s = document.createElement("div");
     s.className = "star";
-    var sz = Math.random() * 2.5 + 0.5;
+    var sz = Math.random() * 2.2 + 0.5;
     s.style.width = sz + "px";
     s.style.height = sz + "px";
     s.style.left = Math.random() * 100 + "%";
@@ -417,18 +339,24 @@ var casePhase = "locked";
   }
 })();
 
+document.getElementById("account-side").innerHTML = ACCOUNT_HTML;
+
 function showSetup() {
   document.getElementById("intro").style.display = "none";
   document.getElementById("setup").style.display = "flex";
-  addTeam(); addTeam(); addTeam();
+  var box = document.getElementById("team-inputs");
+  if (!box.children.length) {
+    addTeam(); addTeam(); addTeam();
+  }
 }
 
 function addTeam() {
   var c = document.getElementById("team-inputs");
-  if (c.children.length >= 6) return;
+  if (c.children.length >= 8) return;
   var d = document.createElement("div");
   d.className = "team-row";
-  d.innerHTML = '<input type="text" placeholder="Team name..." maxlength="20"/><button class="remove-btn" onclick="this.parentElement.remove()">x</button>';
+  d.innerHTML = '<input type="text" placeholder="Team name" maxlength="28"/>'
+    + '<button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>';
   c.appendChild(d);
 }
 
@@ -438,205 +366,238 @@ function startGame() {
   for (var i = 0; i < inputs.length; i++) {
     teams.push({ name: inputs[i].value.trim() || ("Team " + (i + 1)), score: 0 });
   }
-  if (!teams.length) teams = [{ name: "Team 1", score: 0 }];
+  if (!teams.length) teams.push({ name: "Team 1", score: 0 });
+  picks = teams.map(function() { return []; });
   document.getElementById("setup").style.display = "none";
   document.getElementById("game").style.display = "flex";
-  caseIdx = 0;
-  casePhase = "locked";
+  roundIdx = 0;
+  phase = "locked";
   renderScoreboard();
   renderMap();
-  renderCase();
+  renderRound();
+}
+
+function currentRound() {
+  return ROUNDS[roundIdx];
+}
+
+function codesForRound() {
+  var a = currentRound().actions;
+  return a.map(function(x) { return x.code; });
 }
 
 function renderScoreboard() {
-  var max = 0;
-  for (var i = 0; i < teams.length; i++) { if (teams[i].score > max) max = teams[i].score; }
+  var codes = phase === "locked" ? [] : codesForRound();
   var html = "";
+  var max = 0;
+  for (var t = 0; t < teams.length; t++) if (teams[t].score > max) max = teams[t].score;
+
   for (var i = 0; i < teams.length; i++) {
     var top = teams[i].score === max && max > 0;
     html += '<div class="team-card' + (top ? " top-team" : "") + '" id="tc-' + i + '">';
     html += '<div class="team-name">' + esc(teams[i].name) + '</div>';
     html += '<div class="team-score" id="ts-' + i + '">' + teams[i].score + '</div>';
-    html += '<div class="pts-btns">';
-    html += '<button class="pts-btn" onclick="awardPts(' + i + ',1)">+1</button>';
-    html += '<button class="pts-btn" onclick="awardPts(' + i + ',2)">+2</button>';
-    html += '<button class="pts-btn" onclick="awardPts(' + i + ',3)">+3</button>';
-    html += '<button class="pts-btn minus" onclick="awardPts(' + i + ',-1)">-1</button>';
-    html += '</div></div>';
+    if (phase !== "locked") {
+      html += '<div class="pick-label">Their 3 actions (this round)</div>';
+      html += '<div class="letter-grid" id="lg-' + i + '"></div>';
+      html += '<button type="button" class="score-team-btn" onclick="applyScore(' + i + ')">Apply points for this team</button>';
+      html += '<div class="toast-mini" id="toast-' + i + '"></div>';
+    }
+    html += '</div>';
   }
   document.getElementById("scoreboard").innerHTML = html;
+
+  if (phase !== "locked") {
+    for (var j = 0; j < teams.length; j++) {
+      renderLetterGrid(j, codes);
+    }
+  }
 }
 
-function awardPts(i, n) {
-  teams[i].score = Math.max(0, teams[i].score + n);
-  var ts = document.getElementById("ts-" + i);
-  if (ts) ts.textContent = teams[i].score;
-  var tc = document.getElementById("tc-" + i);
-  if (tc) {
-    var f = document.createElement("div");
-    f.className = "float-pts";
-    f.textContent = (n > 0 ? "+" : "") + n;
-    f.style.color = n > 0 ? "var(--gold)" : "#f08080";
-    tc.appendChild(f);
-    setTimeout(function() { if (f.parentNode) f.parentNode.removeChild(f); }, 1000);
+function renderLetterGrid(teamIdx, codes) {
+  var wrap = document.getElementById("lg-" + teamIdx);
+  if (!wrap) return;
+  var sel = picks[teamIdx] || [];
+  var html = "";
+  for (var c = 0; c < codes.length; c++) {
+    var letter = codes[c];
+    var on = sel.indexOf(letter) >= 0;
+    html += '<button type="button" class="letter-btn' + (on ? " sel" : "") + '" '
+      + 'data-team="' + teamIdx + '" data-code="' + letter + '">' + esc(letter) + '</button>';
   }
+  wrap.innerHTML = html;
+  var btns = wrap.querySelectorAll(".letter-btn");
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].onclick = function() {
+      var ti = +this.getAttribute("data-team");
+      var code = this.getAttribute("data-code");
+      togglePick(ti, code);
+    };
+  }
+}
+
+function togglePick(teamIdx, code) {
+  var list = picks[teamIdx];
+  var i = list.indexOf(code);
+  if (i >= 0) {
+    list.splice(i, 1);
+  } else {
+    if (list.length >= 3) return;
+    list.push(code);
+  }
+  renderLetterGrid(teamIdx, codesForRound());
+}
+
+function countMatches(selected, optimal) {
+  var n = 0;
+  for (var i = 0; i < selected.length; i++) {
+    if (optimal.indexOf(selected[i]) >= 0) n++;
+  }
+  return n;
+}
+
+function applyScore(teamIdx) {
+  var sel = picks[teamIdx].slice();
+  var toast = document.getElementById("toast-" + teamIdx);
+  if (sel.length !== 3) {
+    if (toast) toast.textContent = "Select exactly 3 letters.";
+    return;
+  }
+  var opt = currentRound().optimalSet;
+  var matches = countMatches(sel, opt);
+  var pts = matches * POINTS_PER_CORRECT;
+  teams[teamIdx].score += pts;
+  picks[teamIdx] = [];
+  var ts = document.getElementById("ts-" + teamIdx);
+  if (ts) ts.textContent = teams[teamIdx].score;
+  if (toast) {
+    toast.textContent = pts > 0
+      ? ("Recorded +" + pts + " points.")
+      : "Recorded +0 points.";
+  }
+  refreshTopTeamHighlight();
+  renderLetterGrid(teamIdx, codesForRound());
+}
+
+function refreshTopTeamHighlight() {
   var max = 0;
-  for (var j = 0; j < teams.length; j++) { if (teams[j].score > max) max = teams[j].score; }
-  for (var j = 0; j < teams.length; j++) {
-    var el = document.getElementById("tc-" + j);
-    if (el) {
-      if (teams[j].score === max && max > 0) { el.classList.add("top-team"); }
-      else { el.classList.remove("top-team"); }
-    }
+  for (var j = 0; j < teams.length; j++) if (teams[j].score > max) max = teams[j].score;
+  for (var k = 0; k < teams.length; k++) {
+    var el = document.getElementById("tc-" + k);
+    if (!el) continue;
+    if (teams[k].score === max && max > 0) el.classList.add("top-team");
+    else el.classList.remove("top-team");
   }
 }
 
 function renderMap() {
   var html = "";
-  for (var i = 0; i < CASES.length; i++) {
-    var done = i < caseIdx, active = i === caseIdx;
+  for (var i = 0; i < ROUNDS.length; i++) {
+    var done = i < roundIdx;
+    var active = i === roundIdx;
     var cls = done ? "done" : (active ? "active" : "locked");
-    var lbl = done ? "done" : (active ? "active" : "");
-    html += '<div class="q-node">';
-    html += '<div class="q-orb ' + cls + '">' + (done ? "&#x2713;" : (i + 1)) + '</div>';
-    html += '<div class="q-label ' + lbl + '">' + esc(CASES[i].label.split("—")[0].trim()) + '</div>';
-    html += '</div>';
-    if (i < CASES.length - 1) {
+    var lbl = done ? "" : (active ? "active" : "");
+    html += '<div class="q-node"><div class="q-orb ' + cls + '">' + (done ? "&#10003;" : ROUNDS[i].short) + '</div>';
+    html += '<div class="q-label ' + lbl + '">Q' + (i + 1) + '</div></div>';
+    if (i < ROUNDS.length - 1) {
       html += '<div class="q-line' + (done ? " done" : "") + '"></div>';
     }
   }
-  html += '<div class="q-line' + (caseIdx >= CASES.length ? " done" : "") + '"></div>';
-  html += '<div class="q-node"><div class="q-orb ' + (caseIdx >= CASES.length ? "done" : "locked") + '">&#x1F3C1;</div><div class="q-label ' + (caseIdx >= CASES.length ? "done" : "") + '">Close</div></div>';
+  html += '<div class="q-line' + (roundIdx >= ROUNDS.length ? " done" : "") + '"></div>';
+  html += '<div class="q-node"><div class="q-orb ' + (roundIdx >= ROUNDS.length ? "done" : "locked") + '">&#127937;</div>';
+  html += '<div class="q-label">Done</div></div>';
   document.getElementById("quest-map").innerHTML = html;
 }
 
-function buildArtifact(a) {
-  if (!a) return "";
-  if (a.type === "log") {
-    return '<div class="art-doc"><pre class="art-logbody">' + esc(a.body) + '</pre></div>';
+function renderRound() {
+  var card = document.getElementById("case-card");
+  if (roundIdx >= ROUNDS.length) {
+    showVictory();
+    return;
   }
-  if (a.type === "email") {
-    return '<div class="art-doc">'
-      + '<div class="art-email-hdr"><div class="art-email-subj">' + esc(a.subject) + '</div>'
-      + '<div class="art-email-meta">From: ' + esc(a.from) + ' &nbsp;&#183;&nbsp; To: ' + esc(a.to) + '</div></div>'
-      + '<pre class="art-email-body">' + esc(a.body) + '</pre></div>';
-  }
-  if (a.type === "slides") {
-    var rows = "";
-    for (var i = 0; i < a.slides.length; i++) {
-      rows += '<div class="preso-slide"><strong>' + esc(a.slides[i].n) + '</strong><span class="preso-val">' + esc(a.slides[i].v) + '</span></div>';
-    }
-    return '<div class="art-doc"><div class="art-slidehdr"><div class="art-slidetitle">&#x1F4CB; ' + esc(a.title) + '</div></div>' + rows + '</div>';
-  }
-  if (a.type === "riddle") {
-    return '<div class="art-doc"><pre class="art-riddle">' + esc(a.body) + '</pre></div>';
-  }
-  if (a.type === "chat") {
-    return '<div class="art-doc"><pre class="art-chat">' + esc(a.body) + '</pre></div>';
-  }
-  return "";
-}
-
-function renderCase() {
-  if (caseIdx >= CASES.length) { showVictory(); return; }
-  var c = CASES[caseIdx];
-  var ph = casePhase;
-  var gmBtns = "";
-  if (ph === "locked") {
-    gmBtns = '<button class="gmbtn gmbtn-unlock" onclick="unlockCase()">&#x1F513; Unlock Scenario</button>';
-  } else if (ph === "unlocked") {
-    gmBtns = '<button class="gmbtn gmbtn-hint" onclick="showHint()">&#x1F4A1; Give Hint</button>'
-            + '<button class="gmbtn gmbtn-answer" onclick="revealAnswer()">&#x2705; Reveal Answer</button>';
-  } else if (ph === "hinted") {
-    gmBtns = '<button class="gmbtn gmbtn-answer" onclick="revealAnswer()">&#x2705; Reveal Answer</button>';
+  var r = currentRound();
+  var fac = "";
+  if (phase === "locked") {
+    fac = '<button type="button" class="fac-btn fac-unlock" onclick="unlockRound()">Unlock this round</button>';
   } else {
-    var isLast = caseIdx === CASES.length - 1;
-    gmBtns = '<button class="gmbtn gmbtn-next" onclick="nextCase()">' + (isLast ? "&#x1F3C6; Complete Journey" : "&#x2694; Next Scenario") + '</button>';
+    fac = '<span class="fac-label">When discussion ends</span>'
+      + '<button type="button" class="fac-btn fac-next" onclick="nextRound()">'
+      + (roundIdx < ROUNDS.length - 1 ? "Lock round → next quarter" : "Finish → standings")
+      + '</button>';
   }
 
-  var inner = "";
-  if (ph === "locked") {
-    inner = '<div class="lock-state"><div class="lock-icon">&#x1F512;</div><div class="lock-text">Awaiting facilitator unlock...</div></div>';
-  } else {
-    var hintHtml = "";
-    if (ph === "hinted" || ph === "answered") {
-      hintHtml = '<div class="hint-box"><div class="hint-title">&#x1F4A1; Hint</div><div class="hint-text">' + esc(c.hint) + '</div></div>';
-    }
-    var answerHtml = "";
-    if (ph === "answered") {
-      answerHtml = '<div class="answer-wrap">'
-        + '<div class="answer-top"><div class="answer-label">&#x2705; Answer</div>'
-        + '<div class="answer-text">' + esc(c.answer).replace(/\n/g, "<br>") + '</div></div>'
-        + '<div class="punchline-box">&#x1F4A1; ' + esc(c.punchline) + '</div></div>';
-    }
-    inner = '<div class="artifact-wrap">' + buildArtifact(c.artifact) + '</div>'
-          + '<div class="extras">'
-          + '<div class="question-box">&#x2753; ' + esc(c.question) + '</div>'
-          + hintHtml + answerHtml
-          + '</div>';
+  if (phase === "locked") {
+    card.innerHTML =
+        '<div class="case-header">'
+      + '<div class="case-tag">' + esc(r.label) + '</div>'
+      + '<div class="case-title">' + esc(r.title) + '</div>'
+      + '<div class="case-theme">' + esc(r.theme) + '</div>'
+      + '</div>'
+      + '<div class="lock-state"><div class="lock-icon">&#128274;</div><div class="lock-text">Facilitator: unlock when pairs are ready.</div></div>'
+      + '<div class="fac-bar">' + fac + '</div>';
+    renderScoreboard();
+    return;
   }
 
-  document.getElementById("case-card").innerHTML =
-    '<div class="case-header">'
-    + '<div class="case-tag">' + esc(c.label) + '</div>'
-    + '<div class="case-title">' + c.icon + ' ' + esc(c.title) + '</div>'
-    + '<div class="case-flavour">' + esc(c.flavour) + '</div>'
+  var ev = "<ul>";
+  for (var i = 0; i < r.events.length; i++) ev += "<li>" + esc(r.events[i]) + "</li>";
+  ev += "</ul>";
+
+  var rows = "";
+  for (var j = 0; j < r.actions.length; j++) {
+    rows += "<tr><th class=\"action-code\">" + esc(r.actions[j].code) + "</th><td>" + esc(r.actions[j].text) + "</td></tr>";
+  }
+
+  card.innerHTML =
+      '<div class="case-header">'
+    + '<div class="case-tag">' + esc(r.label) + '</div>'
+    + '<div class="case-title">' + esc(r.title) + '</div>'
+    + '<div class="case-theme">' + esc(r.theme) + '</div>'
     + '</div>'
-    + inner
-    + '<div class="gm-panel"><div class="gm-label">&#x2699; Facilitator Controls</div><div class="gm-btns">' + gmBtns + '</div></div>';
-}
+    + '<div class="block"><h3>Instructions</h3><p>Each pair has the same scenario. Use <strong style="color:var(--text)">Events</strong> and the <strong style="color:var(--text)">Account profile</strong> (sidebar). Choose your <strong style="color:var(--text)">top 3 actions</strong> for this quarter and be ready to explain why. The app does <em>not</em> show an answer key — facilitators reveal ground truth after submissions.</p></div>'
+    + '<div class="block"><h3>Events</h3>' + ev + '</div>'
+    + '<div class="block"><h3>Diagnosis (offline)</h3><p>' + esc(r.diagnosisPrompt) + '</p></div>'
+    + '<div class="block"><h3>Action menu — pick your top 3</h3><p style="margin-bottom:12px;font-size:13px;color:var(--muted)">Codes match the facilitator scoring keys in the sidebar.</p><table class="action-table">' + rows + '</table></div>'
+    + '<div class="fac-bar">' + fac + '</div>';
 
-function unlockCase() {
-  var overlay = document.getElementById("unlock-overlay");
-  overlay.classList.add("active");
-  setTimeout(function() {
-    overlay.classList.remove("active");
-    casePhase = "unlocked";
-    renderCase();
-  }, 1600);
-}
-
-function showHint() { casePhase = "hinted"; renderCase(); }
-function revealAnswer() { casePhase = "answered"; renderCase(); }
-
-function nextCase() {
-  caseIdx++;
-  casePhase = "locked";
+  renderScoreboard();
   renderMap();
-  renderCase();
-  var cs = document.querySelector(".center-scroll");
-  if (cs) cs.scrollTop = 0;
+}
+
+function unlockRound() {
+  var ov = document.getElementById("unlock-overlay");
+  ov.classList.add("on");
+  setTimeout(function() {
+    ov.classList.remove("on");
+    phase = "open";
+    picks = teams.map(function() { return []; });
+    renderMap();
+    renderRound();
+  }, 900);
+}
+
+function nextRound() {
+  roundIdx++;
+  phase = "locked";
+  picks = teams.map(function() { return []; });
+  renderMap();
+  renderRound();
+  var sc = document.querySelector(".center-scroll");
+  if (sc) sc.scrollTop = 0;
 }
 
 function showVictory() {
   document.getElementById("game").style.display = "none";
-  var v = document.getElementById("victory");
-  v.style.display = "flex";
-  var conf = document.getElementById("confetti");
-  var colors = ["#FF3621","#F5A623","#2ECC71","#9B59B6","#3498DB","#fff"];
-  for (var i = 0; i < 120; i++) {
-    var el = document.createElement("div");
-    el.className = "conf";
-    var isCircle = Math.random() > 0.5;
-    var sz = 6 + Math.random() * 8;
-    el.style.left = Math.random() * 100 + "%";
-    el.style.background = colors[i % colors.length];
-    el.style.borderRadius = isCircle ? "50%" : "2px";
-    el.style.width = sz + "px";
-    el.style.height = sz + "px";
-    el.style.setProperty("--d", (2 + Math.random() * 4).toFixed(1) + "s");
-    el.style.setProperty("--delay", (Math.random() * 3).toFixed(1) + "s");
-    conf.appendChild(el);
-  }
+  document.getElementById("victory").style.display = "flex";
   var sorted = teams.slice().sort(function(a, b) { return b.score - a.score; });
-  var medals = ["&#x1F947;","&#x1F948;","&#x1F949;","&#x1F3C5;","&#x1F3C5;","&#x1F3C5;"];
+  var medals = ["&#129351;", "&#129352;", "&#129353;", "&#127941;", "&#127941;", "&#127941;", "&#127941;", "&#127941;"];
   var html = "";
   for (var i = 0; i < sorted.length; i++) {
-    html += '<div class="final-card ' + (i === 0 ? "winner" : "") + '">'
-          + '<div class="final-rank">' + medals[i] + '</div>'
-          + '<div class="final-tname">' + esc(sorted[i].name) + '</div>'
-          + '<div class="final-tscore">' + sorted[i].score + '</div>'
-          + '<div class="final-pts">points</div></div>';
+    html += '<div class="final-card' + (i === 0 ? " winner" : "") + '">'
+      + '<div style="font-size:22px">' + medals[i] + '</div>'
+      + '<div class="final-tname">' + esc(sorted[i].name) + '</div>'
+      + '<div class="final-tscore">' + sorted[i].score + '</div>'
+      + '<div style="font-size:11px;color:var(--muted)">points</div></div>';
   }
   document.getElementById("final-scores").innerHTML = html;
 }
