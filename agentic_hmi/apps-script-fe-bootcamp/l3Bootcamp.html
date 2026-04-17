@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FE Launchpad — Account Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0F0A1E;--surface:#1A1230;--card:#211840;--border:#3D2F6B;--orange:#FF3621;--gold:#F5A623;--green:#2ECC71;--text:#F0EAD6;--muted:#9B8EC4;--panel:#16102B}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+button{cursor:pointer;border:none;font-family:inherit;font-weight:600;transition:opacity .15s,transform .1s}
+button:hover{opacity:.88;transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite var(--delay)}
+@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.9}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 16px rgba(245,166,35,.35)}50%{box-shadow:0 0 28px rgba(245,166,35,.65)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(-36px) scale(1)}}
+
+#intro,#setup,#victory{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 24px;position:relative;z-index:1}
+#intro{background:radial-gradient(ellipse at 50% 0%,#2a1a50 0%,var(--bg) 60%)}
+#setup{display:none}
+#game{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1}
+#victory{display:none;min-height:100vh}
+
+.game-title{font-family:'Cinzel',serif;font-size:clamp(32px,6vw,56px);font-weight:900;color:var(--gold);text-shadow:0 0 36px rgba(245,166,35,.45);line-height:1.15;margin-bottom:16px}
+.subtitle{font-size:14px;color:var(--orange);font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+.lead{max-width:640px;font-size:15px;color:var(--muted);line-height:1.75;margin:0 auto 20px}
+.start-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border-radius:12px;padding:16px 40px;font-size:17px;font-weight:800;font-family:'Cinzel',serif;letter-spacing:1px;box-shadow:0 0 36px rgba(255,54,33,.45);margin-top:8px}
+.badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.ibadge{background:#1A123088;border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--muted)}
+
+.setup-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:520px}
+.setup-box h2{font-size:16px;color:var(--gold);margin-bottom:16px}
+.team-row{display:flex;gap:10px;margin-bottom:10px;align-items:center}
+.team-row input{flex:1;background:#0F0A1E;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;outline:none}
+.team-row input:focus{border-color:var(--orange)}
+.remove-btn{background:none;border:1px solid #5a2a2a;border-radius:6px;color:#f08080;width:32px;height:32px;font-size:14px}
+.add-team-btn{background:none;border:1px dashed var(--border);border-radius:8px;padding:10px;width:100%;color:var(--muted);font-size:13px;margin-top:4px}
+.launch-btn{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff;border-radius:10px;padding:14px;width:100%;font-size:15px;font-weight:800;margin-top:18px}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.hdr-logobox{width:28px;height:28px;background:var(--orange);border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff}
+.hdr-title{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);font-weight:700;margin-left:8px}
+.hdr-badge{font-size:10px;background:#FF362122;color:var(--orange);border:1px solid #FF362155;border-radius:20px;padding:4px 10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+.game-body{display:flex;flex:1;min-height:0}
+.sidebar{width:280px;min-width:280px;background:var(--panel);border-right:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(100vh - 52px)}
+.sidebar-title{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:8px}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;position:relative}
+.team-card.top-team{border-color:var(--gold);box-shadow:0 0 12px rgba(245,166,35,.2)}
+.team-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.team-score{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:var(--gold)}
+.pick-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px}
+.letter-grid{display:flex;flex-wrap:wrap;gap:4px}
+.letter-btn{width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:800;padding:0}
+.letter-btn.sel{background:var(--orange);border-color:var(--orange);color:#fff}
+.letter-btn:disabled{opacity:.35}
+.score-team-btn{width:100%;margin-top:8px;padding:8px;font-size:12px;border-radius:8px;background:linear-gradient(135deg,#1a5a35,#2d8a56);color:#fff}
+.toast-mini{font-size:11px;color:var(--green);margin-top:4px;min-height:14px}
+
+.center-scroll{flex:1;overflow-y:auto;max-height:calc(100vh - 52px)}
+.center-col{max-width:900px;margin:0 auto;padding:20px 24px 48px}
+
+.quest-map{display:flex;align-items:center;justify-content:flex-start;gap:0;margin-bottom:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow-x:auto}
+.q-node{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px}
+.q-orb{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid var(--border);background:var(--surface)}
+.q-orb.done{background:var(--orange);border-color:var(--orange)}
+.q-orb.active{border-color:var(--gold);animation:pulse 1.8s ease-in-out infinite}
+.q-orb.locked{opacity:.35}
+.q-label{font-size:8px;font-weight:700;color:var(--muted);text-align:center;max-width:56px;text-transform:uppercase}
+.q-label.active{color:var(--gold)}
+.q-line{flex:1;min-width:10px;height:3px;background:var(--border);margin-bottom:18px}
+.q-line.done{background:var(--orange)}
+
+.case-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.case-header{padding:18px 22px;border-bottom:1px solid var(--border)}
+.case-tag{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.case-title{font-family:'Cinzel',serif;font-size:20px;font-weight:900;color:var(--gold);line-height:1.25}
+.case-theme{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.55}
+
+.block{padding:18px 22px;border-bottom:1px solid var(--border)}
+.block h3{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.block ul{margin:0;padding-left:18px;font-size:14px;line-height:1.65;color:var(--text)}
+.block p{font-size:14px;line-height:1.65;color:var(--muted)}
+
+.profile-grid{display:grid;gap:10px;font-size:13px;line-height:1.55}
+.profile-grid strong{color:var(--gold);font-weight:700}
+
+.action-table{width:100%;border-collapse:collapse;font-size:13px}
+.action-table th{text-align:left;padding:8px 10px;background:var(--panel);border:1px solid var(--border);color:var(--gold);font-size:11px;width:36px}
+.action-table td{padding:10px 12px;border:1px solid var(--border);vertical-align:top}
+.action-code{font-weight:900;color:var(--orange);font-family:'Courier New',monospace}
+
+.lock-state{padding:48px 24px;text-align:center}
+.lock-icon{font-size:56px;margin-bottom:12px;animation:float 3s ease-in-out infinite}
+.lock-text{color:var(--muted);font-size:14px}
+
+.fac-bar{padding:14px 22px;background:#0a0718;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fac-label{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-right:8px}
+.fac-btn{border-radius:8px;padding:11px 20px;font-size:13px;font-weight:700}
+.fac-unlock{background:linear-gradient(135deg,#c42200,var(--orange));color:#fff}
+.fac-next{background:linear-gradient(135deg,#3a2a70,#6a4aaa);color:#fff}
+
+.account-accordion summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--gold);padding:8px 0}
+.account-body{font-size:12px;color:var(--muted);line-height:1.6;padding-bottom:8px}
+
+.victory-title{font-family:'Cinzel',serif;font-size:clamp(28px,5vw,48px);font-weight:900;color:var(--gold);margin-bottom:12px}
+.final-scores{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:28px 0}
+.final-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:18px 24px;min-width:130px}
+.final-card.winner{border-color:var(--gold);box-shadow:0 0 24px rgba(245,166,35,.25)}
+.final-tname{font-size:13px;font-weight:700}
+.final-tscore{font-family:'Cinzel',serif;font-size:36px;font-weight:900;color:var(--gold)}
+.replay-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:12px 28px;font-size:14px;font-weight:700;margin-top:12px}
+
+.unlock-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.unlock-overlay.on{display:flex}
+.unlock-big{font-size:80px}
+.unlock-text{font-family:'Cinzel',serif;font-size:28px;color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div id="intro">
+  <div class="subtitle">FE Launchpad · Account Simulator</div>
+  <h1 class="game-title">The Silent Erosion</h1>
+  <p class="lead">Four-quarter journey through a single fictional account — <strong style="color:var(--text)">Meridian Health Systems</strong>. SE pairs diagnose signals, discuss, and choose actions. The facilitator advances rounds and records scores. <em>No answer key appears in this app</em> — you reveal ground truth live after each round.</p>
+  <div class="badge-row">
+    <div class="ibadge">4 rounds</div>
+    <div class="ibadge">Top 3 actions / round</div>
+    <div class="ibadge">3 pts per correct pick</div>
+    <div class="ibadge">Max 36 pts</div>
+  </div>
+  <button class="start-btn" type="button" onclick="showSetup()">Begin session</button>
+  <p style="margin-top:20px"><a href="?mode=facilitator" style="color:var(--gold);font-size:13px;font-weight:600">Facilitator guide</a></p>
+</div>
+
+<div id="setup">
+  <div class="game-title" style="font-size:30px">Team names</div>
+  <p class="lead" style="margin-bottom:20px">Add one card per pair. The facilitator uses the sidebar each round to enter each team’s <strong style="color:var(--text)">three</strong> action codes and apply points.</p>
+  <div class="setup-box">
+    <h2>Who is playing?</h2>
+    <div id="team-inputs"></div>
+    <button type="button" class="add-team-btn" onclick="addTeam()">+ Add team</button>
+    <button type="button" class="launch-btn" onclick="startGame()">Launch simulator</button>
+  </div>
+</div>
+
+<div id="game">
+  <header class="hdr">
+    <div style="display:flex;align-items:center">
+      <div class="hdr-logobox">D</div>
+      <div class="hdr-title">Meridian · Account Simulator</div>
+    </div>
+    <div class="hdr-badge">Facilitator scoring</div>
+  </header>
+  <div class="game-body">
+    <aside class="sidebar">
+      <div class="sidebar-title">Scoreboard</div>
+      <div id="scoreboard"></div>
+      <details class="account-accordion" open>
+        <summary>Account profile (reference)</summary>
+        <div class="account-body" id="account-side"></div>
+      </details>
+    </aside>
+    <div class="center-scroll">
+      <div class="center-col">
+        <div class="quest-map" id="quest-map"></div>
+        <div id="case-card"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="victory">
+  <div class="subtitle">Session complete</div>
+  <div class="victory-title">Standings</div>
+  <p class="lead">Great work navigating partial information under pressure — the same judgment real accounts demand.</p>
+  <div class="final-scores" id="final-scores"></div>
+  <button type="button" class="replay-btn" onclick="location.reload()">Play again</button>
+</div>
+
+<div class="unlock-overlay" id="unlock-overlay">
+  <div class="unlock-big">&#128275;</div>
+  <div class="unlock-text">Round unlocked</div>
+</div>
+
+<script>
+var POINTS_PER_CORRECT = 3;
+
+/** optimalSet is used only for scoring — never rendered */
+var ROUNDS = [
+  {
+    short: "Q1",
+    label: "Round 1 — Q1: The First Cracks",
+    title: "The First Cracks",
+    theme: "Champion departure, usage shift, and competitive noise land at the same time.",
+    events: [
+      "Marcus messages you on Slack: \"Hey, heads up — Priya just announced she's leaving Meridian at the end of next month. She's taking a role at another company. No replacement has been named yet.\"",
+      "Your Databricks consumption dashboard shows a 12% drop in DBU usage this quarter. The drop is concentrated in the analytics org — SQL warehouse queries are down significantly.",
+      "Marcus mentions in passing: \"Tom's been running some benchmarks on a trial account with another vendor. He's been pretty vocal about it in the engineering Slack channel.\""
+    ],
+    diagnosisPrompt: "As a pair, discuss: What signals are you seeing? What’s the likely root cause behind each signal? How are these events connected (if at all)? Capture notes on flip chart or paper — nothing to submit in this app.",
+    actions: [
+      { code: "A", text: "Make sure a 1:1 with Dr. Sharma happens before she leaves — partner with your AE to get it on the calendar and co-develop the agenda (who else champions the platform internally, who should we be building relationships with before she walks out)" },
+      { code: "B", text: "Request an urgent meeting with Marcus to understand the consumption drop and his read on the broader landscape" },
+      { code: "C", text: "Pull in your manager to discuss the champion loss" },
+      { code: "D", text: "Engage an SSA to run a technical deep-dive on their SQL workloads" },
+      { code: "E", text: "Ask Marcus to facilitate an intro meeting with Tom so you can understand his concerns firsthand" },
+      { code: "F", text: "Request an EBR with Meridian leadership" },
+      { code: "G", text: "Contact the Snowflake competitive intelligence team internally" },
+      { code: "H", text: "Create/update a UCO for the competitive threat" },
+      { code: "I", text: "Engage Technical Services for a platform health check" },
+      { code: "J", text: "Do nothing yet — monitor for another quarter" },
+      { code: "K", text: "Schedule a discovery call with the analytics org to understand the usage decline" },
+      { code: "L", text: "Ask Marcus for his read on Priya's likely successor and what the transition means for the platform team" }
+    ],
+    optimalSet: ["A", "K", "E"]
+  },
+  {
+    short: "Q2",
+    label: "Round 2 — Q2: The Plot Thickens",
+    title: "The Plot Thickens",
+    theme: "New leadership, ML uptick, SQL slide, and support load all demand prioritization.",
+    events: [
+      "Dr. Sharma has left. Her replacement is David Park, a new VP of Data who came from a Snowflake-heavy org. He's agreed to a 30-minute intro call with you next week. Marcus warns you: \"David's first question in his all-hands was why we're spending $2M on Databricks when his last company did everything on Snowflake for less.\"",
+      "Consumption ticked up 5% this quarter — but it's all coming from the ML team. Aisha's team has started running large-scale model training jobs on Databricks. Meanwhile, SQL warehouse usage dropped another 8%.",
+      "Marcus escalates to you: \"We have 14 open support tickets now. Most are Unity Catalog permission errors. My team is spending 20% of their time on UC troubleshooting instead of building pipelines. This is becoming a problem.\""
+    ],
+    diagnosisPrompt: "Discuss diagnosis: What’s changing in the account? What’s signal vs noise? What would you want to validate before pulling in specialists?",
+    actions: [
+      { code: "A", text: "Prepare a tailored value narrative for the David Park intro call focused on what Databricks does that Snowflake can't" },
+      { code: "B", text: "Prepare for the David Park call with discovery questions — understand his priorities, pain points, and vision before pitching" },
+      { code: "C", text: "Set up a working session with Aisha and her ML team — understand what's driving the growth, what they want next, and where they see risk" },
+      { code: "D", text: "Engage Technical Services for a Unity Catalog health check and architecture review" },
+      { code: "E", text: "Propose a Databricks SQL workshop for the analytics team to re-engage them" },
+      { code: "F", text: "Create a UCO for the ML expansion opportunity" },
+      { code: "G", text: "Escalate the support ticket volume to your manager" },
+      { code: "H", text: "Request an EBR with David Park and Rebecca Owens (CFO)" },
+      { code: "I", text: "Build a competitive comparison deck: Databricks vs Snowflake for David Park" },
+      { code: "J", text: "Work with Marcus to triage the UC tickets — review patterns and identify if it's a config issue vs a product gap" },
+      { code: "K", text: "Engage Support to escalate the UC ticket cluster" },
+      { code: "L", text: "Engage an ML SSA to help Aisha's team optimize and expand their ML workloads" }
+    ],
+    optimalSet: ["B", "C", "D"]
+  },
+  {
+    short: "Q3",
+    label: "Round 3 — Q3: Turning Point",
+    title: "Turning Point",
+    theme: "Proof points, executive asks, and a formal competitive proposal collide.",
+    events: [
+      "Great news: The Technical Services engagement identified the UC permission issue. It was a misconfigured inheritance model — Marcus's team had set up 200+ individual grants instead of using group-based access. Tech Services helped them restructure it over two sessions. Support tickets dropped from 14 to 3. Marcus messaged you: \"This is a game-changer. My team just got 20% of their time back.\"",
+      "David Park's feedback after your intro call: \"I appreciated that you asked questions instead of pitching. I want to understand the ML side better — can you set up a demo of model serving? Also, I need a cost optimization review before I can justify our platform spend to Rebecca.\"",
+      "Consumption is now flat overall. ML workloads grew 18%, but SQL warehouse usage dropped another 10%. You learn from Marcus that Tom has formally proposed migrating all analytics workloads to Snowflake. The proposal is on David Park's desk.",
+      "Your discovery session with Aisha's team surfaced a real expansion opportunity around feature engineering and model serving — and a real technical depth requirement that goes beyond what you can support solo."
+    ],
+    diagnosisPrompt: "What is David optimizing for? What does Rebecca care about? Where is credible proof more powerful than narrative?",
+    actions: [
+      { code: "A", text: "Set up the model serving demo with an ML SSA — make it tailored to Meridian's actual use cases" },
+      { code: "B", text: "Conduct a cost optimization review showing current vs optimized spend" },
+      { code: "C", text: "Proactively build a TCO comparison: Databricks (optimized) vs Snowflake + Databricks (split)" },
+      { code: "D", text: "Request an EBR with David Park and Rebecca Owens" },
+      { code: "E", text: "Ask David Park to delay Tom's Snowflake migration proposal until after the cost review" },
+      { code: "F", text: "Engage the competitive intelligence team for a Snowflake battle card" },
+      { code: "G", text: "Meet with Tom Kowalski to understand his specific pain points with Databricks SQL" },
+      { code: "H", text: "Propose a Databricks SQL Serverless POC for the analytics team — show them what \"fast and cost-efficient\" looks like on Databricks" },
+      { code: "I", text: "Create a UCO for the cost optimization engagement" },
+      { code: "J", text: "Align with your AE on account strategy — share the signals, the state of play, and co-own the next moves" },
+      { code: "K", text: "Ask Aisha to present the ML team's success story to David Park" },
+      { code: "L", text: "Engage Technical Services for a SQL warehouse performance optimization" }
+    ],
+    optimalSet: ["B", "A", "K"]
+  },
+  {
+    short: "Q4",
+    label: "Round 4 — Q4: The Close",
+    title: "The Close",
+    theme: "Shift from defending the platform to growing trust, consumption, and commitment.",
+    events: [
+      "The cost optimization review was a hit. You identified $340K in annual savings through right-sizing clusters and moving to serverless SQL warehouses. Rebecca called it \"the most useful vendor meeting I've had this year.\" David shared the findings with his leadership team.",
+      "Aisha presented the ML team's results at David's monthly data org all-hands. The presentation showed 3x model training speedup, 60% cost reduction vs SageMaker, and a roadmap for model serving. After the meeting, two analytics engineers asked Marcus: \"Can we use Databricks for our dashboards too?\"",
+      "Tom has withdrawn his Snowflake migration proposal. In a meeting with David, he said: \"I still think Snowflake is better for pure analytics, but I can't argue with the ML results or the cost savings. Let's optimize what we have first.\" David is now asking about Databricks SQL Serverless and wants to understand Databricks' BI capabilities.",
+      "Your AE shares that Rebecca wants to discuss right-sizing the commitment. She's open to a 2-year deal if the team can show a credible consumption growth plan tied to the ML expansion and the analytics modernization."
+    ],
+    diagnosisPrompt: "What moves convert momentum into a credible growth story the CFO will fund?",
+    actions: [
+      { code: "A", text: "Propose a Databricks SQL Serverless POC for the analytics team" },
+      { code: "B", text: "Work with the ML SSA to build an ML expansion roadmap (feature store, model serving, monitoring)" },
+      { code: "C", text: "Request an EBR with David Park, Rebecca Owens, and your AE — your SA role is to frame the value story and prep the agenda" },
+      { code: "D", text: "Engage Technical Services to help the analytics team migrate their dashboards to Databricks SQL" },
+      { code: "E", text: "Create a joint success plan document mapping Meridian's business outcomes to Databricks capabilities" },
+      { code: "F", text: "Build a consumption growth forecast for the AE to use in their commercial conversations" },
+      { code: "G", text: "Introduce Tom to a Databricks SQL product manager for a feedback session" },
+      { code: "H", text: "Propose a Databricks Champions program at Meridian (Aisha as ML champion, Marcus as platform champion)" },
+      { code: "I", text: "Do nothing about Tom — he's neutralized" },
+      { code: "J", text: "Set up an architecture review with Technical Services for the analytics modernization" },
+      { code: "K", text: "Create UCOs for the SQL Serverless POC and ML expansion" },
+      { code: "L", text: "Celebrate — the account is saved" }
+    ],
+    optimalSet: ["C", "E", "A"]
+  }
+];
+
+var ACCOUNT_HTML = ''
+  + '<div class="profile-grid">'
+  + '<div><strong>Company</strong> · Meridian Health Systems · Healthcare / Life Sciences · ~12,000 employees, ~$4.2B revenue</div>'
+  + '<div><strong>Databricks</strong> · ~$1.8M ARR · ~$2.0M commitment (under-consuming ~10%) · UC, Delta Lake, DBSQL, MLflow (limited) · 40+ all-purpose clusters, 15 job clusters, 3 SQL warehouses · AWS</div>'
+  + '<div><strong>Personas</strong> · Dr. Priya Sharma (VP Data, champion) · Marcus Chen (Platform lead) · Aisha Johnson (Sr DS, ML) · Tom Kowalski (DE/Oracle voice) · Rebecca Owens (CFO)</div>'
+  + '<div><strong>Baseline</strong> · Flat consumption 2 quarters · 6 open support tickets · EBR 5 months ago · Snowflake meeting analytics · Priya presented ROI at board — well received</div>'
+  + '</div>';
+
+var teams = [];
+var roundIdx = 0;
+var phase = "locked";
+/** @type {string[][]} picks[teamIndex] = up to 3 codes */
+var picks = [];
+
+(function stars() {
+  var c = document.getElementById("stars");
+  for (var i = 0; i < 70; i++) {
+    var s = document.createElement("div");
+    s.className = "star";
+    var sz = Math.random() * 2.2 + 0.5;
+    s.style.width = sz + "px";
+    s.style.height = sz + "px";
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = Math.random() * 100 + "%";
+    s.style.setProperty("--d", (Math.random() * 4 + 2).toFixed(1) + "s");
+    s.style.setProperty("--delay", "-" + (Math.random() * 5).toFixed(1) + "s");
+    c.appendChild(s);
+  }
+})();
+
+document.getElementById("account-side").innerHTML = ACCOUNT_HTML;
+
+function showSetup() {
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("setup").style.display = "flex";
+  var box = document.getElementById("team-inputs");
+  if (!box.children.length) {
+    addTeam(); addTeam(); addTeam();
+  }
+}
+
+function addTeam() {
+  var c = document.getElementById("team-inputs");
+  if (c.children.length >= 8) return;
+  var d = document.createElement("div");
+  d.className = "team-row";
+  d.innerHTML = '<input type="text" placeholder="Team name" maxlength="28"/>'
+    + '<button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>';
+  c.appendChild(d);
+}
+
+function startGame() {
+  var inputs = document.querySelectorAll("#team-inputs input");
+  teams = [];
+  for (var i = 0; i < inputs.length; i++) {
+    teams.push({ name: inputs[i].value.trim() || ("Team " + (i + 1)), score: 0 });
+  }
+  if (!teams.length) teams.push({ name: "Team 1", score: 0 });
+  picks = teams.map(function() { return []; });
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("game").style.display = "flex";
+  roundIdx = 0;
+  phase = "locked";
+  renderScoreboard();
+  renderMap();
+  renderRound();
+}
+
+function currentRound() {
+  return ROUNDS[roundIdx];
+}
+
+function codesForRound() {
+  var a = currentRound().actions;
+  return a.map(function(x) { return x.code; });
+}
+
+function renderScoreboard() {
+  var codes = phase === "locked" ? [] : codesForRound();
+  var html = "";
+  var max = 0;
+  for (var t = 0; t < teams.length; t++) if (teams[t].score > max) max = teams[t].score;
+
+  for (var i = 0; i < teams.length; i++) {
+    var top = teams[i].score === max && max > 0;
+    html += '<div class="team-card' + (top ? " top-team" : "") + '" id="tc-' + i + '">';
+    html += '<div class="team-name">' + esc(teams[i].name) + '</div>';
+    html += '<div class="team-score" id="ts-' + i + '">' + teams[i].score + '</div>';
+    if (phase !== "locked") {
+      html += '<div class="pick-label">Their 3 actions (this round)</div>';
+      html += '<div class="letter-grid" id="lg-' + i + '"></div>';
+      html += '<button type="button" class="score-team-btn" onclick="applyScore(' + i + ')">Apply points for this team</button>';
+      html += '<div class="toast-mini" id="toast-' + i + '"></div>';
+    }
+    html += '</div>';
+  }
+  document.getElementById("scoreboard").innerHTML = html;
+
+  if (phase !== "locked") {
+    for (var j = 0; j < teams.length; j++) {
+      renderLetterGrid(j, codes);
+    }
+  }
+}
+
+function renderLetterGrid(teamIdx, codes) {
+  var wrap = document.getElementById("lg-" + teamIdx);
+  if (!wrap) return;
+  var sel = picks[teamIdx] || [];
+  var html = "";
+  for (var c = 0; c < codes.length; c++) {
+    var letter = codes[c];
+    var on = sel.indexOf(letter) >= 0;
+    html += '<button type="button" class="letter-btn' + (on ? " sel" : "") + '" '
+      + 'data-team="' + teamIdx + '" data-code="' + letter + '">' + esc(letter) + '</button>';
+  }
+  wrap.innerHTML = html;
+  var btns = wrap.querySelectorAll(".letter-btn");
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].onclick = function() {
+      var ti = +this.getAttribute("data-team");
+      var code = this.getAttribute("data-code");
+      togglePick(ti, code);
+    };
+  }
+}
+
+function togglePick(teamIdx, code) {
+  var list = picks[teamIdx];
+  var i = list.indexOf(code);
+  if (i >= 0) {
+    list.splice(i, 1);
+  } else {
+    if (list.length >= 3) return;
+    list.push(code);
+  }
+  renderLetterGrid(teamIdx, codesForRound());
+}
+
+function countMatches(selected, optimal) {
+  var n = 0;
+  for (var i = 0; i < selected.length; i++) {
+    if (optimal.indexOf(selected[i]) >= 0) n++;
+  }
+  return n;
+}
+
+function applyScore(teamIdx) {
+  var sel = picks[teamIdx].slice();
+  var toast = document.getElementById("toast-" + teamIdx);
+  if (sel.length !== 3) {
+    if (toast) toast.textContent = "Select exactly 3 letters.";
+    return;
+  }
+  var opt = currentRound().optimalSet;
+  var matches = countMatches(sel, opt);
+  var pts = matches * POINTS_PER_CORRECT;
+  teams[teamIdx].score += pts;
+  picks[teamIdx] = [];
+  var ts = document.getElementById("ts-" + teamIdx);
+  if (ts) ts.textContent = teams[teamIdx].score;
+  if (toast) {
+    toast.textContent = pts > 0
+      ? ("Recorded +" + pts + " points.")
+      : "Recorded +0 points.";
+  }
+  refreshTopTeamHighlight();
+  renderLetterGrid(teamIdx, codesForRound());
+}
+
+function refreshTopTeamHighlight() {
+  var max = 0;
+  for (var j = 0; j < teams.length; j++) if (teams[j].score > max) max = teams[j].score;
+  for (var k = 0; k < teams.length; k++) {
+    var el = document.getElementById("tc-" + k);
+    if (!el) continue;
+    if (teams[k].score === max && max > 0) el.classList.add("top-team");
+    else el.classList.remove("top-team");
+  }
+}
+
+function renderMap() {
+  var html = "";
+  for (var i = 0; i < ROUNDS.length; i++) {
+    var done = i < roundIdx;
+    var active = i === roundIdx;
+    var cls = done ? "done" : (active ? "active" : "locked");
+    var lbl = done ? "" : (active ? "active" : "");
+    html += '<div class="q-node"><div class="q-orb ' + cls + '">' + (done ? "&#10003;" : ROUNDS[i].short) + '</div>';
+    html += '<div class="q-label ' + lbl + '">Q' + (i + 1) + '</div></div>';
+    if (i < ROUNDS.length - 1) {
+      html += '<div class="q-line' + (done ? " done" : "") + '"></div>';
+    }
+  }
+  html += '<div class="q-line' + (roundIdx >= ROUNDS.length ? " done" : "") + '"></div>';
+  html += '<div class="q-node"><div class="q-orb ' + (roundIdx >= ROUNDS.length ? "done" : "locked") + '">&#127937;</div>';
+  html += '<div class="q-label">Done</div></div>';
+  document.getElementById("quest-map").innerHTML = html;
+}
+
+function renderRound() {
+  var card = document.getElementById("case-card");
+  if (roundIdx >= ROUNDS.length) {
+    showVictory();
+    return;
+  }
+  var r = currentRound();
+  var fac = "";
+  if (phase === "locked") {
+    fac = '<button type="button" class="fac-btn fac-unlock" onclick="unlockRound()">Unlock this round</button>';
+  } else {
+    fac = '<span class="fac-label">When discussion ends</span>'
+      + '<button type="button" class="fac-btn fac-next" onclick="nextRound()">'
+      + (roundIdx < ROUNDS.length - 1 ? "Lock round → next quarter" : "Finish → standings")
+      + '</button>';
+  }
+
+  if (phase === "locked") {
+    card.innerHTML =
+        '<div class="case-header">'
+      + '<div class="case-tag">' + esc(r.label) + '</div>'
+      + '<div class="case-title">' + esc(r.title) + '</div>'
+      + '<div class="case-theme">' + esc(r.theme) + '</div>'
+      + '</div>'
+      + '<div class="lock-state"><div class="lock-icon">&#128274;</div><div class="lock-text">Facilitator: unlock when pairs are ready.</div></div>'
+      + '<div class="fac-bar">' + fac + '</div>';
+    renderScoreboard();
+    return;
+  }
+
+  var ev = "<ul>";
+  for (var i = 0; i < r.events.length; i++) ev += "<li>" + esc(r.events[i]) + "</li>";
+  ev += "</ul>";
+
+  var rows = "";
+  for (var j = 0; j < r.actions.length; j++) {
+    rows += "<tr><th class=\"action-code\">" + esc(r.actions[j].code) + "</th><td>" + esc(r.actions[j].text) + "</td></tr>";
+  }
+
+  card.innerHTML =
+      '<div class="case-header">'
+    + '<div class="case-tag">' + esc(r.label) + '</div>'
+    + '<div class="case-title">' + esc(r.title) + '</div>'
+    + '<div class="case-theme">' + esc(r.theme) + '</div>'
+    + '</div>'
+    + '<div class="block"><h3>Instructions</h3><p>Each pair has the same scenario. Use <strong style="color:var(--text)">Events</strong> and the <strong style="color:var(--text)">Account profile</strong> (sidebar). Choose your <strong style="color:var(--text)">top 3 actions</strong> for this quarter and be ready to explain why. The app does <em>not</em> show an answer key — facilitators reveal ground truth after submissions.</p></div>'
+    + '<div class="block"><h3>Events</h3>' + ev + '</div>'
+    + '<div class="block"><h3>Diagnosis (offline)</h3><p>' + esc(r.diagnosisPrompt) + '</p></div>'
+    + '<div class="block"><h3>Action menu — pick your top 3</h3><p style="margin-bottom:12px;font-size:13px;color:var(--muted)">Codes match the facilitator scoring keys in the sidebar.</p><table class="action-table">' + rows + '</table></div>'
+    + '<div class="fac-bar">' + fac + '</div>';
+
+  renderScoreboard();
+  renderMap();
+}
+
+function unlockRound() {
+  var ov = document.getElementById("unlock-overlay");
+  ov.classList.add("on");
+  setTimeout(function() {
+    ov.classList.remove("on");
+    phase = "open";
+    picks = teams.map(function() { return []; });
+    renderMap();
+    renderRound();
+  }, 900);
+}
+
+function nextRound() {
+  roundIdx++;
+  phase = "locked";
+  picks = teams.map(function() { return []; });
+  renderMap();
+  renderRound();
+  var sc = document.querySelector(".center-scroll");
+  if (sc) sc.scrollTop = 0;
+}
+
+function showVictory() {
+  document.getElementById("game").style.display = "none";
+  document.getElementById("victory").style.display = "flex";
+  var sorted = teams.slice().sort(function(a, b) { return b.score - a.score; });
+  var medals = ["&#129351;", "&#129352;", "&#129353;", "&#127941;", "&#127941;", "&#127941;", "&#127941;", "&#127941;"];
+  var html = "";
+  for (var i = 0; i < sorted.length; i++) {
+    html += '<div class="final-card' + (i === 0 ? " winner" : "") + '">'
+      + '<div style="font-size:22px">' + medals[i] + '</div>'
+      + '<div class="final-tname">' + esc(sorted[i].name) + '</div>'
+      + '<div class="final-tscore">' + sorted[i].score + '</div>'
+      + '<div style="font-size:11px;color:var(--muted)">points</div></div>';
+  }
+  document.getElementById("final-scores").innerHTML = html;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>

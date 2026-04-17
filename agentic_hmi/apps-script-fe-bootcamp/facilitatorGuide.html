@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FE Launchpad — Account Simulator (Facilitator)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: #f5f5f5;
+  padding: 20px;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 {
+  color: #FF3621;
+  margin-bottom: 10px;
+  font-size: 32px;
+  font-weight: 800;
+}
+h2 {
+  color: #1a1a1a;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 700;
+  border-bottom: 2px solid #FF3621;
+  padding-bottom: 8px;
+}
+h3 {
+  color: #FF3621;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+.info-box {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+.success-box {
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+.warning-box {
+  background: #f8d7da;
+  border-left: 4px solid #dc3545;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+ul, ol {
+  margin-left: 24px;
+  margin-bottom: 16px;
+}
+li {
+  margin-bottom: 8px;
+}
+strong {
+  color: #FF3621;
+  font-weight: 700;
+}
+.scenario-card {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+}
+.scenario-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.scenario-goal {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+.scoring-guide {
+  background: #e7f3ff;
+  border-left: 4px solid #0066cc;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.time-box {
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: 600;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.button {
+  display: inline-block;
+  background: linear-gradient(135deg, #c42200, #FF3621);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  margin: 16px 8px 16px 0;
+  font-size: 14px;
+}
+.button:hover {
+  opacity: 0.9;
+}
+.toc {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 24px 0;
+}
+.toc ul {
+  list-style: none;
+  margin-left: 0;
+}
+.toc a {
+  color: #0066cc;
+  text-decoration: none;
+}
+.toc a:hover {
+  text-decoration: underline;
+}
+code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>FE Launchpad — Account Simulator</h1>
+<div class="subtitle">Facilitator guide · “The Silent Erosion” (Meridian Health) · Four quarters, same account</div>
+
+<div style="margin-bottom: 20px;">
+<a href="?mode=l3bootcamp" class="button">▶️ Open simulator</a>
+</div>
+
+<div class="success-box">
+<strong>Where to host:</strong> Use your existing <strong>Google Apps Script</strong> web app (or any HTTPS host) and upload the latest <code>l3_sa_bootcamp.html</code> from the <code>genie-edge-demo</code> repo. A public mirror may also be published on GitHub Pages under this project.<br><br>
+The <strong>participant-facing app intentionally does not show</strong> ground truth, hints, or correct answers — only account context, events, the action menu, and scoring entry for the facilitator.
+</div>
+
+<div class="toc">
+<strong>Quick navigation</strong>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#setup">Setup</a></li>
+<li><a href="#controls">Controls &amp; scoring</a></li>
+<li><a href="#answer-key">GM answer key (confidential)</a></li>
+<li><a href="#rounds">Round-by-round notes</a></li>
+<li><a href="#tips">Discussion prompts</a></li>
+<li><a href="#time">Time budget</a></li>
+</ul>
+</div>
+
+<h2 id="overview">Overview</h2>
+
+<p>SE pairs work through <strong>Meridian Health Systems</strong> across <strong>four rounds</strong> (Q1–Q4). Each round: read <strong>Events</strong>, discuss <strong>diagnosis</strong> offline, then each pair chooses their <strong>top three actions</strong> from that quarter’s lettered menu. After teams debrief aloud, you reveal <strong>GM ground truth</strong> from the source scenario bank — not from the app.</p>
+
+<h3>Learning objectives (from scenario bank)</h3>
+<ul>
+<li>Diagnose account-health signals and likely causes behind consumption changes</li>
+<li>Prioritize actions under partial information and limited time</li>
+<li>Know when to engage cross-functional partners (SSA, Technical Services, Support) vs when <em>not</em> to escalate</li>
+<li>Shift mindset from “save the account” to “grow the account” as the story evolves</li>
+</ul>
+
+<div class="info-box">
+<strong>Scoring in the app:</strong> <strong>3 points</strong> for each selected action that matches the optimal set for that round (max <strong>9</strong> per round, <strong>36</strong> total). After pairs report their three letters, enter them under each team in the sidebar and click <strong>Apply points for this team</strong>. The app shows how many points were recorded — <em>not</em> which letters were “supposed” to be correct.
+</div>
+
+<h2 id="setup">Setup</h2>
+<ol>
+<li>Open <code>l3_sa_bootcamp.html</code> on the projector (or deploy via Apps Script / internal hosting).</li>
+<li>Click <strong>Begin session</strong> → enter each pair’s <strong>team name</strong> → <strong>Launch simulator</strong>.</li>
+<li>Explain: diagnosis is offline; the app only shows events + action menu; you will reveal ground truth verbally after each round.</li>
+</ol>
+
+<div class="warning-box">
+<strong>Screen share:</strong> Everyone can watch the main board. <strong>Scoring:</strong> Only the facilitator (or co-facilitator) should click letter chips and <strong>Apply points</strong> so scores stay accurate. Participants can keep notes on paper — they do not need their own copy of the app unless you choose that format.
+</div>
+
+<h2 id="controls">Controls &amp; flow</h2>
+<ul>
+<li><strong>Unlock this round</strong> — Reveals events, diagnosis instructions, and the action table.</li>
+<li><strong>Sidebar</strong> — For each team, tap exactly <strong>three</strong> action codes they committed to, then <strong>Apply points for this team</strong>. Points = 3 × (how many of their picks match the optimal set for that round). Wrong picks are ignored (no negative points).</li>
+<li><strong>Lock round → next quarter</strong> — After debrief and scoring, advance. On Q4, the button reads <strong>Finish → standings</strong>.</li>
+</ul>
+
+<h2 id="answer-key">GM answer key (do not read until reveal)</h2>
+<div class="warning-box">
+These letters match the in-app scoring engine. Use the full narrative, anti-patterns, and discussion notes from your <strong>Scenario Bank &amp; Question Design</strong> PDF when you debrief — the app does not duplicate that text.
+</div>
+<table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+<tr style="background:#f0f0f0;"><th style="text-align:left;padding:8px;border:1px solid #ccc;">Round</th><th style="text-align:left;padding:8px;border:1px solid #ccc;">Optimal top-3 (3 pts each)</th></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q1 — First Cracks</td><td style="padding:8px;border:1px solid #ccc;"><code>A</code>, <code>K</code>, <code>E</code></td></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q2 — Plot Thickens</td><td style="padding:8px;border:1px solid #ccc;"><code>B</code>, <code>C</code>, <code>D</code></td></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q3 — Turning Point</td><td style="padding:8px;border:1px solid #ccc;"><code>B</code>, <code>A</code>, <code>K</code> (cost review, ML SSA serving demo, Aisha presents wins to David)</td></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q4 — The Close</td><td style="padding:8px;border:1px solid #ccc;"><code>C</code>, <code>E</code>, <code>A</code></td></tr>
+</table>
+
+<h2 id="rounds">Round-by-round facilitation</h2>
+
+<div class="scenario-card">
+<div class="scenario-title">Q1 — The First Cracks</div>
+<p>Focus discussion on <strong>connecting signals</strong> (champion exit, SQL drop, Tom’s benchmarks). After teams share their three actions, reveal ground truth from the PDF, then score in the app.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min</div>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q2 — The Plot Thickens</div>
+<p>New VP from a Snowflake-heavy background, ML up / SQL down, UC ticket storm. Good tension: <strong>discovery vs pitch</strong>, <strong>when TS is warranted</strong>, and <strong>when ML SSA is premature</strong>.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min · Optional: 2-min brainstorm of discovery questions for David</div>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q3 — Turning Point</div>
+<p>TS fixed UC; David wants serving demo + cost review; Tom’s proposal lands. Debrief <strong>influence without blocking customer process</strong> and <strong>credible numbers vs vendor TCO decks</strong>.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min</div>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q4 — The Close</div>
+<p>Account has turned; choices shift to <strong>EBR + joint success plan + SQL Serverless POC</strong>. Contrast with “celebrate only” or over-rotating to TS migration too early.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min</div>
+</div>
+
+<h2 id="scoring">Scoring reference</h2>
+<ul>
+<li><strong>Per pick:</strong> +3 if the letter is one of the three optimal actions for that round.</li>
+<li><strong>Cap:</strong> 9 points per round per team; 36 overall.</li>
+<li><strong>Ties:</strong> Allowed — standings screen orders by total.</li>
+</ul>
+
+<h2 id="tips">Discussion prompts (from scenario bank)</h2>
+<p>Use these after teams share their three actions and you reveal ground truth:</p>
+<ul>
+<li><em>Diagnosis:</em> “Who connected champion loss to the consumption story? Walk us through that reasoning.”</li>
+<li><em>Partial information:</em> “Did anyone treat these as three separate problems vs one arc?”</li>
+<li><em>Actions:</em> “Pair A pulled in an SSA early; Pair B did not — both can be argued. Make your case.”</li>
+<li><em>Risk:</em> “What could go wrong with the highest-leverage move you chose?”</li>
+<li><em>Escalation judgment:</em> “Was this a round where the best move was <strong>not</strong> to escalate? Who got that?”</li>
+<li><em>Discovery (Q2):</em> “You have 30 minutes with David — top three questions, <strong>no product names</strong>.”</li>
+<li><em>Reflection:</em> “What signal from this quarter would you watch on your own accounts Monday?”</li>
+</ul>
+
+<h2 id="time">Time management</h2>
+<div class="warning-box">
+<strong>Full run (4 rounds):</strong> about <strong>55–80 minutes</strong> (12–18 min per round + transitions).<br>
+<strong>Tight agenda:</strong> shorten pair discussion to ~5 min and debrief to ~5 min per round (~45 min total).
+</div>
+<ul>
+<li><strong>Read events aloud</strong> (optional) while the slide is unlocked — 1–2 min.</li>
+<li><strong>Pair work</strong> — diagnosis + agree on three letters — 5–8 min.</li>
+<li><strong>Share-outs</strong> — a few teams report — 4–6 min.</li>
+<li><strong>GM reveal + debate</strong> — use PDF narrative — 5–8 min.</li>
+<li><strong>Enter scores</strong> in sidebar — 1–2 min.</li>
+</ul>
+
+<h2 style="margin-top: 40px;">Checklist</h2>
+<div class="success-box">
+<strong>Before:</strong> Simulator opens · teams decided · PDF / answer key ready · timer optional<br>
+<strong>During:</strong> Unlock → discuss → share → <strong>verbal reveal</strong> → enter three letters per team → Apply points → next round<br>
+<strong>After:</strong> Show standings screen · recap themes · collect feedback
+</div>
+
+<h2 style="margin-top: 40px;">Deploying (Apps Script)</h2>
+<ol>
+<li>Copy the contents of <code>l3_sa_bootcamp.html</code> into an <strong>HtmlService</strong> file (e.g. <code>Index.html</code>) in your existing web app project, or serve it via <code>HtmlService.createHtmlOutputFromFile</code> / template as you already do for <code>?mode=l3bootcamp</code>.</li>
+<li>Redeploy the web app so the new HTML is live at your <code>script.google.com/.../exec</code> URL.</li>
+<li>Keep <code>l3_sa_bootcamp_facilitator_guide.html</code> alongside it if you link facilitators to the guide from the same folder/host.</li>
+</ol>
+
+<h2 style="margin-top: 40px;">Resources</h2>
+<a href="?mode=l3bootcamp" class="button">Open simulator</a>
+<a href="https://github.com/pravinva/genie-at-the-edge" class="button" target="_blank">View repo on GitHub</a>
+
+<div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; color: #666; font-size: 14px;">
+<strong>Source material:</strong> FE Launchpad — Account Simulator scenario bank (Meridian / “The Silent Erosion”).<br>
+<em>App refresh: FE Launchpad account simulator · four-quarter scoring edition</em>
+</div>
+
+</div>
+
+</body>
+</html>

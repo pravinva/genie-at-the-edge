@@ -49,6 +49,8 @@ checkpoint/
 *.json
 !**/perspective*.json
 !**/webhook*.json
+!agentic_hmi/apps-script-fe-bootcamp/appsscript.json
+!agentic_hmi/apps-script-fe-bootcamp/.clasp.json
 
 # Secrets
 secrets/
