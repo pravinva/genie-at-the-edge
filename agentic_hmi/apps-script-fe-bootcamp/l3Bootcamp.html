@@ -50,6 +50,10 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .hdr-badge{font-size:10px;background:#FF362122;color:var(--orange);border:1px solid #FF362155;border-radius:20px;padding:4px 10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
 
 .game-body{display:flex;flex:1;min-height:0}
+html.audience-mode .sidebar-title{display:none!important}
+html.audience-mode #scoreboard{display:none!important}
+html.audience-mode .game-body{flex:1}
+html.audience-mode .center-scroll{flex:1}
 .sidebar{width:280px;min-width:280px;background:var(--panel);border-right:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(100vh - 52px)}
 .sidebar-title{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:8px}
 .team-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;position:relative}
@@ -131,8 +135,9 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 <div id="intro">
   <div class="subtitle">FE Launchpad · Account Simulator</div>
   <h1 class="game-title">The Silent Erosion</h1>
-  <p class="lead">Four-quarter journey through a single fictional account — <strong style="color:var(--text)">Meridian Health Systems</strong>. SE pairs diagnose signals, discuss, and choose actions. <strong style="color:var(--text)">One laptop runs the session:</strong> the facilitator uses the <strong style="color:var(--gold)">control link</strong> below (unlock rounds + private scoring). Everyone else follows the room screen — they do not need the app. <em>No answer key appears in this app</em> — you reveal ground truth live after each round.</p>
+  <p class="lead">Four-quarter journey through a single fictional account — <strong style="color:var(--text)">Meridian Health Systems</strong>. SE pairs diagnose signals, discuss, and choose actions. <strong style="color:var(--text)">The facilitator</strong> uses the <strong style="color:var(--gold)">control link</strong> (<code>?gm=1</code>) to unlock rounds and score privately. <strong style="color:var(--text)">Everyone else</strong> can follow the <strong style="color:var(--text)">projector</strong> or open <strong style="color:var(--text)">read-only scenario links</strong> below on a phone or laptop (same events and action menu — no scores, no answer key).</p>
   <p id="gm-hint" style="max-width:560px;margin:12px auto 0;font-size:13px;color:var(--muted);line-height:1.6;display:none"></p>
+  <p id="audience-scenario-links" style="max-width:640px;margin:16px auto 0;font-size:14px;color:var(--muted);line-height:1.65;text-align:center"></p>
   <div class="badge-row">
     <div class="ibadge">4 rounds</div>
     <div class="ibadge">Top 3 actions / round</div>
@@ -206,6 +211,8 @@ function qp(name) {
 }
 /** Facilitator / driver only: unlock rounds, scoring, standings. */
 var isGM = qp("gm") === "1" || qp("facilitator") === "1";
+/** Read-only scenario on participant devices: ?q=1 … ?q=4 (no gm). */
+var isAudienceView = false;
 
 (function initGMLinks() {
   var gmUrl;
@@ -224,7 +231,7 @@ var isGM = qp("gm") === "1" || qp("facilitator") === "1";
   if (!isGM) {
     if (hint) {
       hint.style.display = "block";
-      hint.innerHTML = "You are viewing the <strong>participant</strong> page. <strong>Do not add ?gm=1</strong> unless you are the facilitator on the room laptop. Scores and round controls stay hidden here.";
+      hint.innerHTML = "You are on the <strong>participant</strong> page. <strong>Do not add ?gm=1</strong> unless you are the facilitator. Scores and round controls stay off here — use the <strong>read-only scenario links</strong> below (Q1–Q4) to see events and the action menu on your device, or follow the projector.";
     }
     if (btn) {
       btn.textContent = "Participant view (no controls)";
@@ -387,6 +394,51 @@ var roundPtsApplied = [];
 })();
 
 document.getElementById("account-side").innerHTML = ACCOUNT_HTML;
+
+(function initAudienceScenarioLinks() {
+  if (isGM) return;
+  var el = document.getElementById("audience-scenario-links");
+  if (!el) return;
+  var parts = [];
+  for (var qi = 0; qi < ROUNDS.length; qi++) {
+    var qNum = qi + 1;
+    try {
+      var u = new URL(window.location.href);
+      u.searchParams.delete("gm");
+      u.searchParams.delete("facilitator");
+      u.searchParams.set("q", String(qNum));
+      parts.push('<a href="' + esc(u.pathname + u.search + u.hash) + '" style="color:var(--gold);font-weight:700">Q' + qNum + " — " + esc(ROUNDS[qi].short) + "</a>");
+    } catch (eA) {
+      parts.push('<a href="?q=' + qNum + '" style="color:var(--gold);font-weight:700">Q' + qNum + " — " + esc(ROUNDS[qi].short) + "</a>");
+    }
+  }
+  el.innerHTML = "<strong style=\"color:var(--text)\">Read-only scenario on this device:</strong> " + parts.join(" · ");
+})();
+
+function enterAudienceScenario(roundZeroBased) {
+  isAudienceView = true;
+  roundIdx = roundZeroBased;
+  phase = "open";
+  teams = [];
+  document.documentElement.classList.add("audience-mode");
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("setup").style.display = "none";
+  document.getElementById("victory").style.display = "none";
+  document.getElementById("game").style.display = "flex";
+  var badge = document.getElementById("hdr-mode-badge");
+  if (badge) badge.textContent = "Scenario · read-only";
+  renderRound();
+}
+
+(function initAudienceFromQuery() {
+  if (isGM) return;
+  var qv = qp("q");
+  if (qv === null || qv === "") return;
+  if (!/^[1-9]$|^[1-9][0-9]*$/.test(String(qv).trim())) return;
+  var n = parseInt(qv, 10);
+  if (n < 1 || n > ROUNDS.length) return;
+  enterAudienceScenario(n - 1);
+})();
 
 function showSetup() {
   if (!isGM) {
@@ -580,6 +632,36 @@ function renderMap() {
 
 function renderRound() {
   var card = document.getElementById("case-card");
+  if (isAudienceView) {
+    if (roundIdx >= ROUNDS.length) {
+      document.getElementById("game").style.display = "none";
+      document.getElementById("victory").style.display = "flex";
+      document.getElementById("final-scores").innerHTML = "<p style=\"color:var(--muted);max-width:420px;margin:0 auto\">Session recap is shared by the facilitator in the room.</p>";
+      return;
+    }
+    var ar = ROUNDS[roundIdx];
+    var afac = '<span class="fac-label">Read-only</span><span style="font-size:13px;color:var(--muted)">No scoring on this page. When the room advances, open the next quarter link from the intro page or change <code>?q=</code> in the URL (1–' + ROUNDS.length + ").</span>";
+    var aev = "<ul>";
+    for (var ai = 0; ai < ar.events.length; ai++) aev += "<li>" + esc(ar.events[ai]) + "</li>";
+    aev += "</ul>";
+    var arows = "";
+    for (var aj = 0; aj < ar.actions.length; aj++) {
+      arows += "<tr><th class=\"action-code\">" + esc(ar.actions[aj].code) + "</th><td>" + esc(ar.actions[aj].text) + "</td></tr>";
+    }
+    card.innerHTML =
+        '<div class="case-header">'
+      + '<div class="case-tag">' + esc(ar.label) + '</div>'
+      + '<div class="case-title">' + esc(ar.title) + '</div>'
+      + '<div class="case-theme">' + esc(ar.theme) + '</div>'
+      + '</div>'
+      + '<div class="block"><h3>Instructions</h3><p>Each pair has the same scenario. Use <strong style="color:var(--text)">Events</strong>, the <strong style="color:var(--text)">Account profile</strong> (left), and this quarter’s <strong style="color:var(--text)">action menu</strong>. Choose your <strong style="color:var(--text)">top 3 actions</strong> and be ready to explain why. There is <em>no</em> answer key in this view.</p></div>'
+      + '<div class="block"><h3>Events</h3>' + aev + '</div>'
+      + '<div class="block"><h3>Diagnosis (offline)</h3><p>' + esc(ar.diagnosisPrompt) + '</p></div>'
+      + '<div class="block"><h3>Action menu — pick your top 3</h3><p style="margin-bottom:12px;font-size:13px;color:var(--muted)">Discuss and record your three letters offline. Scoring stays on the facilitator screen only.</p><table class="action-table">' + arows + '</table></div>'
+      + '<div class="fac-bar">' + afac + '</div>';
+    renderMap();
+    return;
+  }
   if (roundIdx >= ROUNDS.length) {
     showVictory();
     return;

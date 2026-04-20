@@ -11,6 +11,21 @@ test.describe("L3 SA bootcamp HTML smoke", () => {
     await expect(page.locator("#gm-hint")).toContainText(/participant/i);
     await expect(page.locator("#game")).not.toBeVisible();
     await expect(page.locator("#setup")).not.toBeVisible();
+    await expect(page.locator("#audience-scenario-links")).toContainText(/Q1/i);
+    await expect(page.locator("#audience-scenario-links a[href*='q=1']")).toHaveCount(1);
+  });
+
+  test("participant read-only ?q=1: scenario visible, no scoring UI", async ({
+    page,
+  }) => {
+    await page.goto("/l3_sa_bootcamp.html?q=1");
+    await expect(page.locator("#game")).toBeVisible();
+    await expect(page.locator("#hdr-mode-badge")).toContainText(/read-only/i);
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+    await expect(page.locator("#scoreboard")).toBeEmpty();
+    await expect(
+      page.getByRole("button", { name: "Apply points for this team" }),
+    ).toHaveCount(0);
   });
 
   test("facilitator (?gm=1): launch, unlock, optimal Q1 = 9 pts; re-apply same does not stack; replace with worse then best", async ({
