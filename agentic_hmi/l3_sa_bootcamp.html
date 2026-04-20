@@ -131,20 +131,22 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 <div id="intro">
   <div class="subtitle">FE Launchpad · Account Simulator</div>
   <h1 class="game-title">The Silent Erosion</h1>
-  <p class="lead">Four-quarter journey through a single fictional account — <strong style="color:var(--text)">Meridian Health Systems</strong>. SE pairs diagnose signals, discuss, and choose actions. The facilitator advances rounds and records scores. <em>No answer key appears in this app</em> — you reveal ground truth live after each round.</p>
+  <p class="lead">Four-quarter journey through a single fictional account — <strong style="color:var(--text)">Meridian Health Systems</strong>. SE pairs diagnose signals, discuss, and choose actions. <strong style="color:var(--text)">One laptop runs the session:</strong> the facilitator uses the <strong style="color:var(--gold)">control link</strong> below (unlock rounds + private scoring). Everyone else follows the room screen — they do not need the app. <em>No answer key appears in this app</em> — you reveal ground truth live after each round.</p>
+  <p id="gm-hint" style="max-width:560px;margin:12px auto 0;font-size:13px;color:var(--muted);line-height:1.6;display:none"></p>
   <div class="badge-row">
     <div class="ibadge">4 rounds</div>
     <div class="ibadge">Top 3 actions / round</div>
     <div class="ibadge">3 pts per correct pick</div>
     <div class="ibadge">Max 36 pts</div>
   </div>
-  <button class="start-btn" type="button" onclick="showSetup()">Begin session</button>
+  <button class="start-btn" type="button" id="btn-begin" onclick="showSetup()">Begin session (facilitator)</button>
+  <p style="margin-top:16px;font-size:13px;color:var(--muted)">Control link for whoever is driving: <a id="gm-self-link" href="#" style="color:var(--gold);font-weight:700">open with ?gm=1</a></p>
   <p style="margin-top:20px"><a href="https://script.google.com/a/macros/databricks.com/s/AKfycbwkPSCxlzRhs1nXqQpQkl_YhHzU0LjGzWbwiobssRJNKu0223fMlw7mi9PG24ruI_EdrA/exec?mode=facilitator" target="_blank" rel="noopener noreferrer" style="color:var(--gold);font-size:13px;font-weight:600">Facilitator guide</a></p>
 </div>
 
 <div id="setup">
   <div class="game-title" style="font-size:30px">Team names</div>
-  <p class="lead" style="margin-bottom:20px">Add one card per pair. The facilitator uses the sidebar each round to enter each team’s <strong style="color:var(--text)">three</strong> action codes and apply points.</p>
+  <p class="lead" style="margin-bottom:20px">Add one row per competing pair (use <strong style="color:var(--text)">+ Add team</strong> only if you have more than one). Leave blank rows out — empty rows are ignored at launch. The facilitator enters each team’s <strong style="color:var(--text)">three</strong> action codes and applies points once per team per round.</p>
   <div class="setup-box">
     <h2>Who is playing?</h2>
     <div id="team-inputs"></div>
@@ -159,7 +161,7 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
       <div class="hdr-logobox">D</div>
       <div class="hdr-title">Meridian · Account Simulator</div>
     </div>
-    <div class="hdr-badge">Facilitator scoring</div>
+    <div class="hdr-badge" id="hdr-mode-badge">…</div>
   </header>
   <div class="game-body">
     <aside class="sidebar">
@@ -194,6 +196,49 @@ button:disabled{opacity:.45;cursor:not-allowed;transform:none}
 
 <script>
 var POINTS_PER_CORRECT = 3;
+
+function qp(name) {
+  try {
+    return new URLSearchParams(window.location.search).get(name);
+  } catch (e) {
+    return null;
+  }
+}
+/** Facilitator / driver only: unlock rounds, scoring, standings. */
+var isGM = qp("gm") === "1" || qp("facilitator") === "1";
+
+(function initGMLinks() {
+  var gmUrl;
+  try {
+    var u = new URL(window.location.href);
+    u.searchParams.set("gm", "1");
+    u.searchParams.delete("facilitator");
+    gmUrl = u.toString();
+  } catch (e2) {
+    gmUrl = window.location.pathname + "?gm=1";
+  }
+  var a = document.getElementById("gm-self-link");
+  if (a) a.href = gmUrl;
+  var hint = document.getElementById("gm-hint");
+  var btn = document.getElementById("btn-begin");
+  if (!isGM) {
+    if (hint) {
+      hint.style.display = "block";
+      hint.innerHTML = "You are viewing the <strong>participant</strong> page. <strong>Do not add ?gm=1</strong> unless you are the facilitator on the room laptop. Scores and round controls stay hidden here.";
+    }
+    if (btn) {
+      btn.textContent = "Participant view (no controls)";
+      btn.disabled = true;
+      btn.style.opacity = "0.55";
+      btn.style.cursor = "not-allowed";
+    }
+  } else {
+    if (hint) {
+      hint.style.display = "block";
+      hint.innerHTML = "<strong>Facilitator mode</strong> — you can unlock rounds, enter picks, and apply scores. Keep this tab on the <strong>projector only</strong> if you do not want teams to see totals.";
+    }
+  }
+})();
 
 /** optimalSet is used only for scoring — never rendered */
 var ROUNDS = [
@@ -322,6 +367,8 @@ var roundIdx = 0;
 var phase = "locked";
 /** @type {string[][]} picks[teamIndex] = up to 3 codes */
 var picks = [];
+/** Points already applied this round per team (for replace-on-reapply, no double-count). */
+var roundPtsApplied = [];
 
 (function stars() {
   var c = document.getElementById("stars");
@@ -342,11 +389,14 @@ var picks = [];
 document.getElementById("account-side").innerHTML = ACCOUNT_HTML;
 
 function showSetup() {
+  if (!isGM) {
+    return;
+  }
   document.getElementById("intro").style.display = "none";
   document.getElementById("setup").style.display = "flex";
   var box = document.getElementById("team-inputs");
   if (!box.children.length) {
-    addTeam(); addTeam(); addTeam();
+    addTeam();
   }
 }
 
@@ -361,17 +411,22 @@ function addTeam() {
 }
 
 function startGame() {
+  if (!isGM) return;
   var inputs = document.querySelectorAll("#team-inputs input");
   teams = [];
   for (var i = 0; i < inputs.length; i++) {
-    teams.push({ name: inputs[i].value.trim() || ("Team " + (i + 1)), score: 0 });
+    var nm = inputs[i].value.trim();
+    if (nm) teams.push({ name: nm, score: 0 });
   }
   if (!teams.length) teams.push({ name: "Team 1", score: 0 });
   picks = teams.map(function() { return []; });
+  roundPtsApplied = teams.map(function() { return 0; });
   document.getElementById("setup").style.display = "none";
   document.getElementById("game").style.display = "flex";
   roundIdx = 0;
   phase = "locked";
+  var badge = document.getElementById("hdr-mode-badge");
+  if (badge) badge.textContent = "Facilitator (GM)";
   renderScoreboard();
   renderMap();
   renderRound();
@@ -390,14 +445,20 @@ function renderScoreboard() {
   var codes = phase === "locked" ? [] : codesForRound();
   var html = "";
   var max = 0;
-  for (var t = 0; t < teams.length; t++) if (teams[t].score > max) max = teams[t].score;
+  if (isGM) {
+    for (var t = 0; t < teams.length; t++) if (teams[t].score > max) max = teams[t].score;
+  }
 
   for (var i = 0; i < teams.length; i++) {
-    var top = teams[i].score === max && max > 0;
+    var top = isGM && teams[i].score === max && max > 0;
     html += '<div class="team-card' + (top ? " top-team" : "") + '" id="tc-' + i + '">';
     html += '<div class="team-name">' + esc(teams[i].name) + '</div>';
-    html += '<div class="team-score" id="ts-' + i + '">' + teams[i].score + '</div>';
-    if (phase !== "locked") {
+    if (isGM) {
+      html += '<div class="team-score" id="ts-' + i + '">' + teams[i].score + '</div>';
+    } else {
+      html += '<div class="team-score" style="font-size:14px;color:var(--muted);font-family:Inter,sans-serif">—</div>';
+    }
+    if (phase !== "locked" && isGM) {
       html += '<div class="pick-label">Their 3 actions (this round)</div>';
       html += '<div class="letter-grid" id="lg-' + i + '"></div>';
       html += '<button type="button" class="score-team-btn" onclick="applyScore(' + i + ')">Apply points for this team</button>';
@@ -407,7 +468,7 @@ function renderScoreboard() {
   }
   document.getElementById("scoreboard").innerHTML = html;
 
-  if (phase !== "locked") {
+  if (phase !== "locked" && isGM) {
     for (var j = 0; j < teams.length; j++) {
       renderLetterGrid(j, codes);
     }
@@ -437,6 +498,7 @@ function renderLetterGrid(teamIdx, codes) {
 }
 
 function togglePick(teamIdx, code) {
+  if (!isGM) return;
   var list = picks[teamIdx];
   var i = list.indexOf(code);
   if (i >= 0) {
@@ -457,6 +519,7 @@ function countMatches(selected, optimal) {
 }
 
 function applyScore(teamIdx) {
+  if (!isGM) return;
   var sel = picks[teamIdx].slice();
   var toast = document.getElementById("toast-" + teamIdx);
   if (sel.length !== 3) {
@@ -466,20 +529,26 @@ function applyScore(teamIdx) {
   var opt = currentRound().optimalSet;
   var matches = countMatches(sel, opt);
   var pts = matches * POINTS_PER_CORRECT;
-  teams[teamIdx].score += pts;
+  var prevRound = roundPtsApplied[teamIdx] || 0;
+  var delta = pts - prevRound;
+  teams[teamIdx].score += delta;
+  roundPtsApplied[teamIdx] = pts;
   picks[teamIdx] = [];
   var ts = document.getElementById("ts-" + teamIdx);
   if (ts) ts.textContent = teams[teamIdx].score;
   if (toast) {
-    toast.textContent = pts > 0
-      ? ("Recorded +" + pts + " points.")
-      : "Recorded +0 points.";
+    if (prevRound === 0) {
+      toast.textContent = pts > 0 ? ("Recorded +" + pts + " points this round.") : "Recorded +0 for this round.";
+    } else {
+      toast.textContent = delta === 0 ? "Updated — still +" + pts + " this round." : ("Adjusted by " + (delta > 0 ? "+" : "") + delta + " (now +" + pts + " this round).");
+    }
   }
   refreshTopTeamHighlight();
   renderLetterGrid(teamIdx, codesForRound());
 }
 
 function refreshTopTeamHighlight() {
+  if (!isGM) return;
   var max = 0;
   for (var j = 0; j < teams.length; j++) if (teams[j].score > max) max = teams[j].score;
   for (var k = 0; k < teams.length; k++) {
@@ -517,13 +586,17 @@ function renderRound() {
   }
   var r = currentRound();
   var fac = "";
-  if (phase === "locked") {
-    fac = '<button type="button" class="fac-btn fac-unlock" onclick="unlockRound()">Unlock this round</button>';
+  if (isGM) {
+    if (phase === "locked") {
+      fac = '<button type="button" class="fac-btn fac-unlock" onclick="unlockRound()">Unlock this round</button>';
+    } else {
+      fac = '<span class="fac-label">When discussion ends</span>'
+        + '<button type="button" class="fac-btn fac-next" onclick="nextRound()">'
+        + (roundIdx < ROUNDS.length - 1 ? "Lock round → next quarter" : "Finish → standings")
+        + '</button>';
+    }
   } else {
-    fac = '<span class="fac-label">When discussion ends</span>'
-      + '<button type="button" class="fac-btn fac-next" onclick="nextRound()">'
-      + (roundIdx < ROUNDS.length - 1 ? "Lock round → next quarter" : "Finish → standings")
-      + '</button>';
+    fac = '<span class="fac-label">Participant view</span><span style="font-size:13px;color:var(--muted)">Round changes and scoring happen on the facilitator screen (<code>?gm=1</code>).</span>';
   }
 
   if (phase === "locked") {
@@ -533,7 +606,7 @@ function renderRound() {
       + '<div class="case-title">' + esc(r.title) + '</div>'
       + '<div class="case-theme">' + esc(r.theme) + '</div>'
       + '</div>'
-      + '<div class="lock-state"><div class="lock-icon">&#128274;</div><div class="lock-text">Facilitator: unlock when pairs are ready.</div></div>'
+      + '<div class="lock-state"><div class="lock-icon">&#128274;</div><div class="lock-text">' + (isGM ? "Unlock when pairs are ready." : "Waiting for facilitator to unlock this round on the room screen.") + '</div></div>'
       + '<div class="fac-bar">' + fac + '</div>';
     renderScoreboard();
     return;
@@ -557,7 +630,7 @@ function renderRound() {
     + '<div class="block"><h3>Instructions</h3><p>Each pair has the same scenario. Use <strong style="color:var(--text)">Events</strong> and the <strong style="color:var(--text)">Account profile</strong> (sidebar). Choose your <strong style="color:var(--text)">top 3 actions</strong> for this quarter and be ready to explain why. The app does <em>not</em> show an answer key — facilitators reveal ground truth after submissions.</p></div>'
     + '<div class="block"><h3>Events</h3>' + ev + '</div>'
     + '<div class="block"><h3>Diagnosis (offline)</h3><p>' + esc(r.diagnosisPrompt) + '</p></div>'
-    + '<div class="block"><h3>Action menu — pick your top 3</h3><p style="margin-bottom:12px;font-size:13px;color:var(--muted)">Codes match the facilitator scoring keys in the sidebar.</p><table class="action-table">' + rows + '</table></div>'
+    + '<div class="block"><h3>Action menu — pick your top 3</h3><p style="margin-bottom:12px;font-size:13px;color:var(--muted)">' + (isGM ? "Codes match the letter keys in the sidebar for scoring." : "Discuss and record your three letters offline — scoring is private to the facilitator.") + '</p><table class="action-table">' + rows + '</table></div>'
     + '<div class="fac-bar">' + fac + '</div>';
 
   renderScoreboard();
@@ -565,21 +638,25 @@ function renderRound() {
 }
 
 function unlockRound() {
+  if (!isGM) return;
   var ov = document.getElementById("unlock-overlay");
   ov.classList.add("on");
   setTimeout(function() {
     ov.classList.remove("on");
     phase = "open";
     picks = teams.map(function() { return []; });
+    roundPtsApplied = teams.map(function() { return 0; });
     renderMap();
     renderRound();
   }, 900);
 }
 
 function nextRound() {
+  if (!isGM) return;
   roundIdx++;
   phase = "locked";
   picks = teams.map(function() { return []; });
+  roundPtsApplied = teams.map(function() { return 0; });
   renderMap();
   renderRound();
   var sc = document.querySelector(".center-scroll");
@@ -589,6 +666,10 @@ function nextRound() {
 function showVictory() {
   document.getElementById("game").style.display = "none";
   document.getElementById("victory").style.display = "flex";
+  if (!isGM) {
+    document.getElementById("final-scores").innerHTML = "<p style=\"color:var(--muted);max-width:420px;margin:0 auto\">Standings are shared by the facilitator after the session.</p>";
+    return;
+  }
   var sorted = teams.slice().sort(function(a, b) { return b.score - a.score; });
   var medals = ["&#129351;", "&#129352;", "&#129353;", "&#127941;", "&#127941;", "&#127941;", "&#127941;", "&#127941;"];
   var html = "";
