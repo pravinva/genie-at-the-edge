@@ -51,6 +51,8 @@ checkpoint/
 !**/webhook*.json
 !agentic_hmi/apps-script-fe-bootcamp/appsscript.json
 !agentic_hmi/apps-script-fe-bootcamp/.clasp.json
+!agentic_hmi/l3-bootcamp-smoke/package.json
+!agentic_hmi/l3-bootcamp-smoke/package-lock.json
 
 # Secrets
 secrets/
