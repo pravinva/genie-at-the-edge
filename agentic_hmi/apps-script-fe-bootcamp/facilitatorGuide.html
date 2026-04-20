@@ -165,11 +165,17 @@ code {
 <div class="subtitle">Facilitator guide · “The Silent Erosion” (Meridian Health) · Four quarters, same account</div>
 
 <div style="margin-bottom: 20px;">
-<a href="?mode=l3bootcamp" class="button">▶️ Open simulator</a>
+<a href="l3_sa_bootcamp.html?gm=1" class="button" target="_blank" rel="noopener noreferrer">▶️ Simulator (facilitator · <code>?gm=1</code>)</a>
+<a href="l3_sa_bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Simulator (participant / intro only)</a>
+<a href="l3-bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Bootcamp hub (all links)</a>
 </div>
 
 <div class="success-box">
-<strong>Where to host:</strong> Use your existing <strong>Google Apps Script</strong> web app (or any HTTPS host) and upload the latest <code>l3_sa_bootcamp.html</code> from the <code>genie-edge-demo</code> repo. A public mirror may also be published on GitHub Pages under this project.<br><br>
+<strong>Where to host:</strong> Use your existing <strong>Google Apps Script</strong> web app (or any HTTPS host) and upload the latest <code>l3_sa_bootcamp.html</code> from the <code>genie-edge-demo</code> repo. A <strong>public GitHub Pages mirror</strong> is published with this project (same HTML):<br><br>
+<strong>GitHub Pages — copy/paste</strong><br>
+• Hub: <a href="https://pravinva.github.io/genie-edge-demo/l3-bootcamp.html" target="_blank" rel="noopener noreferrer"><code>https://pravinva.github.io/genie-edge-demo/l3-bootcamp.html</code></a><br>
+• Facilitator / projector: <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?gm=1" target="_blank" rel="noopener noreferrer"><code>https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?gm=1</code></a><br>
+• Participant (optional): <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html" target="_blank" rel="noopener noreferrer"><code>https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html</code></a> (no <code>?gm=1</code>)<br><br>
 The <strong>participant-facing app intentionally does not show</strong> ground truth, hints, or correct answers — only account context, events, the action menu, and scoring entry for the facilitator.
 </div>
 
@@ -204,13 +210,20 @@ The <strong>participant-facing app intentionally does not show</strong> ground t
 
 <h2 id="setup">Setup</h2>
 <ol>
-<li>Open <code>l3_sa_bootcamp.html</code> on the projector (or deploy via Apps Script / internal hosting).</li>
-<li>Click <strong>Begin session</strong> → enter each pair’s <strong>team name</strong> → <strong>Launch simulator</strong>.</li>
+<li>Open <code>l3_sa_bootcamp.html?gm=1</code> on the <strong>facilitator / projector</strong> machine (Apps Script or GitHub Pages — add <code>?gm=1</code>).</li>
+<li>Click <strong>Begin session</strong> → add a row per competing pair (only named rows count; use <strong>+ Add team</strong> for extras) → <strong>Launch simulator</strong>.</li>
 <li>Explain: diagnosis is offline; the app only shows events + action menu; you will reveal ground truth verbally after each round.</li>
 </ol>
 
 <div class="warning-box">
 <strong>Screen share:</strong> Everyone can watch the main board. <strong>Scoring:</strong> Only the facilitator (or co-facilitator) should click letter chips and <strong>Apply points</strong> so scores stay accurate. Participants can keep notes on paper — they do not need their own copy of the app unless you choose that format.
+</div>
+
+<div class="success-box">
+<strong>Two links (important):</strong><br>
+• <strong>Facilitator / projector:</strong> open the same HTML file with <code>?gm=1</code> on the URL (example: <code>…/l3_sa_bootcamp.html?gm=1</code>). That unlocks <strong>Unlock round</strong>, <strong>Advance round</strong>, the <strong>scoreboard</strong>, and <strong>Apply points</strong>.<br>
+• <strong>Participants (optional):</strong> share the URL <strong>without</strong> <code>?gm=1</code>. They only see the intro handoff text — they cannot advance rounds or see scores. Most sessions use <strong>projector only</strong> and do not give participants a link.<br>
+<strong>Re-scoring a team:</strong> If you change letter picks for the same round and click <strong>Apply points</strong> again, the total adjusts (it replaces this round’s points for that team — it does not stack duplicate +3s).
 </div>
 
 <h2 id="controls">Controls &amp; flow</h2>
@@ -305,8 +318,10 @@ These letters match the in-app scoring engine. Use the full narrative, anti-patt
 </ol>
 
 <h2 style="margin-top: 40px;">Resources</h2>
-<a href="?mode=l3bootcamp" class="button">Open simulator</a>
-<a href="https://github.com/pravinva/genie-at-the-edge" class="button" target="_blank">View repo on GitHub</a>
+<a href="l3_sa_bootcamp.html?gm=1" class="button" target="_blank" rel="noopener noreferrer">Simulator (facilitator)</a>
+<a href="l3_sa_bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Simulator (participant)</a>
+<a href="l3-bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Bootcamp hub</a>
+<a href="https://github.com/pravinva/genie-edge-demo" class="button" target="_blank" rel="noopener noreferrer">View repo on GitHub</a>
 
 <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; color: #666; font-size: 14px;">
 <strong>Source material:</strong> FE Launchpad — Account Simulator scenario bank (Meridian / “The Silent Erosion”).<br>
