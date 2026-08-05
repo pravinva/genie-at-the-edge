@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FE Launchpad — Account Simulator (Facilitator)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: #f5f5f5;
+  padding: 20px;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 {
+  color: #FF3621;
+  margin-bottom: 10px;
+  font-size: 32px;
+  font-weight: 800;
+}
+h2 {
+  color: #1a1a1a;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 700;
+  border-bottom: 2px solid #FF3621;
+  padding-bottom: 8px;
+}
+h3 {
+  color: #FF3621;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+.info-box {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+.success-box {
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+.warning-box {
+  background: #f8d7da;
+  border-left: 4px solid #dc3545;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+ul, ol {
+  margin-left: 24px;
+  margin-bottom: 16px;
+}
+li {
+  margin-bottom: 8px;
+}
+strong {
+  color: #FF3621;
+  font-weight: 700;
+}
+.scenario-card {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+}
+.scenario-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.scenario-goal {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+.scoring-guide {
+  background: #e7f3ff;
+  border-left: 4px solid #0066cc;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.time-box {
+  background: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: 600;
+  margin-top: 8px;
+  font-size: 14px;
+}
+.button {
+  display: inline-block;
+  background: linear-gradient(135deg, #c42200, #FF3621);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  margin: 16px 8px 16px 0;
+  font-size: 14px;
+}
+.button:hover {
+  opacity: 0.9;
+}
+.toc {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 24px 0;
+}
+.toc ul {
+  list-style: none;
+  margin-left: 0;
+}
+.toc a {
+  color: #0066cc;
+  text-decoration: none;
+}
+.toc a:hover {
+  text-decoration: underline;
+}
+code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>FE Launchpad — Account Simulator</h1>
+<div class="subtitle">Facilitator guide · “The Silent Erosion” (Meridian Health) · Four quarters, same account</div>
+
+<div style="margin-bottom: 20px;">
+<a href="l3_sa_bootcamp.html?gm=1" class="button" target="_blank" rel="noopener noreferrer">▶️ Simulator (facilitator · <code>?gm=1</code>)</a>
+<a href="l3_sa_bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Simulator (participant / intro only)</a>
+<a href="l3-bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Bootcamp hub (all links)</a>
+</div>
+
+<div class="success-box">
+<strong>Where to host:</strong> Use your existing <strong>Google Apps Script</strong> web app (or any HTTPS host) and upload the latest <code>l3_sa_bootcamp.html</code> from the <code>genie-edge-demo</code> repo. A <strong>public GitHub Pages mirror</strong> is published with this project (same HTML):<br><br>
+<strong>GitHub Pages — copy/paste</strong><br>
+• Hub: <a href="https://pravinva.github.io/genie-edge-demo/l3-bootcamp.html" target="_blank" rel="noopener noreferrer"><code>https://pravinva.github.io/genie-edge-demo/l3-bootcamp.html</code></a><br>
+• Facilitator / projector: <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?gm=1" target="_blank" rel="noopener noreferrer"><code>https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?gm=1</code></a><br>
+• Participant intro (optional): <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html" target="_blank" rel="noopener noreferrer"><code>https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html</code></a> (no <code>?gm=1</code>)<br>
+• Read-only scenario on device (no scores): append <code>?q=1</code> … <code>?q=4</code> — e.g. <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?q=1" target="_blank" rel="noopener noreferrer"><code>…l3_sa_bootcamp.html?q=1</code></a> (pairs switch <code>q</code> when you advance the room).<br>
+• <strong>日本語 / 한국어 participants:</strong> add <code>&amp;lang=ja</code> or <code>&amp;lang=ko</code> — e.g. <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?lang=ja&amp;q=1" target="_blank" rel="noopener noreferrer"><code>?lang=ja&amp;q=1</code></a> · <a href="https://pravinva.github.io/genie-edge-demo/l3_sa_bootcamp.html?lang=ko&amp;q=1" target="_blank" rel="noopener noreferrer"><code>?lang=ko&amp;q=1</code></a>. Same letter codes (A–L) for scoring; still no unlock / advance / answer key.<br><br>
+The <strong>participant-facing views intentionally do not show</strong> ground truth, hints, or correct answers — only account context, events, and the action menu; scoring stays on <code>?gm=1</code> only.
+</div>
+
+<div class="toc">
+<strong>Quick navigation</strong>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#setup">Setup</a></li>
+<li><a href="#controls">Controls &amp; scoring</a></li>
+<li><a href="#answer-key">GM answer key (confidential)</a></li>
+<li><a href="#rounds">Round-by-round notes</a></li>
+<li><a href="#tips">Discussion prompts</a></li>
+<li><a href="#time">Time budget</a></li>
+</ul>
+</div>
+
+<h2 id="overview">Overview</h2>
+
+<p>SE pairs work through <strong>Meridian Health Systems</strong> across <strong>four rounds</strong> (Q1–Q4). Each round: read <strong>Events</strong>, discuss <strong>diagnosis</strong> offline, then each pair chooses their <strong>top three actions</strong> from that quarter’s lettered menu. After teams debrief aloud, you reveal <strong>GM ground truth</strong> from the source scenario bank — not from the app.</p>
+
+<h3>Learning objectives (from scenario bank)</h3>
+<ul>
+<li>Diagnose account-health signals and likely causes behind consumption changes</li>
+<li>Prioritize actions under partial information and limited time</li>
+<li>Know when to engage cross-functional partners (SSA, Technical Services, Support) vs when <em>not</em> to escalate</li>
+<li>Shift mindset from “save the account” to “grow the account” as the story evolves</li>
+</ul>
+
+<div class="info-box">
+<strong>Scoring in the app:</strong> <strong>3 points</strong> for each selected action that matches the optimal set for that round (max <strong>9</strong> per round, <strong>36</strong> total). After pairs report their three letters, enter them under each team in the sidebar and click <strong>Apply points for this team</strong>. The app shows how many points were recorded — <em>not</em> which letters were “supposed” to be correct.
+</div>
+
+<h2 id="setup">Setup</h2>
+<ol>
+<li>Open <code>l3_sa_bootcamp.html?gm=1</code> on the <strong>facilitator / projector</strong> machine (Apps Script or GitHub Pages — add <code>?gm=1</code>).</li>
+<li>Click <strong>Begin session</strong> → add a row per competing pair (only named rows count; use <strong>+ Add team</strong> for extras) → <strong>Launch simulator</strong>.</li>
+<li>Explain: diagnosis is offline; the app only shows events + action menu; you will reveal ground truth verbally after each round.</li>
+</ol>
+
+<div class="warning-box">
+<strong>Screen share:</strong> Everyone can watch the main board. <strong>Scoring:</strong> Only the facilitator (or co-facilitator) should click letter chips and <strong>Apply points</strong> so scores stay accurate. Participants can keep notes on paper — they do not need their own copy of the app unless you choose that format.
+</div>
+
+<div class="success-box">
+<strong>Two links (important):</strong><br>
+• <strong>Facilitator / projector:</strong> open the same HTML file with <code>?gm=1</code> on the URL (example: <code>…/l3_sa_bootcamp.html?gm=1</code>). That unlocks <strong>Unlock round</strong>, <strong>Advance round</strong>, the <strong>scoreboard</strong>, and <strong>Apply points</strong>.<br>
+• <strong>Participants (optional):</strong> share the URL <strong>without</strong> <code>?gm=1</code>. The intro lists <strong>read-only quarter links</strong> (<code>?q=1</code> … <code>?q=4</code>) so pairs can read <strong>events + action menu + account profile</strong> on their own devices — still <strong>no scores</strong> and <strong>no facilitator controls</strong>. Pairs change <code>?q=</code> when you advance the room (or follow the projector only).<br>
+<strong>Re-scoring a team:</strong> If you change letter picks for the same round and click <strong>Apply points</strong> again, the total adjusts (it replaces this round’s points for that team — it does not stack duplicate +3s).
+</div>
+
+<h2 id="controls">Controls &amp; flow</h2>
+<ul>
+<li><strong>Unlock this round</strong> — Reveals events, diagnosis instructions, and the action table.</li>
+<li><strong>Sidebar</strong> — For each team, tap exactly <strong>three</strong> action codes they committed to, then <strong>Apply points for this team</strong>. Points = 3 × (how many of their picks match the optimal set for that round). Wrong picks are ignored (no negative points).</li>
+<li><strong>Lock round → next quarter</strong> — After debrief and scoring, click <strong>Show scores → next quarter</strong> to put this-round points and running totals full-screen for the room, then continue. On Q4, the button reads <strong>Show scores → final standings</strong>.</li>
+</ul>
+
+<h2 id="answer-key">GM answer key (do not read until reveal)</h2>
+<div class="warning-box">
+These letters match the in-app scoring engine. Reveal <strong>after</strong> share-outs — then use the talking points below. Keep this page off participant screens.
+</div>
+<table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+<tr style="background:#f0f0f0;"><th style="text-align:left;padding:8px;border:1px solid #ccc;">Round</th><th style="text-align:left;padding:8px;border:1px solid #ccc;">Optimal top-3 (3 pts each)</th></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q1 — First Cracks</td><td style="padding:8px;border:1px solid #ccc;"><code>A</code>, <code>K</code>, <code>E</code></td></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q2 — Plot Thickens</td><td style="padding:8px;border:1px solid #ccc;"><code>B</code>, <code>C</code>, <code>D</code></td></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q3 — Turning Point</td><td style="padding:8px;border:1px solid #ccc;"><code>B</code>, <code>A</code>, <code>K</code></td></tr>
+<tr><td style="padding:8px;border:1px solid #ccc;">Q4 — The Close</td><td style="padding:8px;border:1px solid #ccc;"><code>C</code>, <code>E</code>, <code>A</code></td></tr>
+</table>
+
+<h3>Why these are correct — talking points</h3>
+
+<div class="scoring-guide">
+<strong>Q1 — <code>A</code>, <code>K</code>, <code>E</code></strong><br><br>
+<strong>Thesis:</strong> Three connected signals (champion exit, analytics SQL drop, Tom benchmarking) — fix coverage and learn the “why” before escalating or pitching.<br><br>
+<ul>
+<li><strong><code>A</code> — 1:1 with Priya before she leaves (with AE):</strong> Champion departure is the highest-leverage, time-boxed risk. Capture who else owns the platform, who to land next, and transition intel <em>before</em> she walks. Partnering with AE keeps commercial + technical aligned.</li>
+<li><strong><code>K</code> — Discovery with the analytics org on the usage drop:</strong> The 12% DBU drop is concentrated in SQL — you need firsthand diagnosis (workload moved? stalled? frustrated?) rather than guessing from Marcus alone or spinning up specialists too early.</li>
+<li><strong><code>E</code> — Intro to Tom via Marcus:</strong> Competitive noise is real but still early. Hear Tom’s concerns directly (and through a trusted intro) instead of jumping to battle cards, UCOs, or Snowflake CI.</li>
+</ul>
+<strong>Common misses / anti-patterns:</strong> Manager escalate (<code>C</code>), EBR (<code>F</code>), SSA deep-dive (<code>D</code>), TS health check (<code>I</code>), CI/UCO (<code>G</code>/<code>H</code>) — premature; you lack a crisp ask. “Do nothing” (<code>J</code>) burns the Priya window. Urgent Marcus-only (<code>B</code>) or successor gossip (<code>L</code>) are useful later but don’t cover champion transfer + analytics root cause + Tom face-to-face.
+</div>
+
+<div class="scoring-guide" style="margin-top:16px;">
+<strong>Q2 — <code>B</code>, <code>C</code>, <code>D</code></strong><br><br>
+<strong>Thesis:</strong> New Snowflake-biased VP + ML growth + UC ticket storm. Discover before you pitch; nurture the bright spot; fix the structural platform pain with the right specialist.<br><br>
+<ul>
+<li><strong><code>B</code> — Discovery questions for David (not a Snowflake-vs-Databricks pitch):</strong> He already framed spend as a problem. First meeting = listen (priorities, pain, vision). Pitch decks / “what Snowflake can’t do” (<code>A</code>/<code>I</code>) confirm the vendor stereotype he brought in.</li>
+<li><strong><code>C</code> — Working session with Aisha / ML:</strong> Consumption growth is all ML — that’s your expansion story and proof point for David later. Learn what’s driving it, what’s next, and risk <em>before</em> dropping an ML SSA (<code>L</code>) or filing a UCO (<code>F</code>).</li>
+<li><strong><code>D</code> — Technical Services for UC health / architecture:</strong> 14 tickets, 20% of Marcus’s team on UC permissions — pattern screams config/architecture, not “open more Support tickets” (<code>K</code>) or manager panic (<code>G</code>). TS is the right escalation once the pattern is clear (story validates this in Q3).</li>
+</ul>
+<strong>Common misses / anti-patterns:</strong> Competitive deck / value narrative for intro (<code>A</code>/<code>I</code>), early EBR with CFO (<code>H</code>), SQL workshop without knowing why analytics left (<code>E</code>), ML SSA before discovery (<code>L</code>). Triage with Marcus alone (<code>J</code>) is partial — the scale of UC pain warrants TS, not just ticket sorting.
+</div>
+
+<div class="scoring-guide" style="margin-top:16px;">
+<strong>Q3 — <code>B</code>, <code>A</code>, <code>K</code></strong><br><br>
+<strong>Thesis:</strong> David gave you two explicit asks (cost review + serving demo). Answer those with proof; amplify customer-owned ML wins. Don’t block Tom’s process or lead with vendor TCO theater.<br><br>
+<ul>
+<li><strong><code>B</code> — Cost optimization review (current vs optimized):</strong> David needs numbers for Rebecca. Credible spend truth beats a proactive Databricks-vs-Snowflake TCO deck (<code>C</code>) or battle card (<code>F</code>). This is what later unlocks CFO trust.</li>
+<li><strong><code>A</code> — Model serving demo with ML SSA, tailored to Meridian:</strong> He asked for it; discovery already showed depth beyond solo SA support. Bring the specialist for a <em>use-case</em> demo, not a generic product tour.</li>
+<li><strong><code>K</code> — Aisha presents ML wins to David:</strong> Customer voice &gt; vendor narrative. Internal champion proof (training speedup, cost vs SageMaker, roadmap) reframes the platform as growth, not a Snowflake migration debate.</li>
+</ul>
+<strong>Common misses / anti-patterns:</strong> Asking David to delay Tom’s proposal (<code>E</code>) — looks political and blocks their process. Vendor TCO / battle card first (<code>C</code>/<code>F</code>). Premature EBR (<code>D</code>) before the proof David requested. SQL Serverless POC / Tom therapy / more TS (<code>H</code>/<code>G</code>/<code>L</code>) can wait until cost + ML proof land. AE align / UCO (<code>J</code>/<code>I</code>) are hygiene, not the top-3 lever this quarter.
+</div>
+
+<div class="scoring-guide" style="margin-top:16px;">
+<strong>Q4 — <code>C</code>, <code>E</code>, <code>A</code></strong><br><br>
+<strong>Thesis:</strong> Account turned — shift from defend to grow. Convert momentum into an executive commitment story: EBR + joint success plan + a concrete analytics POC David already asked about.<br><br>
+<ul>
+<li><strong><code>C</code> — EBR with David, Rebecca, and AE (SA frames value + agenda):</strong> Rebecca is open to a 2-year deal if growth is credible. This is the commercial moment; SA’s job is the value narrative and agenda, AE owns commercial.</li>
+<li><strong><code>E</code> — Joint success plan (outcomes ↔ Databricks capabilities):</strong> Gives the EBR a durable artifact — ties ML expansion + analytics modernization to business outcomes the CFO will fund, not a one-off win lap.</li>
+<li><strong><code>A</code> — Databricks SQL Serverless POC for analytics:</strong> David explicitly asked; analytics engineers are pulling toward Databricks after Aisha’s talk; Tom stood down but still prefers Snowflake for “pure analytics.” A POC is the right next proof, not a full TS migration yet (<code>D</code>).</li>
+</ul>
+<strong>Common misses / anti-patterns:</strong> Celebrate / account saved (<code>L</code>) or ignore Tom (<code>I</code>) — premature. Forecast-only for AE (<code>F</code>) or UCOs (<code>K</code>) without the exec forum and success plan. Jumping straight to TS dashboard migration / architecture review (<code>D</code>/<code>J</code>) before a POC proves appetite. Champions program / PM intro (<code>H</code>/<code>G</code>) are nice-to-haves after the commitment path is set. ML roadmap alone (<code>B</code>) without the CFO-facing package under-weights the commercial close.
+</div>
+
+<h2 id="rounds">Round-by-round facilitation</h2>
+
+<div class="scenario-card">
+<div class="scenario-title">Q1 — The First Cracks</div>
+<p>Focus discussion on <strong>connecting signals</strong> (champion exit, SQL drop, Tom’s benchmarks). After teams share their three actions, reveal ground truth from the PDF, then score in the app.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min</div>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q2 — The Plot Thickens</div>
+<p>New VP from a Snowflake-heavy background, ML up / SQL down, UC ticket storm. Good tension: <strong>discovery vs pitch</strong>, <strong>when TS is warranted</strong>, and <strong>when ML SSA is premature</strong>.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min · Optional: 2-min brainstorm of discovery questions for David</div>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q3 — Turning Point</div>
+<p>TS fixed UC; David wants serving demo + cost review; Tom’s proposal lands. Debrief <strong>influence without blocking customer process</strong> and <strong>credible numbers vs vendor TCO decks</strong>.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min</div>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q4 — The Close</div>
+<p>Account has turned; choices shift to <strong>EBR + joint success plan + SQL Serverless POC</strong>. Contrast with “celebrate only” or over-rotating to TS migration too early.</p>
+<div class="time-box">⏱️ Suggested: 12–18 min</div>
+</div>
+
+<h2 id="scoring">Scoring reference</h2>
+<ul>
+<li><strong>Per pick:</strong> +3 if the letter is one of the three optimal actions for that round.</li>
+<li><strong>Cap:</strong> 9 points per round per team; 36 overall.</li>
+<li><strong>Ties:</strong> Allowed — standings screen orders by total.</li>
+</ul>
+
+<h2 id="tips">Discussion prompts (from scenario bank)</h2>
+<p>Use these after teams share their three actions and you reveal ground truth:</p>
+<ul>
+<li><em>Diagnosis:</em> “Who connected champion loss to the consumption story? Walk us through that reasoning.”</li>
+<li><em>Partial information:</em> “Did anyone treat these as three separate problems vs one arc?”</li>
+<li><em>Actions:</em> “Pair A pulled in an SSA early; Pair B did not — both can be argued. Make your case.”</li>
+<li><em>Risk:</em> “What could go wrong with the highest-leverage move you chose?”</li>
+<li><em>Escalation judgment:</em> “Was this a round where the best move was <strong>not</strong> to escalate? Who got that?”</li>
+<li><em>Discovery (Q2):</em> “You have 30 minutes with David — top three questions, <strong>no product names</strong>.”</li>
+<li><em>Reflection:</em> “What signal from this quarter would you watch on your own accounts Monday?”</li>
+</ul>
+
+<h2 id="time">Time management</h2>
+<div class="warning-box">
+<strong>Full run (4 rounds):</strong> about <strong>55–80 minutes</strong> (12–18 min per round + transitions).<br>
+<strong>Tight agenda:</strong> shorten pair discussion to ~5 min and debrief to ~5 min per round (~45 min total).
+</div>
+<ul>
+<li><strong>Read events aloud</strong> (optional) while the slide is unlocked — 1–2 min.</li>
+<li><strong>Pair work</strong> — diagnosis + agree on three letters — 5–8 min.</li>
+<li><strong>Share-outs</strong> — a few teams report — 4–6 min.</li>
+<li><strong>GM reveal + debate</strong> — use PDF narrative — 5–8 min.</li>
+<li><strong>Enter scores</strong> in sidebar — 1–2 min.</li>
+</ul>
+
+<h2 style="margin-top: 40px;">Checklist</h2>
+<div class="success-box">
+<strong>Before:</strong> Simulator opens · teams decided · PDF / answer key ready · timer optional<br>
+<strong>During:</strong> Unlock → discuss → share → <strong>verbal reveal</strong> → enter three letters per team → Apply points → next round<br>
+<strong>After:</strong> Show standings screen · recap themes · collect feedback
+</div>
+
+<h2 style="margin-top: 40px;">Deploying (Apps Script)</h2>
+<ol>
+<li>Copy the contents of <code>l3_sa_bootcamp.html</code> into an <strong>HtmlService</strong> file (e.g. <code>Index.html</code>) in your existing web app project, or serve it via <code>HtmlService.createHtmlOutputFromFile</code> / template as you already do for <code>?mode=l3bootcamp</code>.</li>
+<li>Redeploy the web app so the new HTML is live at your <code>script.google.com/.../exec</code> URL.</li>
+<li>Keep <code>l3_sa_bootcamp_facilitator_guide.html</code> alongside it if you link facilitators to the guide from the same folder/host.</li>
+</ol>
+
+<h2 style="margin-top: 40px;">Resources</h2>
+<a href="l3_sa_bootcamp.html?gm=1" class="button" target="_blank" rel="noopener noreferrer">Simulator (facilitator)</a>
+<a href="l3_sa_bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Simulator (participant)</a>
+<a href="l3-bootcamp.html" class="button" target="_blank" rel="noopener noreferrer">Bootcamp hub</a>
+<a href="l3_sa_bootcamp_facilitator_readaloud.html" class="button" target="_blank" rel="noopener noreferrer">Read-aloud + answer key</a>
+<a href="https://github.com/pravinva/genie-edge-demo" class="button" target="_blank" rel="noopener noreferrer">View repo on GitHub</a>
+
+<div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; color: #666; font-size: 14px;">
+<strong>Source material:</strong> FE Launchpad — Account Simulator scenario bank (Meridian / “The Silent Erosion”).<br>
+<em>App refresh: FE Launchpad account simulator · four-quarter scoring edition</em>
+</div>
+
+</div>
+
+</body>
+</html>
