@@ -188,6 +188,7 @@ The <strong>participant-facing views intentionally do not show</strong> ground t
 <li><a href="#setup">Setup</a></li>
 <li><a href="#controls">Controls &amp; scoring</a></li>
 <li><a href="#answer-key">GM answer key (confidential)</a></li>
+<li><a href="#common-debates">Common debates (facilitator)</a></li>
 <li><a href="#rounds">Round-by-round notes</a></li>
 <li><a href="#tips">Discussion prompts</a></li>
 <li><a href="#time">Time budget</a></li>
@@ -291,6 +292,53 @@ These letters match the in-app scoring engine. Reveal <strong>after</strong> sha
 <li><strong><code>A</code> — Databricks SQL Serverless POC for analytics:</strong> David explicitly asked; analytics engineers are pulling toward Databricks after Aisha’s talk; Tom stood down but still prefers Snowflake for “pure analytics.” A POC is the right next proof, not a full TS migration yet (<code>D</code>).</li>
 </ul>
 <strong>Common misses / anti-patterns:</strong> Celebrate / account saved (<code>L</code>) or ignore Tom (<code>I</code>) — premature. Forecast-only for AE (<code>F</code>) or UCOs (<code>K</code>) without the exec forum and success plan. Jumping straight to TS dashboard migration / architecture review (<code>D</code>/<code>J</code>) before a POC proves appetite. Champions program / PM intro (<code>H</code>/<code>G</code>) are nice-to-haves after the commitment path is set. ML roadmap alone (<code>B</code>) without the CFO-facing package under-weights the commercial close.
+</div>
+
+<h2 id="common-debates">Common debates (facilitator)</h2>
+<p>Use these when teams push back on the answer key. The rubric rewards <strong>top 3 under constraint</strong> and <strong>sequence</strong> — many alternate picks are reasonable as a 4th action or the next quarter.</p>
+
+<div class="scenario-card">
+<div class="scenario-title">Q1 — “Why not meet / triage with Marcus?” (<code>B</code> or Q2’s <code>J</code>)</div>
+<p><strong>If they mean <code>B</code> — urgent meeting with Marcus on consumption:</strong> Strong partial. Marcus already surfaced all three signals. With three picks, <code>B</code> overlaps with “listen to Marcus” without closing the <strong>Priya window</strong> (<code>A</code>), <strong>firsthand analytics diagnosis</strong> (<code>K</code>), or <strong>Tom via intro</strong> (<code>E</code>).</p>
+<p><strong>Facilitator line:</strong> <em>“B is fine as a single move — but it doesn’t replace champion transfer, analytics root cause, or engaging Tom directly.”</em></p>
+<p><strong>Credit:</strong> <code>A + K + B</code> (no <code>E</code>) — debate missing Tom.</p>
+<p style="margin-top:12px"><strong>If they mean Q2’s <code>J</code> — triage UC tickets with Marcus:</strong> Wrong quarter for Q1 (baseline ~6 tickets, not the UC storm). In Q2, <code>J</code> is tempting but at <strong>14 tickets / 20% platform time</strong> the story validates <strong>structural UC fix</strong> → <code>D</code> (Technical Services), not ticket triage alone.</p>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q2 — “Why not <code>F</code> (UCO for ML expansion)?”</div>
+<p>ML growth is real, but filing a UCO before the <strong>Aisha working session</strong> (<code>C</code>) is process before insight. Q2’s hotter fires: <strong>David discovery</strong> (<code>B</code>) and <strong>UC pattern</strong> (<code>D</code>).</p>
+<p><strong>Facilitator line:</strong> <em>“What would you put in the UCO after one quarter of ‘ML is up 5%’?”</em> — <code>F</code> often belongs after <code>C</code>, sometimes in Q3.</p>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q2 / Q3 — “Why not talk to Tom about DBSQL instead of cost optimization?”</div>
+<p><strong>Clarify the quarter:</strong> In Q2, <code>B</code> is <strong>discovery for David</strong>, not cost review. Tom’s <strong>formal Snowflake proposal</strong> lands in <strong>Q3</strong>. SQL workshop (<code>E</code> in Q2) or meeting Tom (<code>G</code> in Q3) before diagnosis / exec asks can look like pitching to the skeptic.</p>
+<p><strong>Q3 — <code>G</code> (meet Tom on DBSQL pain) vs <code>B</code> (cost optimization review):</strong> David <strong>explicitly asked</strong> for cost review for Rebecca. Tom’s input informs strategy; it doesn’t replace the executive deliverable. <code>H</code> / SQL Serverless POC is optimal in <strong>Q4</strong> (<code>A</code>) after proof lands.</p>
+<p><strong>Facilitator line:</strong> <em>“Tom matters — but Q3 is answer David and Rebecca with numbers and customer proof (Aisha), not only absorb Tom’s worldview.”</em></p>
+<p><strong>Credit:</strong> <code>B + A + G</code> (no <code>K</code>) — defensible; push: who does David need to hear from more after ML growth?</p>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q4 — Joint success plan (<code>E</code>) vs consumption forecast (<code>F</code>)</div>
+<p>Rebecca wants a <strong>credible growth story</strong> for a 2-year deal — not only a DBU curve.</p>
+<ul>
+<li><strong><code>E</code> — Joint success plan:</strong> Outcomes ↔ capabilities ↔ milestones (ML expansion, analytics modernization, platform). Customer-facing artifact for the EBR.</li>
+<li><strong><code>F</code> — Consumption forecast:</strong> Sizing math for AE / Finance. Supporting appendix — assumes the “why grow” story already exists.</li>
+</ul>
+<p><strong>Why <code>E</code> beats <code>F</code> in the top 3:</strong> The optimal Q4 package is <strong>forum + story + proof</strong> — <code>C</code> (EBR) + <code>E</code> (success plan) + <code>A</code> (SQL Serverless POC David asked for). <code>F</code> should follow from <code>E</code> (AE models commit from milestones), not replace it.</p>
+<p><strong>Facilitator line:</strong> <em>“If you picked F, name the three workloads that drive the curve. If you can’t, you needed E first.”</em></p>
+<p><strong>Credit:</strong> <code>C + E + F</code> (no POC) — strong commercial angle; ask where SQL Serverless proof fits for David.</p>
+</div>
+
+<div class="scenario-card">
+<div class="scenario-title">Q4 — “Why not <code>J</code> (TS architecture review for analytics modernization)?”</div>
+<p>Right type of move, wrong altitude and timing. Analytics pull is real, but David asked about <strong>SQL Serverless</strong> — a <strong>POC</strong> (<code>A</code>) proves appetite before a full TS architecture review. Pair with EBR + success plan, not instead of them.</p>
+<p><strong>Facilitator line:</strong> <em>“Architecture review is often phase 2 after a successful POC — not what Rebecca signs this quarter.”</em></p>
+</div>
+
+<div class="info-box">
+<strong>Partial-credit framing:</strong> If pairs can argue sequence (“we’d do X next week”), acknowledge judgment — the app scores exact letter match only. Use debate to teach, not only to defend the key.
 </div>
 
 <h2 id="rounds">Round-by-round facilitation</h2>
